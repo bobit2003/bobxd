@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, Pen, FileText as ArticleIcon, Send, Eye, LayoutGrid, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Plus, Trash2, Pen, Pencil, FileText as ArticleIcon, Send, Eye, LayoutGrid, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
@@ -97,6 +97,9 @@ function ContentCard({
               )}
             </div>
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-primary/60 hover:text-primary" onClick={() => onEdit(item)}>
+                <Pencil className="w-3 h-3" />
+              </Button>
               {item.status !== "published" && (
                 <Select value={item.status} onValueChange={v => onStatusChange(item.id, v)}>
                   <SelectTrigger className="h-7 w-7 p-0 border-0 bg-transparent">
@@ -364,6 +367,7 @@ export default function ContentCalendar() {
                         {dayItems.slice(0, 3).map(item => (
                           <div
                             key={item.id}
+                            onClick={() => setEditItem(item)}
                             className={`text-[9px] px-1.5 py-0.5 rounded truncate cursor-pointer transition-opacity hover:opacity-80 ${platformColors[item.platform] ?? "bg-white/10 text-white/60"} border`}
                             title={`${item.title} — ${item.platform} ${item.contentType}`}
                           >

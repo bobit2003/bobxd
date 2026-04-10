@@ -106,8 +106,10 @@ export default function Metrics() {
     weekKeys.forEach(k => { logsByWeek[k] = new Set(); });
 
     auditEntries?.filter((e: AuditLogEntry) => e.entity === "habit" && e.action === "habit.log" && e.createdAt).forEach((e: AuditLogEntry) => {
-      const key = getISOWeekKey(new Date(e.createdAt!));
-      if (key in logsByWeek && e.entityId) logsByWeek[key].add(`${e.entityId}-${key}`);
+      const entryDate = new Date(e.createdAt!);
+      const key = getISOWeekKey(entryDate);
+      const dateStr = entryDate.toISOString().slice(0, 10);
+      if (key in logsByWeek && e.entityId) logsByWeek[key].add(`${e.entityId}-${dateStr}`);
     });
 
     return weekKeys.map(k => {
