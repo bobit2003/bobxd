@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useListContent, getListContentQueryKey,
   useCreateContent, useUpdateContent, useDeleteContent
@@ -133,9 +133,23 @@ export default function ContentCalendar() {
   });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editItem, setEditItem] = useState<ContentItem | null>(null);
+  const [editFormData, setEditFormData] = useState({ title: "", platform: "", contentType: "", status: "", content: "", scheduledDate: "" });
   const [formData, setFormData] = useState({
     title: "", platform: "linkedin", contentType: "post", status: "idea", content: "", scheduledDate: ""
   });
+
+  useEffect(() => {
+    if (editItem) {
+      setEditFormData({
+        title: editItem.title,
+        platform: editItem.platform,
+        contentType: editItem.contentType,
+        status: editItem.status,
+        content: editItem.content ?? "",
+        scheduledDate: editItem.scheduledDate ? new Date(editItem.scheduledDate).toISOString().slice(0, 10) : "",
+      });
+    }
+  }, [editItem]);
 
   const { data: items, isLoading } = useListContent();
   const createContent = useCreateContent();
@@ -168,6 +182,20 @@ export default function ContentCalendar() {
 
   const handleDelete = (id: number) => {
     if (confirm("Delete this content item?")) deleteContent.mutate({ id }, { onSuccess: invalidate });
+  };
+
+  const handleEditSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editItem) return;
+    updateContent.mutate({
+      id: editItem.id,
+      data: {
+        ...editFormData,
+        scheduledDate: editFormData.scheduledDate ? new Date(editFormData.scheduledDate).toISOString() : undefined,
+      } as Parameters<typeof updateContent.mutate>[0]["data"]
+    }, {
+      onSuccess: () => { invalidate(); setEditItem(null); }
+    });
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -391,11 +419,38 @@ export default function ContentCalendar() {
         <Sheet open={!!editItem} onOpenChange={(open) => !open && setEditItem(null)}>
           <SheetContent className="bg-[#0d0d0d] border-white/10 overflow-y-auto">
             <SheetHeader><SheetTitle className="text-primary tracking-widest uppercase">Edit Content</SheetTitle></SheetHeader>
-            <div className="mt-6 space-y-2">
-              <p className="text-sm text-foreground font-semibold">{editItem.title}</p>
-              <p className="text-xs text-muted-foreground">{editItem.platform} · {editItem.contentType}</p>
-              {editItem.content && <p className="text-xs text-muted-foreground mt-4 whitespace-pre-wrap">{editItem.content}</p>}
-            </div>
+            <form onSubmit={handleEditSave} className="mt-6 space-y-4">
+              <Input placeholder="Title" value={editFormData.title} onChange={e => setEditFormData(p => ({ ...p, title: e.target.value }))} className="bg-white/5 border-white/10" />
+              <Select value={editFormData.platform} onValueChange={v => setEditFormData(p => ({ ...p, platform: v }))}>
+                <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["linkedin", "tiktok", "x", "instagram", "youtube", "blog"].map(p => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={editFormData.contentType} onValueChange={v => setEditFormData(p => ({ ...p, contentType: v }))}>
+                <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["post", "video", "article", "story", "reel", "thread"].map(ct => (
+                    <SelectItem key={ct} value={ct}>{ct}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={editFormData.status} onValueChange={v => setEditFormData(p => ({ ...p, status: v }))}>
+                <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["idea", "draft", "scheduled", "published"].map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Textarea placeholder="Content / notes..." value={editFormData.content} onChange={e => setEditFormData(p => ({ ...p, content: e.target.value }))} className="bg-white/5 border-white/10 min-h-[100px]" />
+              <Input type="date" value={editFormData.scheduledDate} onChange={e => setEditFormData(p => ({ ...p, scheduledDate: e.target.value }))} className="bg-white/5 border-white/10" />
+              <Button type="submit" className="w-full bg-primary/20 border border-primary/30 text-primary hover:bg-primary/30" disabled={updateContent.isPending}>
+                {updateContent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+              </Button>
+            </form>
           </SheetContent>
         </Sheet>
       )}

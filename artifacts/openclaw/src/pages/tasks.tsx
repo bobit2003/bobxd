@@ -28,7 +28,6 @@ const columns = [
 export default function Tasks() {
   const queryClient = useQueryClient();
   const [newTaskValues, setNewTaskValues] = useState<Record<string, string>>({ todo: '', in_progress: '', done: '' });
-  const [draggingId, setDraggingId] = useState<number | null>(null);
 
   const { data: tasks, isLoading } = useListTasks({
     query: { queryKey: getListTasksQueryKey() }
@@ -69,12 +68,7 @@ export default function Tasks() {
     });
   };
 
-  const handleDragStart = (start: { draggableId: string }) => {
-    setDraggingId(parseInt(start.draggableId));
-  };
-
   const handleDragEnd = (result: DropResult) => {
-    setDraggingId(null);
     if (!result.destination) return;
     const newStatus = result.destination.droppableId as "todo" | "in_progress" | "done";
     const taskId = parseInt(result.draggableId);
@@ -105,7 +99,7 @@ export default function Tasks() {
       {isLoading ? (
         <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       ) : (
-        <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DragDropContext onDragEnd={handleDragEnd}>
           <div className="flex-1 flex gap-4 overflow-x-auto overflow-y-hidden pb-4 snap-x">
             {columns.map(col => {
               const colTasks = tasks?.filter((t: Task) => t.status === col.id).sort((a: Task, b: Task) => {
