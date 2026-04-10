@@ -17,4 +17,11 @@ export interface DashboardSummary {
   totalAutomations: number;
   activeAutomations: number;
   totalConversations: number;
+  hotLeads: number;
+  totalLeads: number;
+  revenue: string;
+  unpaidAmount: string;
+  billableHours: string;
+  contentScheduled: number;
+  milestonesInProgress: number;
 }

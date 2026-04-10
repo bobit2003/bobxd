@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { tasks, projects, habits, goals } from "@workspace/db";
+import { tasks, projects, habits, goals, leads, invoices, timeEntries, milestones, contentItems } from "@workspace/db";
 import { eq, and, lte, gte } from "drizzle-orm";
 
 const router = Router();
@@ -14,6 +14,8 @@ const quotes = [
   "Execution eats strategy for breakfast.",
   "Done is better than perfect.",
   "Build things people want.",
+  "Revenue is the ultimate validation.",
+  "Every empire was built one brick at a time.",
 ];
 
 router.get("/briefing", async (req, res) => {
@@ -21,6 +23,7 @@ router.get("/briefing", async (req, res) => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart.getTime() + 86400000);
+    const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 86400000);
     const hour = now.getHours();
 
     let greeting = "Good morning";
@@ -47,11 +50,39 @@ router.get("/briefing", async (req, res) => {
       .slice(0, 3)
       .map(t => t.title);
 
-    const insights = [
-      tasksOverdue > 0 ? `You have ${tasksOverdue} overdue task(s) requiring attention.` : "All tasks are on track.",
-      habitRows.length > 0 ? `You're tracking ${habitRows.length} habit(s). Keep the streaks alive.` : "Start tracking habits to build momentum.",
-      activeProjectRows.length > 0 ? `${activeProjectRows.length} active project(s) in progress.` : "No active projects. Time to start building.",
-    ];
+    const allInvoices = await db.select().from(invoices);
+    const unpaidInvs = allInvoices.filter(i => i.status !== "paid" && i.status !== "cancelled");
+    const unpaidAmount = unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+
+    const allLeads = await db.select().from(leads);
+    const hotLeads = allLeads.filter(l => l.score === "hot" && l.stage !== "won" && l.stage !== "lost").length;
+
+    const allTime = await db.select().from(timeEntries);
+    const weeklyBillable = allTime
+      .filter(t => t.billable === "true" && t.date >= weekStart)
+      .reduce((s, t) => s + parseFloat(t.hours || "0"), 0);
+
+    const allMilestones = await db.select().from(milestones);
+    const upcomingMs = allMilestones
+      .filter(m => m.status !== "completed" && m.dueDate)
+      .sort((a, b) => (a.dueDate?.getTime() || 0) - (b.dueDate?.getTime() || 0))
+      .slice(0, 3)
+      .map(m => `${m.title} (due ${m.dueDate!.toLocaleDateString()})`);
+
+    const allContent = await db.select().from(contentItems);
+    const upcomingContent = allContent
+      .filter(c => c.status === "scheduled" && c.scheduledDate)
+      .sort((a, b) => (a.scheduledDate?.getTime() || 0) - (b.scheduledDate?.getTime() || 0))
+      .slice(0, 3)
+      .map(c => `${c.title} on ${c.platform} (${c.scheduledDate!.toLocaleDateString()})`);
+
+    const insights: string[] = [];
+    if (tasksOverdue > 0) insights.push(`${tasksOverdue} overdue task(s) need attention.`);
+    else insights.push("All tasks are on track.");
+    if (unpaidInvs.length > 0) insights.push(`$${unpaidAmount.toFixed(0)} in unpaid invoices across ${unpaidInvs.length} invoice(s).`);
+    if (hotLeads > 0) insights.push(`${hotLeads} hot lead(s) ready to close.`);
+    if (weeklyBillable > 0) insights.push(`${weeklyBillable.toFixed(1)}h billable this week.`);
+    if (habitRows.length > 0) insights.push(`Tracking ${habitRows.length} habit(s). Longest streak: ${maxStreak} day(s).`);
 
     res.json({
       greeting: `${greeting}, Commander`,
@@ -63,6 +94,12 @@ router.get("/briefing", async (req, res) => {
       topPriorities: highPriTasks.length > 0 ? highPriTasks : ["No high priority tasks. You're ahead of schedule."],
       aiInsight: insights.join(" "),
       quote: quotes[Math.floor(Math.random() * quotes.length)],
+      unpaidInvoices: unpaidInvs.length,
+      unpaidAmount: unpaidAmount.toFixed(2),
+      hotLeads,
+      billableHoursThisWeek: weeklyBillable.toFixed(1),
+      upcomingMilestones: upcomingMs,
+      upcomingContent: upcomingContent,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to generate briefing");

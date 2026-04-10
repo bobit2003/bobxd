@@ -1,5 +1,5 @@
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useListProjects, getListProjectsQueryKey, useListTasks, getListTasksQueryKey } from "@workspace/api-client-react";
-import { FolderKanban, CheckSquare, Users, Zap, MessageSquare, Activity, AlertTriangle } from "lucide-react";
+import { FolderKanban, CheckSquare, Users, Zap, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, CalendarDays, Flag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -51,7 +51,6 @@ function StatCard({ title, value, icon: Icon, subtitle, href, delay }: { title: 
             </div>
           )}
           
-          {/* Fake Sparkline */}
           <div className="absolute bottom-0 left-0 w-full h-8 opacity-20 pointer-events-none">
             <svg viewBox="0 0 100 20" preserveAspectRatio="none" className="w-full h-full">
               <path d={`M0,${20 - Math.random()*15} L20,${20 - Math.random()*15} L40,${20 - Math.random()*15} L60,${20 - Math.random()*15} L80,${20 - Math.random()*15} L100,${20 - Math.random()*15}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" vectorEffect="non-scaling-stroke" />
@@ -63,6 +62,16 @@ function StatCard({ title, value, icon: Icon, subtitle, href, delay }: { title: 
   );
 }
 
+function FinanceCard({ label, value, color, delay }: { label: string; value: string; color: string; delay: number }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.4 }}
+      className={`${color} rounded-lg p-3 border`}>
+      <p className="text-[10px] uppercase tracking-widest opacity-70">{label}</p>
+      <p className="text-xl font-bold font-mono mt-1">${value}</p>
+    </motion.div>
+  );
+}
+
 const fakeLogs = [
   { type: 'AI', msg: 'Neural model weights synchronized.' },
   { type: 'TASK', msg: 'Background cleanup job finished.' },
@@ -70,6 +79,8 @@ const fakeLogs = [
   { type: 'AUTO', msg: 'Trigger [DataSync] fired successfully.' },
   { type: 'SEC', msg: 'Firewall definitions updated.' },
   { type: 'CLIENT', msg: 'Incoming connection established.' },
+  { type: 'LEAD', msg: 'Hot lead scoring updated.' },
+  { type: 'FIN', msg: 'Invoice payment processed.' },
 ];
 
 export default function Dashboard() {
@@ -146,17 +157,39 @@ export default function Dashboard() {
           ))}
         </div>
       ) : data ? (
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-5 shrink-0">
-          <StatCard delay={0.0} title="Projects" value={data.totalProjects} subtitle={`${data.activeProjects} active`} icon={FolderKanban} href="/projects" />
-          <StatCard delay={0.1} title="Tasks" value={data.totalTasks} subtitle={`${data.pendingTasks} pending`} icon={CheckSquare} href="/tasks" />
-          <StatCard delay={0.2} title="Clients" value={data.totalClients} subtitle={`${data.activeClients} active`} icon={Users} href="/clients" />
-          <StatCard delay={0.3} title="Automations" value={data.totalAutomations} subtitle={`${data.activeAutomations} active`} icon={Zap} href="/automations" />
-          <StatCard delay={0.4} title="AI Links" value={data.totalConversations} subtitle="Neural Active" icon={MessageSquare} href="/ai" />
-        </div>
+        <>
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-5 shrink-0">
+            <StatCard delay={0.0} title="Projects" value={data.totalProjects} subtitle={`${data.activeProjects} active`} icon={FolderKanban} href="/projects" />
+            <StatCard delay={0.05} title="Tasks" value={data.totalTasks} subtitle={`${data.pendingTasks} pending`} icon={CheckSquare} href="/tasks" />
+            <StatCard delay={0.1} title="Clients" value={data.totalClients} subtitle={`${data.activeClients} active`} icon={Users} href="/clients" />
+            <StatCard delay={0.15} title="Leads" value={data.totalLeads} subtitle={`${data.hotLeads} hot`} icon={Target} href="/leads" />
+            <StatCard delay={0.2} title="AI Links" value={data.totalConversations} subtitle="Neural Active" icon={MessageSquare} href="/ai" />
+          </div>
+
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-4 shrink-0">
+            <FinanceCard delay={0.25} label="Revenue" value={data.revenue} color="bg-green-500/10 border-green-500/20 text-green-400" />
+            <FinanceCard delay={0.3} label="Unpaid" value={data.unpaidAmount} color="bg-amber-500/10 border-amber-500/20 text-amber-400" />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}
+              className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-primary">
+              <p className="text-[10px] uppercase tracking-widest opacity-70">Billable Hours</p>
+              <p className="text-xl font-bold font-mono mt-1">{data.billableHours}h</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.4 }}
+              className="bg-violet-500/10 border border-violet-500/20 rounded-lg p-3 text-violet-400 flex items-center gap-3">
+              <div className="flex-1">
+                <p className="text-[10px] uppercase tracking-widest opacity-70">Pipeline</p>
+                <div className="flex gap-3 mt-1 text-sm font-mono font-bold">
+                  <span className="flex items-center gap-1"><Flag className="w-3 h-3" />{data.milestonesInProgress}</span>
+                  <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" />{data.contentScheduled}</span>
+                  <span className="flex items-center gap-1"><Zap className="w-3 h-3" />{data.activeAutomations}</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </>
       ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        {/* Left Column: Activity Feed */}
         <div className="lg:col-span-1 flex flex-col min-h-0">
           <h2 className="text-xs font-bold tracking-widest mb-3 text-primary/70 uppercase flex items-center gap-2 shrink-0">
             <Activity className="w-3 h-3" /> System Activity Feed
@@ -171,6 +204,8 @@ export default function Dashboard() {
                     log.type === 'AI' ? 'text-purple-400' :
                     log.type === 'AUTO' ? 'text-amber-400' :
                     log.type === 'SEC' ? 'text-red-400' :
+                    log.type === 'LEAD' ? 'text-green-400' :
+                    log.type === 'FIN' ? 'text-emerald-400' :
                     'text-primary'
                   }`}>{log.type}</span>
                   <span className="text-foreground/80 group-hover:text-foreground transition-colors break-words">{log.msg}</span>
@@ -181,10 +216,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right Columns: Projects & Tasks */}
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
-          
-          {/* Active Projects */}
           <div className="flex flex-col min-h-0">
             <h2 className="text-xs font-bold tracking-widest mb-3 text-primary/70 uppercase flex items-center gap-2 shrink-0">
               <FolderKanban className="w-3 h-3" /> Active Directives
@@ -193,7 +225,7 @@ export default function Dashboard() {
               {activeProjects.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground uppercase tracking-widest">No active directives.</div>
               ) : activeProjects.map(p => {
-                const fakeProgress = Math.floor(Math.random() * 40) + 20; // 20-60%
+                const fakeProgress = Math.floor(Math.random() * 40) + 20;
                 return (
                   <div key={p.id} className="bg-black/40 border border-white/5 rounded p-3 hover:border-primary/30 transition-colors group">
                     <div className="flex justify-between items-center mb-2">
@@ -210,7 +242,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Priority Queue */}
           <div className="flex flex-col min-h-0">
             <h2 className="text-xs font-bold tracking-widest mb-3 text-primary/70 uppercase flex items-center gap-2 shrink-0">
               <AlertTriangle className="w-3 h-3" /> Priority Queue
@@ -231,7 +262,7 @@ export default function Dashboard() {
                       <span className={t.priority === 'high' ? 'text-destructive' : t.priority === 'medium' ? 'text-amber-500' : ''}>
                         {t.priority} PRI
                       </span>
-                      <span>•</span>
+                      <span>-</span>
                       <span>{t.status}</span>
                     </div>
                   </div>

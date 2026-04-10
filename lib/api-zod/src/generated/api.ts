@@ -403,6 +403,13 @@ export const GetDashboardSummaryResponse = zod.object({
   totalAutomations: zod.number(),
   activeAutomations: zod.number(),
   totalConversations: zod.number(),
+  hotLeads: zod.number(),
+  totalLeads: zod.number(),
+  revenue: zod.string(),
+  unpaidAmount: zod.string(),
+  billableHours: zod.string(),
+  contentScheduled: zod.number(),
+  milestonesInProgress: zod.number(),
 });
 
 /**
@@ -792,6 +799,12 @@ export const GetDailyBriefingResponse = zod.object({
   topPriorities: zod.array(zod.string()),
   aiInsight: zod.string(),
   quote: zod.string(),
+  unpaidInvoices: zod.number(),
+  unpaidAmount: zod.string(),
+  hotLeads: zod.number(),
+  billableHoursThisWeek: zod.string(),
+  upcomingMilestones: zod.array(zod.string()),
+  upcomingContent: zod.array(zod.string()),
 });
 
 /**

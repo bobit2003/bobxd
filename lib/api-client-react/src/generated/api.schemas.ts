@@ -383,6 +383,13 @@ export interface DashboardSummary {
   totalAutomations: number;
   activeAutomations: number;
   totalConversations: number;
+  hotLeads: number;
+  totalLeads: number;
+  revenue: string;
+  unpaidAmount: string;
+  billableHours: string;
+  contentScheduled: number;
+  milestonesInProgress: number;
 }
 
 export interface Note {
@@ -542,6 +549,12 @@ export interface DailyBriefing {
   topPriorities: string[];
   aiInsight: string;
   quote: string;
+  unpaidInvoices: number;
+  unpaidAmount: string;
+  hotLeads: number;
+  billableHoursThisWeek: string;
+  upcomingMilestones: string[];
+  upcomingContent: string[];
 }
 
 export type LeadScore = (typeof LeadScore)[keyof typeof LeadScore];

@@ -16,4 +16,10 @@ export interface DailyBriefing {
   topPriorities: string[];
   aiInsight: string;
   quote: string;
+  unpaidInvoices: number;
+  unpaidAmount: string;
+  hotLeads: number;
+  billableHoursThisWeek: string;
+  upcomingMilestones: string[];
+  upcomingContent: string[];
 }

@@ -1735,6 +1735,20 @@ components:
           type: integer
         totalConversations:
           type: integer
+        hotLeads:
+          type: integer
+        totalLeads:
+          type: integer
+        revenue:
+          type: string
+        unpaidAmount:
+          type: string
+        billableHours:
+          type: string
+        contentScheduled:
+          type: integer
+        milestonesInProgress:
+          type: integer
       required:
         - totalProjects
         - activeProjects
@@ -1746,6 +1760,13 @@ components:
         - totalAutomations
         - activeAutomations
         - totalConversations
+        - hotLeads
+        - totalLeads
+        - revenue
+        - unpaidAmount
+        - billableHours
+        - contentScheduled
+        - milestonesInProgress
 
     Note:
       type: object
@@ -2123,6 +2144,22 @@ components:
           type: string
         quote:
           type: string
+        unpaidInvoices:
+          type: integer
+        unpaidAmount:
+          type: string
+        hotLeads:
+          type: integer
+        billableHoursThisWeek:
+          type: string
+        upcomingMilestones:
+          type: array
+          items:
+            type: string
+        upcomingContent:
+          type: array
+          items:
+            type: string
       required:
         - greeting
         - date
@@ -2133,6 +2170,12 @@ components:
         - topPriorities
         - aiInsight
         - quote
+        - unpaidInvoices
+        - unpaidAmount
+        - hotLeads
+        - billableHoursThisWeek
+        - upcomingMilestones
+        - upcomingContent
 
     Lead:
       type: object

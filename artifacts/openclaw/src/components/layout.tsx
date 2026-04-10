@@ -1,5 +1,5 @@
 import { Link, useLocation, useLocation as useWouterLocation } from "wouter";
-import { Terminal, Bot, FolderKanban, CheckSquare, Users, Zap, Menu, Network, Search, Command, BookOpen, Flame, Target, Brain, ScrollText, BarChart3, Sunrise, UserPlus, FileText, Receipt, Clock, Flag, CalendarDays } from "lucide-react";
+import { Terminal, Bot, FolderKanban, CheckSquare, Users, Zap, Menu, Network, Search, Command, BookOpen, Flame, Target, Brain, ScrollText, BarChart3, Sunrise, UserPlus, FileText, Receipt, Clock, Flag, CalendarDays, DollarSign } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -236,6 +236,33 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       {searchResults.clients.map((c: any) => (
                         <CommandItem key={`c-${c.id}`} onSelect={() => { setLocation("/clients"); setCmdOpen(false); }} className="text-foreground">
                           <Users className="mr-2 h-4 w-4" /> <span>{c.name}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  {(searchResults as any).leads?.length > 0 && (
+                    <CommandGroup heading="Leads" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                      {(searchResults as any).leads.map((l: any) => (
+                        <CommandItem key={`l-${l.id}`} onSelect={() => { setLocation("/leads"); setCmdOpen(false); }} className="text-foreground">
+                          <UserPlus className="mr-2 h-4 w-4" /> <span>{l.name}{l.company ? ` - ${l.company}` : ''}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  {(searchResults as any).invoices?.length > 0 && (
+                    <CommandGroup heading="Invoices" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                      {(searchResults as any).invoices.map((i: any) => (
+                        <CommandItem key={`i-${i.id}`} onSelect={() => { setLocation("/invoices"); setCmdOpen(false); }} className="text-foreground">
+                          <DollarSign className="mr-2 h-4 w-4" /> <span>{i.invoiceNumber} - ${i.amount}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  {(searchResults as any).content?.length > 0 && (
+                    <CommandGroup heading="Content" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                      {(searchResults as any).content.map((ct: any) => (
+                        <CommandItem key={`ct-${ct.id}`} onSelect={() => { setLocation("/content"); setCmdOpen(false); }} className="text-foreground">
+                          <CalendarDays className="mr-2 h-4 w-4" /> <span>{ct.title}</span>
                         </CommandItem>
                       ))}
                     </CommandGroup>
