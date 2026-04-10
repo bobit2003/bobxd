@@ -568,9 +568,28 @@ export interface Goal {
   status: string;
   progress: number;
   milestones?: string | null;
+  strategy?: string | null;
   targetDate?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export type GoalStrategyResultStrategyParsed = {
+  steps?: string[];
+  habit?: string;
+  insight?: string;
+};
+
+export interface GoalStrategyResult {
+  id: number;
+  title: string;
+  strategy?: string | null;
+  strategyParsed?: GoalStrategyResultStrategyParsed;
+}
+
+export interface AutomationGenerateResult {
+  script: string;
+  name: string;
 }
 
 export interface CreateGoalBody {
@@ -1105,6 +1124,10 @@ export const ListTasksStatus = {
   in_progress: "in_progress",
   done: "done",
 } as const;
+
+export type GenerateAutomationScriptBody = {
+  description: string;
+};
 
 export type GlobalSearchParams = {
   q: string;

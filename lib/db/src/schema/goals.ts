@@ -10,6 +10,7 @@ export const goals = pgTable("goals", {
   status: text("status").notNull().default("active"),
   progress: integer("progress").notNull().default(0),
   milestones: text("milestones"),
+  strategy: text("strategy"),
   targetDate: timestamp("target_date", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

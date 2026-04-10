@@ -3,13 +3,16 @@ import {
   useListAutomations, getListAutomationsQueryKey,
   useCreateAutomation,
   useDeleteAutomation,
-  useRunAutomation
+  useRunAutomation,
+  useGenerateAutomationScript,
+  type Automation,
+  type AutomationGenerateResult,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Play, Trash2, Zap, Terminal as TerminalIcon } from "lucide-react";
+import { Loader2, Plus, Play, Trash2, Zap, Terminal as TerminalIcon, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -18,6 +21,8 @@ export default function Automations() {
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", description: "", script: "// Auto-generated wrapper\nasync function execute() {\n  console.log('Running script...');\n}\nexecute();", trigger: "manual", status: "active" });
+  const [aiDescription, setAiDescription] = useState("");
+  const [aiError, setAiError] = useState("");
 
   const { data: automations, isLoading } = useListAutomations({
     query: { queryKey: getListAutomationsQueryKey() }
@@ -26,6 +31,23 @@ export default function Automations() {
   const createAutomation = useCreateAutomation();
   const deleteAutomation = useDeleteAutomation();
   const runAutomation = useRunAutomation();
+  const generateScript = useGenerateAutomationScript();
+
+  const handleGenerate = async () => {
+    if (!aiDescription.trim()) return;
+    setAiError("");
+    generateScript.mutate({ data: { description: aiDescription } }, {
+      onSuccess: (result: AutomationGenerateResult) => {
+        setFormData(prev => ({
+          ...prev,
+          script: result.script,
+          name: prev.name || result.name,
+        }));
+        setAiDescription("");
+      },
+      onError: () => setAiError("Generation failed. Check API connection.")
+    });
+  };
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,14 +56,16 @@ export default function Automations() {
         name: formData.name,
         description: formData.description,
         script: formData.script,
-        trigger: formData.trigger as any,
-        status: formData.status as any
+        trigger: formData.trigger as "manual" | "scheduled" | "event",
+        status: formData.status as "active" | "inactive",
       }
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListAutomationsQueryKey() });
         setIsCreateOpen(false);
         setFormData({ name: "", description: "", script: "// Auto-generated wrapper\nasync function execute() {\n  console.log('Running script...');\n}\nexecute();", trigger: "manual", status: "active" });
+        setAiDescription("");
+        setAiError("");
       }
     });
   };
@@ -90,6 +114,38 @@ export default function Automations() {
               </SheetTitle>
             </SheetHeader>
             <form onSubmit={handleCreate} className="space-y-6 pt-8 font-mono">
+
+              {/* AI Generator Section */}
+              <div className="border border-violet-500/20 rounded-sm bg-violet-500/5 p-4 space-y-3">
+                <div className="flex items-center gap-2 text-[10px] text-violet-400 uppercase tracking-widest font-bold">
+                  <Sparkles className="w-3 h-3" /> AI Script Generator
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
+                  Describe what the automation should do. The AI will write the JS script for you.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="e.g. Log a daily summary of pending tasks..."
+                    value={aiDescription}
+                    onChange={e => setAiDescription(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && (e.preventDefault(), handleGenerate())}
+                    className="bg-black/50 border-violet-500/20 text-violet-400 font-mono text-xs focus-visible:ring-violet-500/50 placeholder:text-muted-foreground/30"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={generateScript.isPending || !aiDescription.trim()}
+                    className="h-9 px-3 text-[10px] uppercase tracking-widest bg-violet-500/20 text-violet-400 border border-violet-500/30 hover:bg-violet-500/40 rounded-sm shrink-0"
+                  >
+                    {generateScript.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  </Button>
+                </div>
+                {aiError && <p className="text-[10px] text-destructive uppercase tracking-widest">{aiError}</p>}
+                {generateScript.isPending && (
+                  <p className="text-[10px] text-violet-400/60 uppercase tracking-widest animate-pulse">Generating script...</p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Identifier</label>
                 <Input required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="bg-black/50 border-white/10 rounded-sm font-sans" />
@@ -110,7 +166,12 @@ export default function Automations() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Payload (JS/Node)</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Payload (JS/Node)</label>
+                  {generateScript.isPending && (
+                    <span className="text-[9px] text-violet-400 uppercase tracking-widest animate-pulse">AI writing...</span>
+                  )}
+                </div>
                 <div className="rounded border border-white/10 overflow-hidden bg-black focus-within:border-amber-500/50 transition-colors">
                   <div className="flex gap-2 p-2 bg-white/5 border-b border-white/10 shrink-0">
                     <div className="w-2 h-2 rounded-full bg-red-500" />
@@ -147,7 +208,7 @@ export default function Automations() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {automations?.map(automation => (
+          {automations?.map((automation: Automation) => (
             <div key={automation.id} className="glass-card rounded-lg overflow-hidden flex flex-col group border border-white/10 hover:border-amber-500/30 transition-all">
               {/* Header */}
               <div className="bg-black/60 p-3 border-b border-white/5 flex justify-between items-center">

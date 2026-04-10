@@ -37,7 +37,7 @@ BobXD OS is an ultimate AI-powered command center — a personal operating syste
 - `/memories` — **AI Memory Bank** — persistent context storage, categories, importance levels
 - `/projects` — **Projects** — CRUD with status, type, client link
 - `/tasks` — **Tasks** — Kanban-style CRUD with priority/status/due dates
-- `/goals` — **Mission Objectives** — goal tracking with progress bars, milestones, categories
+- `/goals` — **Mission Objectives** — goal tracking with progress bars + AI Coach: per-goal GPT strategy (5 action steps, daily habit, strategic insight), expandable panel, regenerate on demand
 - `/clients` — **Clients** — CRUD with status indicators
 - `/notes` — **Knowledge Base** — searchable notes with tags, categories
 - `/habits` — **Habit Tracker** — daily habits with streaks, completion logging, best streak tracking
@@ -48,8 +48,13 @@ BobXD OS is an ultimate AI-powered command center — a personal operating syste
 - `/time` — **Time Tracker** — hours logging with billable/non-billable split, totals
 - `/milestones` — **Milestones** — project checkpoints with status toggle (pending/in_progress/completed/overdue)
 - `/content` — **Content Calendar** — Kanban-style board (idea/draft/scheduled/published) for multi-platform content
-- `/automations` — **Automation Hub** — scripts with triggers and manual run
+- `/automations` — **Automation Hub** — scripts with triggers, manual run, + AI Script Generator (natural language → GPT-written JS script)
 - `/command-log` — **System Audit Log** — immutable action history with filtering
+
+## AI Capabilities (Task 6)
+
+- **AI Goals Coach** — Brain icon button on each goal triggers GPT-5.2 to generate: 5 action steps, daily habit, strategic insight; stored in `goals.strategy` column; expandable panel with AnimatePresence; regenerate on demand
+- **AI Automations Generator** — "AI Script Generator" panel in the create sheet; type a description, GPT writes the JS script; auto-fills Name + Script fields; violet-themed UI with Sparkles icon
 
 ## Enhanced Features
 

@@ -21,6 +21,7 @@ import type {
   AlertItem,
   AuditLogEntry,
   Automation,
+  AutomationGenerateResult,
   AutomationRunResult,
   Client,
   ContentItem,
@@ -45,10 +46,12 @@ import type {
   Directive,
   Expense,
   FinancialSummary,
+  GenerateAutomationScriptBody,
   GenerateOpenaiImageBody,
   GenerateOpenaiImageResponse,
   GlobalSearchParams,
   Goal,
+  GoalStrategyResult,
   Habit,
   HealthStatus,
   Invoice,
@@ -2435,6 +2438,96 @@ export const useRunAutomation = <
 };
 
 /**
+ * @summary AI-generate an automation script from a natural language description
+ */
+export const getGenerateAutomationScriptUrl = () => {
+  return `/api/automations/generate`;
+};
+
+export const generateAutomationScript = async (
+  generateAutomationScriptBody: GenerateAutomationScriptBody,
+  options?: RequestInit,
+): Promise<AutomationGenerateResult> => {
+  return customFetch<AutomationGenerateResult>(
+    getGenerateAutomationScriptUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(generateAutomationScriptBody),
+    },
+  );
+};
+
+export const getGenerateAutomationScriptMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateAutomationScript>>,
+    TError,
+    { data: BodyType<GenerateAutomationScriptBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof generateAutomationScript>>,
+  TError,
+  { data: BodyType<GenerateAutomationScriptBody> },
+  TContext
+> => {
+  const mutationKey = ["generateAutomationScript"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof generateAutomationScript>>,
+    { data: BodyType<GenerateAutomationScriptBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return generateAutomationScript(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GenerateAutomationScriptMutationResult = NonNullable<
+  Awaited<ReturnType<typeof generateAutomationScript>>
+>;
+export type GenerateAutomationScriptMutationBody =
+  BodyType<GenerateAutomationScriptBody>;
+export type GenerateAutomationScriptMutationError = ErrorType<unknown>;
+
+/**
+ * @summary AI-generate an automation script from a natural language description
+ */
+export const useGenerateAutomationScript = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateAutomationScript>>,
+    TError,
+    { data: BodyType<GenerateAutomationScriptBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof generateAutomationScript>>,
+  TError,
+  { data: BodyType<GenerateAutomationScriptBody> },
+  TContext
+> => {
+  return useMutation(getGenerateAutomationScriptMutationOptions(options));
+};
+
+/**
  * @summary Get overall dashboard summary stats
  */
 export const getGetDashboardSummaryUrl = () => {
@@ -3642,6 +3735,90 @@ export const useDeleteGoal = <
   TContext
 > => {
   return useMutation(getDeleteGoalMutationOptions(options));
+};
+
+/**
+ * @summary AI-generate a coaching strategy for a goal
+ */
+export const getGenerateGoalStrategyUrl = (id: number) => {
+  return `/api/goals/${id}/strategy`;
+};
+
+export const generateGoalStrategy = async (
+  id: number,
+  options?: RequestInit,
+): Promise<GoalStrategyResult> => {
+  return customFetch<GoalStrategyResult>(getGenerateGoalStrategyUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getGenerateGoalStrategyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateGoalStrategy>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof generateGoalStrategy>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["generateGoalStrategy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof generateGoalStrategy>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return generateGoalStrategy(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GenerateGoalStrategyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof generateGoalStrategy>>
+>;
+
+export type GenerateGoalStrategyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary AI-generate a coaching strategy for a goal
+ */
+export const useGenerateGoalStrategy = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateGoalStrategy>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof generateGoalStrategy>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getGenerateGoalStrategyMutationOptions(options));
 };
 
 /**

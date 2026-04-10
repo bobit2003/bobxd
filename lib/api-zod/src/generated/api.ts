@@ -464,6 +464,18 @@ export const RunAutomationResponse = zod.object({
 });
 
 /**
+ * @summary AI-generate an automation script from a natural language description
+ */
+export const GenerateAutomationScriptBody = zod.object({
+  description: zod.string(),
+});
+
+export const GenerateAutomationScriptResponse = zod.object({
+  script: zod.string(),
+  name: zod.string(),
+});
+
+/**
  * @summary Get overall dashboard summary stats
  */
 export const GetDashboardSummaryResponse = zod.object({
@@ -667,6 +679,7 @@ export const ListGoalsResponseItem = zod.object({
   status: zod.string(),
   progress: zod.number(),
   milestones: zod.string().nullish(),
+  strategy: zod.string().nullish(),
   targetDate: zod.coerce.date().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -711,6 +724,7 @@ export const UpdateGoalResponse = zod.object({
   status: zod.string(),
   progress: zod.number(),
   milestones: zod.string().nullish(),
+  strategy: zod.string().nullish(),
   targetDate: zod.coerce.date().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -721,6 +735,26 @@ export const UpdateGoalResponse = zod.object({
  */
 export const DeleteGoalParams = zod.object({
   id: zod.coerce.number(),
+});
+
+/**
+ * @summary AI-generate a coaching strategy for a goal
+ */
+export const GenerateGoalStrategyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GenerateGoalStrategyResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  strategy: zod.string().nullish(),
+  strategyParsed: zod
+    .object({
+      steps: zod.array(zod.string()).optional(),
+      habit: zod.string().optional(),
+      insight: zod.string().optional(),
+    })
+    .optional(),
 });
 
 /**

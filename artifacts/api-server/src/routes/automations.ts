@@ -4,6 +4,7 @@ import { automations } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { CreateAutomationBody, UpdateAutomationBody, UpdateAutomationParams, DeleteAutomationParams, RunAutomationParams } from "@workspace/api-zod";
 import { writeAudit } from "../audit-writer.js";
+import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
 
@@ -69,6 +70,42 @@ router.delete("/automations/:id", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to delete automation");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/automations/generate", async (req, res) => {
+  try {
+    const { description } = req.body as { description: string };
+    if (!description?.trim()) return res.status(400).json({ error: "description required" });
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 800,
+      messages: [
+        {
+          role: "system",
+          content: `You are an automation script generator for a business OS. 
+Generate a clean JavaScript automation script that runs as a self-contained function.
+The script should use only standard JavaScript (no external imports, no Node.js-specific modules).
+Use console.log() to output meaningful status messages.
+Return only valid JS code, no markdown, no explanation, no backticks.
+The script should be practical, demonstrate the concept clearly, and run synchronously.`
+        },
+        {
+          role: "user",
+          content: `Generate an automation script for: "${description}"\n\nReturn only the JavaScript code, no explanation.`
+        }
+      ]
+    });
+
+    const script = completion.choices[0]?.message?.content?.trim() ?? "console.log('Automation ready');";
+    const name = description.slice(0, 60);
+
+    res.json({ script, name });
+    writeAudit("automation.generate", "automation", { details: `AI-generated script for: ${description.slice(0, 80)}` });
+  } catch (err) {
+    req.log.error({ err }, "Failed to generate automation script");
+    res.status(500).json({ error: "Generation failed" });
   }
 });
 

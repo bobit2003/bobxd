@@ -37713,6 +37713,13 @@ var RunAutomationResponse = objectType({
   output: stringType(),
   runAt: coerce.date()
 });
+var GenerateAutomationScriptBody = objectType({
+  description: stringType()
+});
+var GenerateAutomationScriptResponse = objectType({
+  script: stringType(),
+  name: stringType()
+});
 var GetDashboardSummaryResponse = objectType({
   totalProjects: numberType(),
   activeProjects: numberType(),
@@ -37864,6 +37871,7 @@ var ListGoalsResponseItem = objectType({
   status: stringType(),
   progress: numberType(),
   milestones: stringType().nullish(),
+  strategy: stringType().nullish(),
   targetDate: coerce.date().nullish(),
   createdAt: coerce.date(),
   updatedAt: coerce.date()
@@ -37898,12 +37906,26 @@ var UpdateGoalResponse = objectType({
   status: stringType(),
   progress: numberType(),
   milestones: stringType().nullish(),
+  strategy: stringType().nullish(),
   targetDate: coerce.date().nullish(),
   createdAt: coerce.date(),
   updatedAt: coerce.date()
 });
 var DeleteGoalParams = objectType({
   id: coerce.number()
+});
+var GenerateGoalStrategyParams = objectType({
+  id: coerce.number()
+});
+var GenerateGoalStrategyResponse = objectType({
+  id: numberType(),
+  title: stringType(),
+  strategy: stringType().nullish(),
+  strategyParsed: objectType({
+    steps: arrayType(stringType()).optional(),
+    habit: stringType().optional(),
+    insight: stringType().optional()
+  }).optional()
 });
 var ListMemoriesResponseItem = objectType({
   id: numberType(),
@@ -57037,6 +57059,7 @@ var goals = pgTable("goals", {
   status: text("status").notNull().default("active"),
   progress: integer("progress").notNull().default(0),
   milestones: text("milestones"),
+  strategy: text("strategy"),
   targetDate: timestamp("target_date", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
@@ -65019,6 +65042,40 @@ router6.delete("/automations/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+router6.post("/automations/generate", async (req, res) => {
+  try {
+    const { description } = req.body;
+    if (!description?.trim()) return res.status(400).json({ error: "description required" });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 800,
+      messages: [
+        {
+          role: "system",
+          content: `You are an automation script generator for a business OS. 
+Generate a clean JavaScript automation script that runs as a self-contained function.
+The script should use only standard JavaScript (no external imports, no Node.js-specific modules).
+Use console.log() to output meaningful status messages.
+Return only valid JS code, no markdown, no explanation, no backticks.
+The script should be practical, demonstrate the concept clearly, and run synchronously.`
+        },
+        {
+          role: "user",
+          content: `Generate an automation script for: "${description}"
+
+Return only the JavaScript code, no explanation.`
+        }
+      ]
+    });
+    const script = completion.choices[0]?.message?.content?.trim() ?? "console.log('Automation ready');";
+    const name = description.slice(0, 60);
+    res.json({ script, name });
+    writeAudit("automation.generate", "automation", { details: `AI-generated script for: ${description.slice(0, 80)}` });
+  } catch (err) {
+    req.log.error({ err }, "Failed to generate automation script");
+    res.status(500).json({ error: "Generation failed" });
+  }
+});
 router6.post("/automations/:id/run", async (req, res) => {
   try {
     const { id } = RunAutomationParams.parse({ id: Number(req.params.id) });
@@ -65324,6 +65381,50 @@ router10.put("/goals/:id", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to update goal");
     res.status(400).json({ error: "Bad request" });
+  }
+});
+router10.post("/goals/:id/strategy", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const [goal] = await db.select().from(goals).where(eq(goals.id, id));
+    if (!goal) return res.status(404).json({ error: "Not found" });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 600,
+      messages: [
+        {
+          role: "system",
+          content: `You are a world-class executive coach and strategic advisor. 
+Analyze the goal and return a JSON object with:
+- steps: array of exactly 5 concise, actionable steps (each under 80 chars)
+- habit: one daily habit that directly accelerates this goal (under 60 chars)
+- insight: one sharp strategic insight about this goal (under 120 chars)
+Return ONLY valid JSON, no markdown, no explanation.`
+        },
+        {
+          role: "user",
+          content: `Goal: "${goal.title}"
+Category: ${goal.category}
+Description: ${goal.description ?? "none"}
+Current progress: ${goal.progress}%
+
+Generate coaching strategy.`
+        }
+      ]
+    });
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "{}";
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { steps: ["Define clear milestones", "Track weekly progress", "Review blockers", "Adjust tactics", "Celebrate wins"], habit: "Review goal progress for 5 minutes daily", insight: "Consistency compounds \u2014 small daily actions create exponential results." };
+    }
+    const strategyStr = JSON.stringify(parsed);
+    const [updated] = await db.update(goals).set({ strategy: strategyStr, updatedAt: /* @__PURE__ */ new Date() }).where(eq(goals.id, id)).returning();
+    res.json({ ...serialize7(updated), strategyParsed: parsed });
+  } catch (err) {
+    req.log.error({ err }, "Failed to generate goal strategy");
+    res.status(500).json({ error: "Strategy generation failed" });
   }
 });
 router10.delete("/goals/:id", async (req, res) => {

@@ -14,6 +14,7 @@ export interface Goal {
   status: string;
   progress: number;
   milestones?: string | null;
+  strategy?: string | null;
   targetDate?: Date | null;
   createdAt: Date;
   updatedAt: Date;

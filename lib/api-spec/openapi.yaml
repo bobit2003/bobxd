@@ -542,6 +542,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/AutomationRunResult"
 
+  /automations/generate:
+    post:
+      operationId: generateAutomationScript
+      tags: [automations]
+      summary: AI-generate an automation script from a natural language description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+              required:
+                - description
+      responses:
+        "200":
+          description: Generated script
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutomationGenerateResult"
+
   /dashboard/summary:
     get:
       operationId: getDashboardSummary
@@ -800,6 +824,25 @@ paths:
       responses:
         "204":
           description: Deleted
+
+  /goals/{id}/strategy:
+    post:
+      operationId: generateGoalStrategy
+      tags: [goals]
+      summary: AI-generate a coaching strategy for a goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Goal with AI strategy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoalStrategyResult"
 
   /memories:
     get:
@@ -2242,6 +2285,9 @@ components:
         milestones:
           type: string
           nullable: true
+        strategy:
+          type: string
+          nullable: true
         targetDate:
           type: string
           format: date-time
@@ -2260,6 +2306,40 @@ components:
         - progress
         - createdAt
         - updatedAt
+    GoalStrategyResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        strategy:
+          type: string
+          nullable: true
+        strategyParsed:
+          type: object
+          properties:
+            steps:
+              type: array
+              items:
+                type: string
+            habit:
+              type: string
+            insight:
+              type: string
+      required:
+        - id
+        - title
+    AutomationGenerateResult:
+      type: object
+      properties:
+        script:
+          type: string
+        name:
+          type: string
+      required:
+        - script
+        - name
     CreateGoalBody:
       type: object
       properties:
