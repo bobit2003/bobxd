@@ -1012,6 +1012,57 @@ export interface RevenueIntelligence {
   opportunities: RevenueIntelligenceOpportunitiesItem[];
 }
 
+export type AlertItemSeverity =
+  (typeof AlertItemSeverity)[keyof typeof AlertItemSeverity];
+
+export const AlertItemSeverity = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+} as const;
+
+export interface AlertItem {
+  /** Alert type identifier (e.g. overdue_tasks, habits_unlogged, invoices_overdue, hot_leads_idle) */
+  type: string;
+  severity: AlertItemSeverity;
+  /** Human-readable alert message */
+  message: string;
+  /** Frontend route to navigate to for this alert */
+  link: string;
+}
+
+export type AgentStatsAiBrain = {
+  conversationCount: number;
+  messageCount: number;
+};
+
+export type AgentStatsOperations = {
+  activeTasks: number;
+  pendingTasks: number;
+  totalTasks: number;
+};
+
+export type AgentStatsRevenue = {
+  pipelineValue: number;
+  paidRevenue: number;
+  hotLeads: number;
+  totalLeads: number;
+  activeClients: number;
+  totalClients: number;
+};
+
+export type AgentStatsAutomation = {
+  totalAutomations: number;
+  activeAutomations: number;
+};
+
+export interface AgentStats {
+  aiBrain: AgentStatsAiBrain;
+  operations: AgentStatsOperations;
+  revenue: AgentStatsRevenue;
+  automation: AgentStatsAutomation;
+}
+
 export type ListTasksParams = {
   projectId?: number;
   status?: ListTasksStatus;

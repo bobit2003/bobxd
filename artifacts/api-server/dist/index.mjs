@@ -22211,7 +22211,7 @@ var require_cookie = __commonJS({
   "../../node_modules/.pnpm/cookie@0.7.2/node_modules/cookie/index.js"(exports) {
     "use strict";
     exports.parse = parse3;
-    exports.serialize = serialize17;
+    exports.serialize = serialize16;
     var __toString = Object.prototype.toString;
     var __hasOwnProperty = Object.prototype.hasOwnProperty;
     var cookieNameRegExp = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
@@ -22270,7 +22270,7 @@ var require_cookie = __commonJS({
       }
       return min;
     }
-    function serialize17(name, val, opt) {
+    function serialize16(name, val, opt) {
       var enc = opt && opt.encode || encodeURIComponent;
       if (typeof enc !== "function") {
         throw new TypeError("option encode is invalid");
@@ -24623,7 +24623,7 @@ var require_redact = __commonJS({
       const {
         paths = [],
         censor = "[REDACTED]",
-        serialize: serialize17 = JSON.stringify,
+        serialize: serialize16 = JSON.stringify,
         strict = true,
         remove = false
       } = options;
@@ -24632,10 +24632,10 @@ var require_redact = __commonJS({
       return function redact(obj) {
         if (strict && (obj === null || typeof obj !== "object")) {
           if (obj === null || obj === void 0) {
-            return serialize17 ? serialize17(obj) : obj;
+            return serialize16 ? serialize16(obj) : obj;
           }
           if (typeof obj !== "object") {
-            return serialize17 ? serialize17(obj) : obj;
+            return serialize16 ? serialize16(obj) : obj;
           }
         }
         const cloned = selectiveClone(obj, pathStructure);
@@ -24645,14 +24645,14 @@ var require_redact = __commonJS({
           actualCensor = censor;
         }
         redactPaths(cloned, paths, actualCensor, remove);
-        if (serialize17 === false) {
+        if (serialize16 === false) {
           cloned.restore = function() {
             return deepClone(original);
           };
           return cloned;
         }
-        if (typeof serialize17 === "function") {
-          return serialize17(cloned);
+        if (typeof serialize16 === "function") {
+          return serialize16(cloned);
         }
         return JSON.stringify(cloned);
       };
@@ -24741,7 +24741,7 @@ var require_redaction = __commonJS({
     var rx = /[^.[\]]+|\[([^[\]]*?)\]/g;
     var CENSOR = "[Redacted]";
     var strict = false;
-    function redaction(opts, serialize17) {
+    function redaction(opts, serialize16) {
       const { paths, censor, remove } = handle(opts);
       const shape = paths.reduce((o, str2) => {
         rx.lastIndex = 0;
@@ -24775,10 +24775,10 @@ var require_redaction = __commonJS({
         return o;
       }, {});
       const result = {
-        [redactFmtSym]: Redact({ paths, censor, serialize: serialize17, strict, remove })
+        [redactFmtSym]: Redact({ paths, censor, serialize: serialize16, strict, remove })
       };
       const topCensor = (...args) => {
-        return typeof censor === "function" ? serialize17(censor(...args)) : serialize17(censor);
+        return typeof censor === "function" ? serialize16(censor(...args)) : serialize16(censor);
       };
       return [...Object.keys(shape), ...Object.getOwnPropertySymbols(shape)].reduce((o, k) => {
         if (shape[k] === null) {
@@ -24790,7 +24790,7 @@ var require_redaction = __commonJS({
           o[k] = Redact({
             paths: shape[k],
             censor: wrappedCensor,
-            serialize: serialize17,
+            serialize: serialize16,
             strict,
             remove
           });
@@ -31018,7 +31018,7 @@ var require_serializer = __commonJS({
       99
       /* code.copyDone */
     );
-    var serialize17 = {
+    var serialize16 = {
       startup,
       password,
       requestSsl,
@@ -31038,7 +31038,7 @@ var require_serializer = __commonJS({
       copyFail,
       cancel
     };
-    exports.serialize = serialize17;
+    exports.serialize = serialize16;
   }
 });
 
@@ -31512,11 +31512,11 @@ var require_connection = __commonJS({
   "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
-    var { parse: parse3, serialize: serialize17 } = require_dist2();
+    var { parse: parse3, serialize: serialize16 } = require_dist2();
     var { getStream, getSecureStream } = require_stream();
-    var flushBuffer = serialize17.flush();
-    var syncBuffer = serialize17.sync();
-    var endBuffer = serialize17.end();
+    var flushBuffer = serialize16.flush();
+    var syncBuffer = serialize16.sync();
+    var endBuffer = serialize16.end();
     var Connection2 = class extends EventEmitter {
       constructor(config2) {
         super();
@@ -31607,22 +31607,22 @@ var require_connection = __commonJS({
         });
       }
       requestSsl() {
-        this.stream.write(serialize17.requestSsl());
+        this.stream.write(serialize16.requestSsl());
       }
       startup(config2) {
-        this.stream.write(serialize17.startup(config2));
+        this.stream.write(serialize16.startup(config2));
       }
       cancel(processID, secretKey) {
-        this._send(serialize17.cancel(processID, secretKey));
+        this._send(serialize16.cancel(processID, secretKey));
       }
       password(password) {
-        this._send(serialize17.password(password));
+        this._send(serialize16.password(password));
       }
       sendSASLInitialResponseMessage(mechanism, initialResponse) {
-        this._send(serialize17.sendSASLInitialResponseMessage(mechanism, initialResponse));
+        this._send(serialize16.sendSASLInitialResponseMessage(mechanism, initialResponse));
       }
       sendSCRAMClientFinalMessage(additionalData) {
-        this._send(serialize17.sendSCRAMClientFinalMessage(additionalData));
+        this._send(serialize16.sendSCRAMClientFinalMessage(additionalData));
       }
       _send(buffer) {
         if (!this.stream.writable) {
@@ -31631,19 +31631,19 @@ var require_connection = __commonJS({
         return this.stream.write(buffer);
       }
       query(text2) {
-        this._send(serialize17.query(text2));
+        this._send(serialize16.query(text2));
       }
       // send parse message
       parse(query) {
-        this._send(serialize17.parse(query));
+        this._send(serialize16.parse(query));
       }
       // send bind message
       bind(config2) {
-        this._send(serialize17.bind(config2));
+        this._send(serialize16.bind(config2));
       }
       // send execute message
       execute(config2) {
-        this._send(serialize17.execute(config2));
+        this._send(serialize16.execute(config2));
       }
       flush() {
         if (this.stream.writable) {
@@ -31671,19 +31671,19 @@ var require_connection = __commonJS({
         });
       }
       close(msg) {
-        this._send(serialize17.close(msg));
+        this._send(serialize16.close(msg));
       }
       describe(msg) {
-        this._send(serialize17.describe(msg));
+        this._send(serialize16.describe(msg));
       }
       sendCopyFromChunk(chunk) {
-        this._send(serialize17.copyData(chunk));
+        this._send(serialize16.copyData(chunk));
       }
       endCopyFrom() {
-        this._send(serialize17.copyDone());
+        this._send(serialize16.copyDone());
       }
       sendCopyFail(msg) {
-        this._send(serialize17.copyFail(msg));
+        this._send(serialize16.copyFail(msg));
       }
     };
     module.exports = Connection2;
@@ -37457,49 +37457,49 @@ var GenerateOpenaiImageResponse = objectType({
 var GetRevenueIntelligenceResponse = objectType({
   clientRankings: arrayType(
     objectType({
-      id: numberType().optional(),
-      name: stringType().optional(),
-      company: stringType().optional(),
-      lifetimeValue: numberType().optional(),
-      valueTier: stringType().optional(),
-      lastInvoiceDate: stringType().optional(),
-      paidInvoiceCount: numberType().optional()
+      id: numberType(),
+      name: stringType(),
+      company: stringType().nullish(),
+      lifetimeValue: numberType(),
+      valueTier: enumType(["high", "medium", "low"]),
+      lastInvoiceDate: stringType().nullish(),
+      paidInvoiceCount: numberType()
     })
   ),
   staleLeads: arrayType(
     objectType({
-      id: numberType().optional(),
-      name: stringType().optional(),
-      company: stringType().optional(),
-      score: stringType().optional(),
-      stage: stringType().optional(),
-      budget: stringType().optional(),
-      daysSinceUpdate: numberType().optional()
+      id: numberType(),
+      name: stringType(),
+      company: stringType().nullish(),
+      score: stringType(),
+      stage: stringType(),
+      budget: stringType().nullish(),
+      daysSinceUpdate: numberType()
     })
   ),
   overdueCollections: arrayType(
     objectType({
-      id: numberType().optional(),
-      invoiceNumber: stringType().optional(),
-      clientName: stringType().optional(),
-      amount: stringType().optional(),
-      daysOverdue: numberType().optional()
+      id: numberType(),
+      invoiceNumber: stringType(),
+      clientName: stringType(),
+      amount: stringType(),
+      daysOverdue: numberType()
     })
   ),
   reactivationTargets: arrayType(
     objectType({
-      id: numberType().optional(),
-      name: stringType().optional(),
-      lifetimeValue: numberType().optional(),
-      daysSinceLastInvoice: numberType().optional()
+      id: numberType(),
+      name: stringType(),
+      lifetimeValue: numberType(),
+      daysSinceLastInvoice: numberType()
     })
   ),
   opportunities: arrayType(
     objectType({
-      type: stringType().optional(),
-      label: stringType().optional(),
-      value: stringType().optional(),
-      urgency: stringType().optional()
+      type: stringType(),
+      label: stringType(),
+      value: stringType().nullish(),
+      urgency: enumType(["high", "medium", "low"])
     })
   )
 });
@@ -38361,6 +38361,40 @@ var ListEventsResponseItem = objectType({
   createdAt: coerce.date()
 });
 var ListEventsResponse = arrayType(ListEventsResponseItem);
+var GetIntelligenceAlertsResponseItem = objectType({
+  type: stringType().describe(
+    "Alert type identifier (e.g. overdue_tasks, habits_unlogged, invoices_overdue, hot_leads_idle)"
+  ),
+  severity: enumType(["high", "medium", "low"]),
+  message: stringType().describe("Human-readable alert message"),
+  link: stringType().describe("Frontend route to navigate to for this alert")
+});
+var GetIntelligenceAlertsResponse = arrayType(
+  GetIntelligenceAlertsResponseItem
+);
+var GetAgentStatsResponse = objectType({
+  aiBrain: objectType({
+    conversationCount: numberType(),
+    messageCount: numberType()
+  }),
+  operations: objectType({
+    activeTasks: numberType(),
+    pendingTasks: numberType(),
+    totalTasks: numberType()
+  }),
+  revenue: objectType({
+    pipelineValue: numberType(),
+    paidRevenue: numberType(),
+    hotLeads: numberType(),
+    totalLeads: numberType(),
+    activeClients: numberType(),
+    totalClients: numberType()
+  }),
+  automation: objectType({
+    totalAutomations: numberType(),
+    activeAutomations: numberType()
+  })
+});
 var GetSystemContextResponse = objectType({
   timestamp: coerce.date(),
   revenue: objectType({
@@ -64751,6 +64785,22 @@ var clients_default = router4;
 
 // src/routes/tasks.ts
 var import_express5 = __toESM(require_express2(), 1);
+
+// src/audit-writer.ts
+async function writeAudit(action, entity, opts) {
+  try {
+    await db.insert(auditLog).values({
+      action,
+      entity,
+      entityId: opts?.entityId != null ? String(opts.entityId) : null,
+      details: opts?.details ?? null,
+      source: opts?.source ?? "system"
+    });
+  } catch {
+  }
+}
+
+// src/routes/tasks.ts
 var router5 = (0, import_express5.Router)();
 function serialize3(t) {
   return {
@@ -64785,6 +64835,10 @@ router5.post("/tasks", async (req, res) => {
       meta: { priority: row.priority, status: row.status }
     }).catch(() => {
     });
+    writeAudit("task.create", "task", {
+      entityId: row.id,
+      details: `Created task "${row.title}" [${row.priority} priority]`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create task");
     res.status(400).json({ error: "Bad request" });
@@ -64801,12 +64855,17 @@ router5.put("/tasks/:id", async (req, res) => {
     }).where(eq(tasks.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize3(row));
-    const eventTitle = row.status === "done" ? `Task completed: ${row.title}` : `Task updated: ${row.title}`;
-    emitEvent(row.status === "done" ? "task_completed" : "task_updated", "TASK", eventTitle, {
+    const isComplete = row.status === "done";
+    emitEvent(
+      isComplete ? "task_completed" : "task_updated",
+      "TASK",
+      isComplete ? `Task completed: ${row.title}` : `Task updated: ${row.title}`,
+      { entityId: row.id, entityType: "task", meta: { priority: row.priority, status: row.status } }
+    ).catch(() => {
+    });
+    writeAudit(isComplete ? "task.complete" : "task.update", "task", {
       entityId: row.id,
-      entityType: "task",
-      meta: { priority: row.priority, status: row.status }
-    }).catch(() => {
+      details: isComplete ? `Completed task "${row.title}"` : `Updated task "${row.title}" \u2014 status: ${row.status}`
     });
   } catch (err) {
     req.log.error({ err }, "Failed to update task");
@@ -64824,6 +64883,7 @@ router5.delete("/tasks/:id", async (req, res) => {
       entityType: "task"
     }).catch(() => {
     });
+    writeAudit("task.delete", "task", { entityId: id, details: "Task deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete task");
     res.status(500).json({ error: "Internal server error" });
@@ -64857,6 +64917,10 @@ router6.post("/automations", async (req, res) => {
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(automations).values({ ...body, createdAt: now, updatedAt: now }).returning();
     res.status(201).json(serialize4(row));
+    writeAudit("automation.create", "automation", {
+      entityId: row.id,
+      details: `Automation "${row.name}" created`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create automation");
     res.status(400).json({ error: "Bad request" });
@@ -64869,6 +64933,10 @@ router6.put("/automations/:id", async (req, res) => {
     const [row] = await db.update(automations).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(automations.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize4(row));
+    writeAudit("automation.update", "automation", {
+      entityId: row.id,
+      details: `Automation "${row.name}" updated \u2014 status: ${row.status}`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update automation");
     res.status(400).json({ error: "Bad request" });
@@ -64880,6 +64948,7 @@ router6.delete("/automations/:id", async (req, res) => {
     const deleted = await db.delete(automations).where(eq(automations.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    writeAudit("automation.delete", "automation", { entityId: id, details: "Automation deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete automation");
     res.status(500).json({ error: "Internal server error" });
@@ -64903,6 +64972,10 @@ router6.post("/automations/:id/run", async (req, res) => {
     }
     await db.update(automations).set({ lastRunAt: runAt, lastResult: output, updatedAt: runAt }).where(eq(automations.id, id));
     res.json({ success: success2, output, runAt: runAt.toISOString() });
+    writeAudit("automation.run", "automation", {
+      entityId: id,
+      details: `Automation "${row.name}" run \u2014 ${success2 ? "success" : "failed"}: ${output.substring(0, 100)}`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to run automation");
     res.status(500).json({ error: "Internal server error" });
@@ -65066,6 +65139,10 @@ router9.post("/habits", async (req, res) => {
     const body = CreateHabitBody.parse(req.body);
     const [row] = await db.insert(habits).values(body).returning();
     res.status(201).json(serialize6(row));
+    writeAudit("habit.create", "habit", {
+      entityId: row.id,
+      details: `Habit "${row.name}" created \u2014 frequency: ${row.frequency}`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create habit");
     res.status(400).json({ error: "Bad request" });
@@ -65078,6 +65155,10 @@ router9.put("/habits/:id", async (req, res) => {
     const [row] = await db.update(habits).set(body).where(eq(habits.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize6(row));
+    writeAudit("habit.update", "habit", {
+      entityId: row.id,
+      details: `Habit "${row.name}" updated`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update habit");
     res.status(400).json({ error: "Bad request" });
@@ -65090,6 +65171,7 @@ router9.delete("/habits/:id", async (req, res) => {
     const deleted = await db.delete(habits).where(eq(habits.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    writeAudit("habit.delete", "habit", { entityId: id, details: "Habit deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete habit");
     res.status(500).json({ error: "Internal server error" });
@@ -65125,6 +65207,10 @@ router9.post("/habits/:id/complete", async (req, res) => {
       lastCompleted: now
     }).where(eq(habits.id, id)).returning();
     res.json(serialize6(updated));
+    writeAudit("habit.log", "habit", {
+      entityId: id,
+      details: `Habit "${habit.name}" logged \u2014 streak: ${newStreak}`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to complete habit");
     res.status(500).json({ error: "Internal server error" });
@@ -65229,16 +65315,56 @@ var memories_default = router11;
 // src/routes/audit.ts
 var import_express12 = __toESM(require_express2(), 1);
 var router12 = (0, import_express12.Router)();
-function serialize9(a) {
-  return { ...a, createdAt: a.createdAt.toISOString() };
+function serializeAudit(a) {
+  return {
+    id: a.id,
+    action: a.action,
+    entity: a.entity,
+    entityId: a.entityId,
+    details: a.details,
+    source: a.source,
+    createdAt: a.createdAt.toISOString()
+  };
 }
 router12.get("/audit", async (req, res) => {
   try {
     const rows = await db.select().from(auditLog).orderBy(desc(auditLog.createdAt)).limit(200);
-    res.json(rows.map(serialize9));
+    res.json(rows.map(serializeAudit));
   } catch (err) {
     req.log.error({ err }, "Failed to list audit log");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+router12.get("/audit/stream", async (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+  try {
+    const initial = await db.select().from(auditLog).orderBy(desc(auditLog.createdAt)).limit(20);
+    let lastId = 0;
+    for (const entry of initial.slice().reverse()) {
+      if (entry.id > lastId) lastId = entry.id;
+      res.write(`data: ${JSON.stringify(serializeAudit(entry))}
+
+`);
+    }
+    const interval2 = setInterval(async () => {
+      try {
+        const newEntries = await db.select().from(auditLog).where(gt(auditLog.id, lastId)).orderBy(auditLog.id).limit(50);
+        for (const entry of newEntries) {
+          if (entry.id > lastId) lastId = entry.id;
+          res.write(`data: ${JSON.stringify(serializeAudit(entry))}
+
+`);
+        }
+      } catch {
+      }
+    }, 3e3);
+    req.on("close", () => clearInterval(interval2));
+  } catch (err) {
+    req.log.error({ err }, "Audit stream error");
+    res.end();
   }
 });
 router12.post("/audit", async (req, res) => {
@@ -65246,13 +65372,12 @@ router12.post("/audit", async (req, res) => {
     const body = req.body;
     const [row] = await db.insert(auditLog).values({
       action: body.action || "unknown",
-      entity: body.entity ?? null,
+      entity: body.entity ?? "unknown",
       entityId: body.entityId ?? null,
       details: body.details ?? null,
-      userName: body.user ?? "system",
-      createdAt: /* @__PURE__ */ new Date()
+      source: body.source ?? "user"
     }).returning();
-    res.status(201).json(serialize9(row));
+    res.status(201).json(serializeAudit(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create audit log");
     res.status(400).json({ error: "Bad request" });
@@ -65263,13 +65388,13 @@ var audit_default = router12;
 // src/routes/metrics.ts
 var import_express13 = __toESM(require_express2(), 1);
 var router13 = (0, import_express13.Router)();
-function serialize10(m) {
+function serialize9(m) {
   return { ...m, date: m.date.toISOString(), createdAt: m.createdAt.toISOString() };
 }
 router13.get("/metrics", async (req, res) => {
   try {
     const rows = await db.select().from(metrics).orderBy(desc(metrics.date)).limit(200);
-    res.json(rows.map(serialize10));
+    res.json(rows.map(serialize9));
   } catch (err) {
     req.log.error({ err }, "Failed to list metrics");
     res.status(500).json({ error: "Internal server error" });
@@ -65279,7 +65404,7 @@ router13.post("/metrics", async (req, res) => {
   try {
     const body = CreateMetricBody.parse(req.body);
     const [row] = await db.insert(metrics).values(body).returning();
-    res.status(201).json(serialize10(row));
+    res.status(201).json(serialize9(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create metric");
     res.status(400).json({ error: "Bad request" });
@@ -65430,7 +65555,7 @@ var briefing_default = router15;
 // src/routes/leads.ts
 var import_express16 = __toESM(require_express2(), 1);
 var router16 = (0, import_express16.Router)();
-function serialize11(l) {
+function serialize10(l) {
   return {
     ...l,
     lastContactedAt: l.lastContactedAt?.toISOString() ?? null,
@@ -65441,7 +65566,7 @@ function serialize11(l) {
 router16.get("/leads", async (req, res) => {
   try {
     const rows = await db.select().from(leads).orderBy(desc(leads.createdAt));
-    res.json(rows.map(serialize11));
+    res.json(rows.map(serialize10));
   } catch (err) {
     req.log.error({ err }, "Failed to list leads");
     res.status(500).json({ error: "Internal server error" });
@@ -65452,12 +65577,16 @@ router16.post("/leads", async (req, res) => {
     const body = CreateLeadBody.parse(req.body);
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(leads).values({ ...body, createdAt: now, updatedAt: now }).returning();
-    res.status(201).json(serialize11(row));
+    res.status(201).json(serialize10(row));
     emitEvent("lead_created", "LEAD", `New ${row.score} lead: ${row.name}`, {
       entityId: row.id,
       entityType: "lead",
       meta: { score: row.score, stage: row.stage, company: row.company }
     }).catch(() => {
+    });
+    writeAudit("lead.create", "lead", {
+      entityId: row.id,
+      details: `New ${row.score} lead: ${row.name}${row.company ? ` (${row.company})` : ""}`
     });
   } catch (err) {
     req.log.error({ err }, "Failed to create lead");
@@ -65470,12 +65599,16 @@ router16.put("/leads/:id", async (req, res) => {
     const body = UpdateLeadBody.parse(req.body);
     const [row] = await db.update(leads).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(leads.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize11(row));
+    res.json(serialize10(row));
     emitEvent("lead_updated", "LEAD", `Lead updated: ${row.name} \u2014 ${row.stage}`, {
       entityId: row.id,
       entityType: "lead",
       meta: { stage: row.stage, score: row.score }
     }).catch(() => {
+    });
+    writeAudit("lead.update", "lead", {
+      entityId: row.id,
+      details: `Lead "${row.name}" updated \u2014 stage: ${row.stage}, score: ${row.score}`
     });
   } catch (err) {
     req.log.error({ err }, "Failed to update lead");
@@ -65493,6 +65626,7 @@ router16.delete("/leads/:id", async (req, res) => {
       entityType: "lead"
     }).catch(() => {
     });
+    writeAudit("lead.delete", "lead", { entityId: id, details: "Lead deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete lead");
     res.status(500).json({ error: "Internal server error" });
@@ -65537,6 +65671,10 @@ router16.post("/leads/:id/convert", async (req, res) => {
       meta: { ...result, leadName: lead.name }
     }).catch(() => {
     });
+    writeAudit("lead.convert", "lead", {
+      entityId: lead.id,
+      details: `Lead "${lead.name}" converted to client \u2014 clientId: ${result.clientId}, projectId: ${result.projectId}`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to convert lead");
     res.status(500).json({ error: "Internal server error" });
@@ -65547,7 +65685,7 @@ var leads_default = router16;
 // src/routes/invoices.ts
 var import_express17 = __toESM(require_express2(), 1);
 var router17 = (0, import_express17.Router)();
-function serialize12(i) {
+function serialize11(i) {
   return {
     ...i,
     dueDate: i.dueDate?.toISOString() ?? null,
@@ -65559,7 +65697,7 @@ function serialize12(i) {
 router17.get("/invoices", async (req, res) => {
   try {
     const rows = await db.select().from(invoices).orderBy(desc(invoices.createdAt));
-    res.json(rows.map(serialize12));
+    res.json(rows.map(serialize11));
   } catch (err) {
     req.log.error({ err }, "Failed to list invoices");
     res.status(500).json({ error: "Internal server error" });
@@ -65570,12 +65708,16 @@ router17.post("/invoices", async (req, res) => {
     const body = CreateInvoiceBody.parse(req.body);
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(invoices).values({ ...body, createdAt: now, updatedAt: now }).returning();
-    res.status(201).json(serialize12(row));
+    res.status(201).json(serialize11(row));
     emitEvent("invoice_created", "FIN", `Invoice created: ${row.invoiceNumber} \u2014 $${row.amount}`, {
       entityId: row.id,
       entityType: "invoice",
       meta: { amount: row.amount, status: row.status }
     }).catch(() => {
+    });
+    writeAudit("invoice.create", "invoice", {
+      entityId: row.id,
+      details: `Invoice ${row.invoiceNumber} created \u2014 $${row.amount}`
     });
   } catch (err) {
     req.log.error({ err }, "Failed to create invoice");
@@ -65588,7 +65730,7 @@ router17.put("/invoices/:id", async (req, res) => {
     const body = UpdateInvoiceBody.parse(req.body);
     const [row] = await db.update(invoices).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(invoices.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize12(row));
+    res.json(serialize11(row));
     const isPaid = row.status === "paid";
     emitEvent(
       isPaid ? "invoice_paid" : "invoice_updated",
@@ -65596,6 +65738,10 @@ router17.put("/invoices/:id", async (req, res) => {
       isPaid ? `Payment received: ${row.invoiceNumber} \u2014 $${row.amount}` : `Invoice updated: ${row.invoiceNumber}`,
       { entityId: row.id, entityType: "invoice", meta: { amount: row.amount, status: row.status } }
     ).catch(() => {
+    });
+    writeAudit(isPaid ? "invoice.paid" : "invoice.update", "invoice", {
+      entityId: row.id,
+      details: isPaid ? `Payment received: ${row.invoiceNumber} \u2014 $${row.amount}` : `Invoice ${row.invoiceNumber} updated \u2014 status: ${row.status}`
     });
   } catch (err) {
     req.log.error({ err }, "Failed to update invoice");
@@ -65613,6 +65759,7 @@ router17.delete("/invoices/:id", async (req, res) => {
       entityType: "invoice"
     }).catch(() => {
     });
+    writeAudit("invoice.delete", "invoice", { entityId: id, details: "Invoice deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete invoice");
     res.status(500).json({ error: "Internal server error" });
@@ -65623,13 +65770,13 @@ var invoices_default = router17;
 // src/routes/expenses.ts
 var import_express18 = __toESM(require_express2(), 1);
 var router18 = (0, import_express18.Router)();
-function serialize13(e) {
+function serialize12(e) {
   return { ...e, date: e.date.toISOString(), createdAt: e.createdAt.toISOString() };
 }
 router18.get("/expenses", async (req, res) => {
   try {
     const rows = await db.select().from(expenses).orderBy(desc(expenses.date));
-    res.json(rows.map(serialize13));
+    res.json(rows.map(serialize12));
   } catch (err) {
     req.log.error({ err }, "Failed to list expenses");
     res.status(500).json({ error: "Internal server error" });
@@ -65639,7 +65786,7 @@ router18.post("/expenses", async (req, res) => {
   try {
     const body = CreateExpenseBody.parse(req.body);
     const [row] = await db.insert(expenses).values(body).returning();
-    res.status(201).json(serialize13(row));
+    res.status(201).json(serialize12(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create expense");
     res.status(400).json({ error: "Bad request" });
@@ -65661,13 +65808,13 @@ var expenses_default = router18;
 // src/routes/time-entries.ts
 var import_express19 = __toESM(require_express2(), 1);
 var router19 = (0, import_express19.Router)();
-function serialize14(t) {
+function serialize13(t) {
   return { ...t, date: t.date.toISOString(), createdAt: t.createdAt.toISOString() };
 }
 router19.get("/time-entries", async (req, res) => {
   try {
     const rows = await db.select().from(timeEntries).orderBy(desc(timeEntries.date));
-    res.json(rows.map(serialize14));
+    res.json(rows.map(serialize13));
   } catch (err) {
     req.log.error({ err }, "Failed to list time entries");
     res.status(500).json({ error: "Internal server error" });
@@ -65677,7 +65824,7 @@ router19.post("/time-entries", async (req, res) => {
   try {
     const body = CreateTimeEntryBody.parse(req.body);
     const [row] = await db.insert(timeEntries).values(body).returning();
-    res.status(201).json(serialize14(row));
+    res.status(201).json(serialize13(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create time entry");
     res.status(400).json({ error: "Bad request" });
@@ -65699,7 +65846,7 @@ var time_entries_default = router19;
 // src/routes/milestones.ts
 var import_express20 = __toESM(require_express2(), 1);
 var router20 = (0, import_express20.Router)();
-function serialize15(m) {
+function serialize14(m) {
   return {
     ...m,
     dueDate: m.dueDate?.toISOString() ?? null,
@@ -65710,7 +65857,7 @@ function serialize15(m) {
 router20.get("/milestones", async (req, res) => {
   try {
     const rows = await db.select().from(milestones).orderBy(desc(milestones.createdAt));
-    res.json(rows.map(serialize15));
+    res.json(rows.map(serialize14));
   } catch (err) {
     req.log.error({ err }, "Failed to list milestones");
     res.status(500).json({ error: "Internal server error" });
@@ -65720,7 +65867,7 @@ router20.post("/milestones", async (req, res) => {
   try {
     const body = CreateMilestoneBody.parse(req.body);
     const [row] = await db.insert(milestones).values(body).returning();
-    res.status(201).json(serialize15(row));
+    res.status(201).json(serialize14(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create milestone");
     res.status(400).json({ error: "Bad request" });
@@ -65736,7 +65883,7 @@ router20.put("/milestones/:id", async (req, res) => {
     }
     const [row] = await db.update(milestones).set(updateData).where(eq(milestones.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize15(row));
+    res.json(serialize14(row));
   } catch (err) {
     req.log.error({ err }, "Failed to update milestone");
     res.status(400).json({ error: "Bad request" });
@@ -65758,7 +65905,7 @@ var milestones_default = router20;
 // src/routes/content.ts
 var import_express21 = __toESM(require_express2(), 1);
 var router21 = (0, import_express21.Router)();
-function serialize16(c) {
+function serialize15(c) {
   return {
     ...c,
     scheduledDate: c.scheduledDate?.toISOString() ?? null,
@@ -65770,7 +65917,7 @@ function serialize16(c) {
 router21.get("/content", async (req, res) => {
   try {
     const rows = await db.select().from(contentItems).orderBy(desc(contentItems.createdAt));
-    res.json(rows.map(serialize16));
+    res.json(rows.map(serialize15));
   } catch (err) {
     req.log.error({ err }, "Failed to list content");
     res.status(500).json({ error: "Internal server error" });
@@ -65781,7 +65928,7 @@ router21.post("/content", async (req, res) => {
     const body = CreateContentBody.parse(req.body);
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(contentItems).values({ ...body, createdAt: now, updatedAt: now }).returning();
-    res.status(201).json(serialize16(row));
+    res.status(201).json(serialize15(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create content");
     res.status(400).json({ error: "Bad request" });
@@ -65793,7 +65940,7 @@ router21.put("/content/:id", async (req, res) => {
     const body = UpdateContentBody.parse(req.body);
     const [row] = await db.update(contentItems).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(contentItems.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize16(row));
+    res.json(serialize15(row));
   } catch (err) {
     req.log.error({ err }, "Failed to update content");
     res.status(400).json({ error: "Bad request" });
@@ -66070,7 +66217,7 @@ router23.get("/intelligence/revenue", async (req, res) => {
       opportunities.push({
         type: "lead_followup",
         label: `Follow up on hot lead ${hotStaleLead.name}${hotStaleLead.company ? ` (${hotStaleLead.company})` : ""} \u2014 ${hotStaleLead.daysSinceUpdate} days idle${hotStaleLead.budget ? `, $${hotStaleLead.budget}` : ""}`,
-        value: hotStaleLead.budget ? `$${hotStaleLead.budget}` : "Unknown",
+        value: hotStaleLead.budget ? `$${hotStaleLead.budget}` : null,
         urgency: "high"
       });
     } else if (staleLeads.length > 0) {
@@ -66078,7 +66225,7 @@ router23.get("/intelligence/revenue", async (req, res) => {
       opportunities.push({
         type: "lead_followup",
         label: `Follow up on ${sl.name}${sl.company ? ` (${sl.company})` : ""} \u2014 ${sl.daysSinceUpdate} days with no contact`,
-        value: sl.budget ? `$${sl.budget}` : "Unknown",
+        value: sl.budget ? `$${sl.budget}` : null,
         urgency: "medium"
       });
     }
@@ -66103,6 +66250,112 @@ router23.get("/intelligence/revenue", async (req, res) => {
     res.json({ clientRankings, staleLeads, overdueCollections, reactivationTargets, opportunities });
   } catch (err) {
     req.log.error({ err }, "Failed to get revenue intelligence");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+router23.get("/intelligence/alerts", async (req, res) => {
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const alerts = [];
+    const allTasks = await db.select().from(tasks);
+    const overdueTasks = allTasks.filter(
+      (t) => t.dueDate && t.status !== "done" && new Date(t.dueDate) < today
+    );
+    if (overdueTasks.length > 0) {
+      alerts.push({
+        type: "overdue_tasks",
+        severity: "high",
+        message: `${overdueTasks.length} task${overdueTasks.length > 1 ? "s" : ""} overdue`,
+        link: "/tasks"
+      });
+    }
+    const allHabits = await db.select().from(habits);
+    const unloggedHabits = allHabits.filter(
+      (h) => !h.lastCompleted || new Date(h.lastCompleted) < today
+    );
+    if (unloggedHabits.length > 0) {
+      alerts.push({
+        type: "habits_unlogged",
+        severity: "medium",
+        message: `${unloggedHabits.length} habit${unloggedHabits.length > 1 ? "s" : ""} not logged today`,
+        link: "/habits"
+      });
+    }
+    const allInvoices = await db.select().from(invoices);
+    const pastDueInvoices = allInvoices.filter(
+      (i) => i.status !== "paid" && i.status !== "cancelled" && i.dueDate && new Date(i.dueDate) < today
+    );
+    if (pastDueInvoices.length > 0) {
+      const totalPastDue = pastDueInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+      alerts.push({
+        type: "invoices_overdue",
+        severity: "high",
+        message: `${pastDueInvoices.length} invoice${pastDueInvoices.length > 1 ? "s" : ""} past due \u2014 $${totalPastDue.toFixed(0)} outstanding`,
+        link: "/invoices"
+      });
+    }
+    const allLeads = await db.select().from(leads);
+    const hotIdleLeads = allLeads.filter((l) => {
+      if (l.score !== "hot" || l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return (now.getTime() - lastUpdate.getTime()) / (1e3 * 60 * 60 * 24) >= 7;
+    });
+    if (hotIdleLeads.length > 0) {
+      alerts.push({
+        type: "hot_leads_idle",
+        severity: "high",
+        message: `${hotIdleLeads.length} hot lead${hotIdleLeads.length > 1 ? "s" : ""} idle 7+ days \u2014 follow up now`,
+        link: "/leads"
+      });
+    }
+    res.json(alerts);
+  } catch (err) {
+    req.log.error({ err }, "Failed to get intelligence alerts");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+router23.get("/intelligence/agent-stats", async (req, res) => {
+  try {
+    const [convCount] = await db.select({ count: count() }).from(conversations);
+    const [msgCount] = await db.select({ count: count() }).from(messages);
+    const [activeTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "in_progress"));
+    const [totalTaskCount] = await db.select({ count: count() }).from(tasks);
+    const [pendingTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "todo"));
+    const [automationCount] = await db.select({ count: count() }).from(automations);
+    const [activeAutomationCount] = await db.select({ count: count() }).from(automations).where(eq(automations.status, "active"));
+    const [clientCount] = await db.select({ count: count() }).from(clients);
+    const [activeClientCount] = await db.select({ count: count() }).from(clients).where(eq(clients.status, "active"));
+    const allLeads = await db.select().from(leads);
+    const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+    const allInvoices = await db.select().from(invoices);
+    const pipelineValue = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled").reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const paidRevenue = allInvoices.filter((i) => i.status === "paid").reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    res.json({
+      aiBrain: {
+        conversationCount: Number(convCount.count),
+        messageCount: Number(msgCount.count)
+      },
+      operations: {
+        activeTasks: Number(activeTaskCount.count),
+        pendingTasks: Number(pendingTaskCount.count),
+        totalTasks: Number(totalTaskCount.count)
+      },
+      revenue: {
+        pipelineValue: parseFloat(pipelineValue.toFixed(2)),
+        paidRevenue: parseFloat(paidRevenue.toFixed(2)),
+        hotLeads: hotLeads.length,
+        totalLeads: allLeads.length,
+        activeClients: Number(activeClientCount.count),
+        totalClients: Number(clientCount.count)
+      },
+      automation: {
+        totalAutomations: Number(automationCount.count),
+        activeAutomations: Number(activeAutomationCount.count)
+      }
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get agent stats");
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -4,64 +4,68 @@ import {
   useListTasks, getListTasksQueryKey,
   useListMilestones,
   useGetRevenueIntelligence, getGetRevenueIntelligenceQueryKey,
-  useGetSystemContext, getGetSystemContextQueryKey,
+  useGetIntelligenceAlerts, getGetIntelligenceAlertsQueryKey,
 } from "@workspace/api-client-react";
-import { FolderKanban, CheckSquare, Users, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, TrendingUp, ArrowUpRight, Radio, Zap, ShieldAlert, Bell } from "lucide-react";
+import { FolderKanban, CheckSquare, Users, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, TrendingUp, ArrowUpRight, Radio, Zap, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import type { AlertItem } from "@workspace/api-client-react";
 
-type LiveEvent = {
+type AuditEntry = {
   id: number;
-  type: string;
-  category: string;
-  title: string;
-  description?: string | null;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  details: string | null;
+  source: string;
   createdAt: string;
 };
 
-const categoryColor: Record<string, string> = {
-  CLIENT: "text-primary",
-  LEAD: "text-green-400",
-  TASK: "text-violet-400",
-  FIN: "text-amber-400",
-  AI: "text-purple-400",
-  AUTO: "text-cyan-400",
-  SYS: "text-white/60",
+const entityColor: Record<string, string> = {
+  task: "text-violet-400",
+  lead: "text-green-400",
+  invoice: "text-amber-400",
+  habit: "text-cyan-400",
+  automation: "text-cyan-400",
+  client: "text-primary",
+  project: "text-primary",
+  unknown: "text-white/50",
 };
 
-function useLiveEventFeed() {
-  const [events, setEvents] = useState<LiveEvent[]>([]);
+function entityTag(entity: string): string {
+  return entity.substring(0, 4).toUpperCase().padEnd(4);
+}
+
+function useAuditFeed() {
+  const [entries, setEntries] = useState<AuditEntry[]>([]);
   const queryClient = useQueryClient();
 
-  const addEvent = useCallback((ev: LiveEvent) => {
-    setEvents(prev => {
-      const next = [ev, ...prev];
-      if (next.length > 60) next.pop();
+  const addEntry = useCallback((e: AuditEntry) => {
+    setEntries(prev => {
+      const next = [e, ...prev];
+      if (next.length > 100) next.pop();
       return next;
     });
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
-    queryClient.invalidateQueries({ queryKey: getGetSystemContextQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetRevenueIntelligenceQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetIntelligenceAlertsQueryKey() });
   }, [queryClient]);
 
   useEffect(() => {
-    const url = "/api/events/stream";
     let evtSource: EventSource;
     let retry: ReturnType<typeof setTimeout>;
 
     function connect() {
-      evtSource = new EventSource(url);
-
+      evtSource = new EventSource("/api/audit/stream");
       evtSource.onmessage = (e) => {
         try {
-          const data = JSON.parse(e.data) as LiveEvent;
-          addEvent(data);
+          const data = JSON.parse(e.data) as AuditEntry;
+          addEntry(data);
         } catch {}
       };
-
       evtSource.onerror = () => {
         evtSource.close();
         retry = setTimeout(connect, 3000);
@@ -73,9 +77,9 @@ function useLiveEventFeed() {
       evtSource?.close();
       clearTimeout(retry);
     };
-  }, [addEvent]);
+  }, [addEntry]);
 
-  return events;
+  return entries;
 }
 
 function StatCard({ title, value, icon: Icon, subtitle, href, delay, accent }: {
@@ -84,7 +88,7 @@ function StatCard({ title, value, icon: Icon, subtitle, href, delay, accent }: {
   return (
     <Link href={href}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.35 }}>
-        <div className={`glass-card p-4 rounded-lg cursor-pointer h-full relative overflow-hidden group border ${accent ? accent : 'border-white/5'}`}>
+        <div className={`glass-card p-4 rounded-lg cursor-pointer h-full relative overflow-hidden group border ${accent ?? "border-white/5"}`}>
           <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors pointer-events-none" />
           <div className="flex justify-between items-start mb-3 relative z-10">
             <h3 className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{title}</h3>
@@ -98,13 +102,40 @@ function StatCard({ title, value, icon: Icon, subtitle, href, delay, accent }: {
   );
 }
 
-function AlertBadge({ type, message }: { type: string; message: string }) {
-  const isHigh = type.includes("overdue") || type.includes("high");
+function AlertStrip({ alerts, onDismiss }: { alerts: AlertItem[]; onDismiss: (type: string) => void }) {
+  if (alerts.length === 0) return null;
   return (
-    <div className={`flex items-center gap-2 px-3 py-2 rounded border text-xs ${isHigh ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
-      <ShieldAlert className="w-3 h-3 shrink-0" />
-      <span className="truncate">{message}</span>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="glass-card rounded-lg border border-red-500/20 bg-red-500/5 shrink-0 overflow-hidden"
+    >
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-red-500/10">
+        <AlertTriangle className="w-3 h-3 text-red-400 shrink-0" />
+        <span className="text-[9px] text-red-400 uppercase tracking-widest font-bold">System Alerts</span>
+        <span className="ml-auto text-[9px] text-muted-foreground/50 font-mono">{alerts.length} active</span>
+      </div>
+      <div className="divide-y divide-white/5">
+        {alerts.map((alert) => (
+          <div key={alert.type} className="flex items-center gap-3 px-3 py-2 group hover:bg-white/5 transition-colors">
+            <div className={`w-1 h-1 rounded-full shrink-0 ${alert.severity === "high" ? "bg-red-400" : "bg-amber-400"}`} />
+            <Link href={alert.link} className="flex-1 min-w-0">
+              <span className={`text-xs truncate ${alert.severity === "high" ? "text-red-300" : "text-amber-300"}`}>
+                {alert.message}
+              </span>
+            </Link>
+            <button
+              onClick={() => onDismiss(alert.type)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/50 hover:text-red-400 p-0.5 rounded"
+              aria-label="Dismiss alert"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 }
 
@@ -114,14 +145,18 @@ export default function Dashboard() {
   const { data: tasks } = useListTasks({ query: { queryKey: getListTasksQueryKey() } });
   const { data: milestones } = useListMilestones();
   const { data: revenueIntel } = useGetRevenueIntelligence({ query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 60000 } });
-  const { data: sysCtx } = useGetSystemContext({ query: { queryKey: getGetSystemContextQueryKey(), staleTime: 30000 } });
+  const { data: rawAlerts } = useGetIntelligenceAlerts({ query: { queryKey: getGetIntelligenceAlertsQueryKey(), staleTime: 30000 } });
 
-  const liveEvents = useLiveEventFeed();
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const activeAlerts = (rawAlerts ?? []).filter(a => !dismissedAlerts.has(a.type));
+  const dismissAlert = (type: string) => setDismissedAlerts(prev => new Set([...prev, type]));
+
+  const auditEntries = useAuditFeed();
   const feedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (feedRef.current) feedRef.current.scrollTop = 0;
-  }, [liveEvents.length]);
+  }, [auditEntries.length]);
 
   const activeProjects = projects?.filter(p => p.status === "active") ?? [];
 
@@ -140,8 +175,6 @@ export default function Dashboard() {
     return (p[b.priority] ?? 0) - (p[a.priority] ?? 0);
   }).slice(0, 8) ?? [];
 
-  const alerts = sysCtx?.alerts ?? [];
-
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col gap-4 overflow-hidden">
       {/* Header */}
@@ -150,13 +183,18 @@ export default function Dashboard() {
           <h1 className="text-xl font-bold tracking-widest text-primary uppercase glow-text">Command Center</h1>
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Global Telemetry & Oversight</p>
         </div>
-        {sysCtx && (
-          <div className="flex items-center gap-1.5">
-            <Radio className="w-3 h-3 text-green-400 animate-pulse" />
-            <span className="text-[9px] text-green-400 uppercase tracking-widest font-mono">Live</span>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          <Radio className="w-3 h-3 text-green-400 animate-pulse" />
+          <span className="text-[9px] text-green-400 uppercase tracking-widest font-mono">Live</span>
+        </div>
       </div>
+
+      {/* System Alerts */}
+      <AnimatePresence>
+        {activeAlerts.length > 0 && (
+          <AlertStrip alerts={activeAlerts} onDismiss={dismissAlert} />
+        )}
+      </AnimatePresence>
 
       {/* Stat Row */}
       {isLoading ? (
@@ -173,7 +211,7 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      {/* Finance + Alerts Row */}
+      {/* Finance Row */}
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 shrink-0">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
@@ -197,17 +235,6 @@ export default function Dashboard() {
             <p className="text-xl font-bold font-mono text-violet-400 mt-1">{data.activeAutomations}</p>
           </motion.div>
         </div>
-      )}
-
-      {/* Alerts Banner */}
-      {alerts.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-          className="flex items-center gap-2 flex-wrap shrink-0">
-          <Bell className="w-3 h-3 text-muted-foreground shrink-0" />
-          {alerts.slice(0, 3).map((a, i) => (
-            <AlertBadge key={i} type={a.type} message={a.message} />
-          ))}
-        </motion.div>
       )}
 
       {/* Revenue Engine Panel */}
@@ -234,7 +261,7 @@ export default function Dashboard() {
                     {opp.urgency} priority
                   </div>
                 </div>
-                {opp.value && opp.value !== "Unknown" && (
+                {opp.value && (
                   <div className="text-amber-400 font-bold font-mono text-sm shrink-0">{opp.value}</div>
                 )}
               </div>
@@ -246,31 +273,33 @@ export default function Dashboard() {
       {/* Main 3-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0 overflow-hidden">
 
-        {/* Live Event Feed */}
+        {/* Audit Log Feed */}
         <div className="flex flex-col min-h-0">
           <div className="flex items-center gap-2 mb-2 shrink-0">
             <Radio className="w-3 h-3 text-primary animate-pulse" />
-            <h2 className="text-[10px] font-bold tracking-widest text-primary/70 uppercase">Live Event Feed</h2>
-            {liveEvents.length > 0 && (
-              <span className="ml-auto text-[9px] text-muted-foreground font-mono">{liveEvents.length} events</span>
+            <h2 className="text-[10px] font-bold tracking-widest text-primary/70 uppercase">Activity Feed</h2>
+            {auditEntries.length > 0 && (
+              <span className="ml-auto text-[9px] text-muted-foreground font-mono">{auditEntries.length} entries</span>
             )}
           </div>
           <div ref={feedRef} className="glass-card flex-1 rounded-lg overflow-y-auto font-mono text-[11px] leading-relaxed">
-            {liveEvents.length === 0 ? (
+            {auditEntries.length === 0 ? (
               <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground/40 uppercase tracking-widest">
-                Waiting for events...
+                Waiting for activity...
               </div>
             ) : (
               <div className="divide-y divide-white/5">
-                {liveEvents.map((ev) => (
-                  <div key={ev.id} className="flex gap-2 px-3 py-2 hover:bg-white/5 transition-colors">
+                {auditEntries.map((entry) => (
+                  <div key={entry.id} className="flex gap-2 px-3 py-2 hover:bg-white/5 transition-colors">
                     <span className="text-muted-foreground/40 shrink-0 text-[9px] mt-0.5 tabular-nums">
-                      {new Date(ev.createdAt).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                      {new Date(entry.createdAt).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                     </span>
-                    <span className={`shrink-0 w-10 text-[9px] font-bold uppercase mt-0.5 ${categoryColor[ev.category] ?? "text-muted-foreground"}`}>
-                      {ev.category}
+                    <span className={`shrink-0 w-10 text-[9px] font-bold uppercase mt-0.5 ${entityColor[entry.entity] ?? "text-muted-foreground/50"}`}>
+                      {entityTag(entry.entity)}
                     </span>
-                    <span className="text-foreground/80 flex-1 min-w-0 break-words">{ev.title}</span>
+                    <span className="text-foreground/80 flex-1 min-w-0 break-words">
+                      {entry.details ?? entry.action}
+                    </span>
                   </div>
                 ))}
               </div>

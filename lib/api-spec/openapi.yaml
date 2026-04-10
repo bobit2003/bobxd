@@ -1365,6 +1365,45 @@ paths:
           content:
             text/event-stream: {}
 
+  /audit/stream:
+    get:
+      operationId: streamAuditLog
+      tags: [audit]
+      summary: SSE stream of the audit log — sends last 20 entries on connect then polls for new ones
+      responses:
+        "200":
+          description: SSE audit log stream
+          content:
+            text/event-stream: {}
+
+  /intelligence/alerts:
+    get:
+      operationId: getIntelligenceAlerts
+      tags: [intelligence]
+      summary: Get proactive system alerts — overdue tasks, habits unlogged, past-due invoices, hot leads idle
+      responses:
+        "200":
+          description: List of proactive alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AlertItem"
+
+  /intelligence/agent-stats:
+    get:
+      operationId: getAgentStats
+      tags: [intelligence]
+      summary: Get live stats for the Living Agent Map — AI Brain, Operations, Revenue, Automation node data
+      responses:
+        "200":
+          description: Agent domain statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentStats"
+
   /system-context:
     get:
       operationId: getSystemContext
@@ -2899,3 +2938,54 @@ components:
               urgency: { type: string, enum: [high, medium, low] }
             required: [type, label, urgency]
       required: [clientRankings, staleLeads, overdueCollections, reactivationTargets, opportunities]
+
+    AlertItem:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Alert type identifier (e.g. overdue_tasks, habits_unlogged, invoices_overdue, hot_leads_idle)
+        severity:
+          type: string
+          enum: [high, medium, low]
+        message:
+          type: string
+          description: Human-readable alert message
+        link:
+          type: string
+          description: Frontend route to navigate to for this alert
+      required: [type, severity, message, link]
+
+    AgentStats:
+      type: object
+      properties:
+        aiBrain:
+          type: object
+          properties:
+            conversationCount: { type: integer }
+            messageCount: { type: integer }
+          required: [conversationCount, messageCount]
+        operations:
+          type: object
+          properties:
+            activeTasks: { type: integer }
+            pendingTasks: { type: integer }
+            totalTasks: { type: integer }
+          required: [activeTasks, pendingTasks, totalTasks]
+        revenue:
+          type: object
+          properties:
+            pipelineValue: { type: number }
+            paidRevenue: { type: number }
+            hotLeads: { type: integer }
+            totalLeads: { type: integer }
+            activeClients: { type: integer }
+            totalClients: { type: integer }
+          required: [pipelineValue, paidRevenue, hotLeads, totalLeads, activeClients, totalClients]
+        automation:
+          type: object
+          properties:
+            totalAutomations: { type: integer }
+            activeAutomations: { type: integer }
+          required: [totalAutomations, activeAutomations]
+      required: [aiBrain, operations, revenue, automation]

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { tasks, leads, invoices, milestones, clients, timeEntries, habits } from "@workspace/db";
-import { eq, lt } from "drizzle-orm";
+import { tasks, leads, invoices, milestones, clients, timeEntries, habits, automations, conversations, messages } from "@workspace/db";
+import { eq, count } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
@@ -13,7 +13,6 @@ router.get("/intelligence/daily-plan", async (req, res) => {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 86400000);
 
-    // Gather all relevant data
     const allTasks = await db.select().from(tasks);
     const overdueTasks = allTasks.filter(
       (t) => t.dueDate && t.status !== "done" && t.dueDate < todayStart
@@ -66,7 +65,6 @@ router.get("/intelligence/daily-plan", async (req, res) => {
       return last < todayStart;
     });
 
-    // Build the intelligence prompt
     const contextBlock = `
 CURRENT SYSTEM STATE (${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}):
 
@@ -155,7 +153,6 @@ router.get("/intelligence/revenue", async (req, res) => {
     const allInvoices = await db.select().from(invoices);
     const allLeads = await db.select().from(leads);
 
-    // --- Client Rankings with lifetime value ---
     const clientRankings = allClients.map(c => {
       const clientPaidInvoices = allInvoices.filter(i => i.clientId === c.id && i.status === "paid");
       const lifetimeValue = clientPaidInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
@@ -180,7 +177,6 @@ router.get("/intelligence/revenue", async (req, res) => {
       };
     }).sort((a, b) => b.lifetimeValue - a.lifetimeValue);
 
-    // --- Stale Leads: not updated in 7+ days, not won/lost ---
     const staleLeads = allLeads
       .filter(l => {
         if (l.stage === "won" || l.stage === "lost") return false;
@@ -203,7 +199,6 @@ router.get("/intelligence/revenue", async (req, res) => {
       })
       .sort((a, b) => b.daysSinceUpdate - a.daysSinceUpdate);
 
-    // --- Overdue Collections: unpaid invoices past due date ---
     const overdueCollections = allInvoices
       .filter(i => i.status !== "paid" && i.status !== "cancelled" && i.dueDate && new Date(i.dueDate) < today)
       .map(i => {
@@ -219,7 +214,6 @@ router.get("/intelligence/revenue", async (req, res) => {
       })
       .sort((a, b) => b.daysOverdue - a.daysOverdue);
 
-    // --- Reactivation Targets: clients with paid invoices but not in 30+ days ---
     const reactivationTargets = allClients
       .filter(c => {
         const clientPaidInvs = allInvoices.filter(i => i.clientId === c.id && i.status === "paid");
@@ -242,10 +236,8 @@ router.get("/intelligence/revenue", async (req, res) => {
       })
       .sort((a, b) => b.lifetimeValue - a.lifetimeValue);
 
-    // --- Opportunities: top actionable items ---
-    const opportunities: { type: string; label: string; value: string; urgency: string }[] = [];
+    const opportunities: { type: string; label: string; value: string | null; urgency: string }[] = [];
 
-    // Overdue collections
     const totalOverdue = overdueCollections.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
     if (overdueCollections.length > 0) {
       opportunities.push({
@@ -256,13 +248,12 @@ router.get("/intelligence/revenue", async (req, res) => {
       });
     }
 
-    // Hot stale leads
     const hotStaleLead = staleLeads.find(l => l.score === "hot");
     if (hotStaleLead) {
       opportunities.push({
         type: "lead_followup",
         label: `Follow up on hot lead ${hotStaleLead.name}${hotStaleLead.company ? ` (${hotStaleLead.company})` : ""} — ${hotStaleLead.daysSinceUpdate} days idle${hotStaleLead.budget ? `, $${hotStaleLead.budget}` : ""}`,
-        value: hotStaleLead.budget ? `$${hotStaleLead.budget}` : "Unknown",
+        value: hotStaleLead.budget ? `$${hotStaleLead.budget}` : null,
         urgency: "high",
       });
     } else if (staleLeads.length > 0) {
@@ -270,12 +261,11 @@ router.get("/intelligence/revenue", async (req, res) => {
       opportunities.push({
         type: "lead_followup",
         label: `Follow up on ${sl.name}${sl.company ? ` (${sl.company})` : ""} — ${sl.daysSinceUpdate} days with no contact`,
-        value: sl.budget ? `$${sl.budget}` : "Unknown",
+        value: sl.budget ? `$${sl.budget}` : null,
         urgency: "medium",
       });
     }
 
-    // Reactivation
     if (reactivationTargets.length > 0) {
       const rt = reactivationTargets[0];
       opportunities.push({
@@ -286,7 +276,6 @@ router.get("/intelligence/revenue", async (req, res) => {
       });
     }
 
-    // Upsell top client
     const highValueClient = clientRankings.find(c => c.valueTier === "high");
     if (highValueClient && !reactivationTargets.some(r => r.id === highValueClient.id)) {
       opportunities.push({
@@ -300,6 +289,129 @@ router.get("/intelligence/revenue", async (req, res) => {
     res.json({ clientRankings, staleLeads, overdueCollections, reactivationTargets, opportunities });
   } catch (err) {
     req.log.error({ err }, "Failed to get revenue intelligence");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Proactive alerts endpoint
+router.get("/intelligence/alerts", async (req, res) => {
+  try {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const alerts: { type: string; severity: string; message: string; link: string }[] = [];
+
+    const allTasks = await db.select().from(tasks);
+    const overdueTasks = allTasks.filter(
+      (t) => t.dueDate && t.status !== "done" && new Date(t.dueDate) < today
+    );
+    if (overdueTasks.length > 0) {
+      alerts.push({
+        type: "overdue_tasks",
+        severity: "high",
+        message: `${overdueTasks.length} task${overdueTasks.length > 1 ? "s" : ""} overdue`,
+        link: "/tasks",
+      });
+    }
+
+    const allHabits = await db.select().from(habits);
+    const unloggedHabits = allHabits.filter(
+      (h) => !h.lastCompleted || new Date(h.lastCompleted) < today
+    );
+    if (unloggedHabits.length > 0) {
+      alerts.push({
+        type: "habits_unlogged",
+        severity: "medium",
+        message: `${unloggedHabits.length} habit${unloggedHabits.length > 1 ? "s" : ""} not logged today`,
+        link: "/habits",
+      });
+    }
+
+    const allInvoices = await db.select().from(invoices);
+    const pastDueInvoices = allInvoices.filter(
+      (i) => i.status !== "paid" && i.status !== "cancelled" && i.dueDate && new Date(i.dueDate) < today
+    );
+    if (pastDueInvoices.length > 0) {
+      const totalPastDue = pastDueInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+      alerts.push({
+        type: "invoices_overdue",
+        severity: "high",
+        message: `${pastDueInvoices.length} invoice${pastDueInvoices.length > 1 ? "s" : ""} past due — $${totalPastDue.toFixed(0)} outstanding`,
+        link: "/invoices",
+      });
+    }
+
+    const allLeads = await db.select().from(leads);
+    const hotIdleLeads = allLeads.filter((l) => {
+      if (l.score !== "hot" || l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24) >= 7;
+    });
+    if (hotIdleLeads.length > 0) {
+      alerts.push({
+        type: "hot_leads_idle",
+        severity: "high",
+        message: `${hotIdleLeads.length} hot lead${hotIdleLeads.length > 1 ? "s" : ""} idle 7+ days — follow up now`,
+        link: "/leads",
+      });
+    }
+
+    res.json(alerts);
+  } catch (err) {
+    req.log.error({ err }, "Failed to get intelligence alerts");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Living Agent Map stats endpoint
+router.get("/intelligence/agent-stats", async (req, res) => {
+  try {
+    const [convCount] = await db.select({ count: count() }).from(conversations);
+    const [msgCount] = await db.select({ count: count() }).from(messages);
+    const [activeTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "in_progress"));
+    const [totalTaskCount] = await db.select({ count: count() }).from(tasks);
+    const [pendingTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "todo"));
+    const [automationCount] = await db.select({ count: count() }).from(automations);
+    const [activeAutomationCount] = await db.select({ count: count() }).from(automations).where(eq(automations.status, "active"));
+    const [clientCount] = await db.select({ count: count() }).from(clients);
+    const [activeClientCount] = await db.select({ count: count() }).from(clients).where(eq(clients.status, "active"));
+
+    const allLeads = await db.select().from(leads);
+    const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+
+    const allInvoices = await db.select().from(invoices);
+    const pipelineValue = allInvoices
+      .filter((i) => i.status !== "paid" && i.status !== "cancelled")
+      .reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const paidRevenue = allInvoices
+      .filter((i) => i.status === "paid")
+      .reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+
+    res.json({
+      aiBrain: {
+        conversationCount: Number(convCount.count),
+        messageCount: Number(msgCount.count),
+      },
+      operations: {
+        activeTasks: Number(activeTaskCount.count),
+        pendingTasks: Number(pendingTaskCount.count),
+        totalTasks: Number(totalTaskCount.count),
+      },
+      revenue: {
+        pipelineValue: parseFloat(pipelineValue.toFixed(2)),
+        paidRevenue: parseFloat(paidRevenue.toFixed(2)),
+        hotLeads: hotLeads.length,
+        totalLeads: allLeads.length,
+        activeClients: Number(activeClientCount.count),
+        totalClients: Number(clientCount.count),
+      },
+      automation: {
+        totalAutomations: Number(automationCount.count),
+        activeAutomations: Number(activeAutomationCount.count),
+      },
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get agent stats");
     res.status(500).json({ error: "Internal server error" });
   }
 });

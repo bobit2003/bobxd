@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { habits, habitLogs } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { CreateHabitBody, UpdateHabitBody } from "@workspace/api-zod";
+import { writeAudit } from "../audit-writer.js";
 
 const router = Router();
 
@@ -29,6 +30,10 @@ router.post("/habits", async (req, res) => {
     const body = CreateHabitBody.parse(req.body);
     const [row] = await db.insert(habits).values(body).returning();
     res.status(201).json(serialize(row));
+    writeAudit("habit.create", "habit", {
+      entityId: row.id,
+      details: `Habit "${row.name}" created — frequency: ${row.frequency}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create habit");
     res.status(400).json({ error: "Bad request" });
@@ -42,6 +47,10 @@ router.put("/habits/:id", async (req, res) => {
     const [row] = await db.update(habits).set(body).where(eq(habits.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize(row));
+    writeAudit("habit.update", "habit", {
+      entityId: row.id,
+      details: `Habit "${row.name}" updated`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update habit");
     res.status(400).json({ error: "Bad request" });
@@ -55,6 +64,7 @@ router.delete("/habits/:id", async (req, res) => {
     const deleted = await db.delete(habits).where(eq(habits.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    writeAudit("habit.delete", "habit", { entityId: id, details: "Habit deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete habit");
     res.status(500).json({ error: "Internal server error" });
@@ -96,6 +106,10 @@ router.post("/habits/:id/complete", async (req, res) => {
     }).where(eq(habits.id, id)).returning();
 
     res.json(serialize(updated));
+    writeAudit("habit.log", "habit", {
+      entityId: id,
+      details: `Habit "${habit.name}" logged — streak: ${newStreak}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to complete habit");
     res.status(500).json({ error: "Internal server error" });

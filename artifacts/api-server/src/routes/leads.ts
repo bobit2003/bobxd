@@ -4,6 +4,7 @@ import { leads, clients, projects } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { CreateLeadBody, UpdateLeadBody } from "@workspace/api-zod";
 import { emitEvent } from "../events.js";
+import { writeAudit } from "../audit-writer.js";
 
 const router = Router();
 
@@ -35,6 +36,10 @@ router.post("/leads", async (req, res) => {
     emitEvent("lead_created", "LEAD", `New ${row.score} lead: ${row.name}`, {
       entityId: row.id, entityType: "lead", meta: { score: row.score, stage: row.stage, company: row.company }
     }).catch(() => {});
+    writeAudit("lead.create", "lead", {
+      entityId: row.id,
+      details: `New ${row.score} lead: ${row.name}${row.company ? ` (${row.company})` : ""}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create lead");
     res.status(400).json({ error: "Bad request" });
@@ -51,6 +56,10 @@ router.put("/leads/:id", async (req, res) => {
     emitEvent("lead_updated", "LEAD", `Lead updated: ${row.name} — ${row.stage}`, {
       entityId: row.id, entityType: "lead", meta: { stage: row.stage, score: row.score }
     }).catch(() => {});
+    writeAudit("lead.update", "lead", {
+      entityId: row.id,
+      details: `Lead "${row.name}" updated — stage: ${row.stage}, score: ${row.score}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update lead");
     res.status(400).json({ error: "Bad request" });
@@ -66,6 +75,7 @@ router.delete("/leads/:id", async (req, res) => {
     emitEvent("lead_deleted", "LEAD", `Lead removed`, {
       entityId: id, entityType: "lead"
     }).catch(() => {});
+    writeAudit("lead.delete", "lead", { entityId: id, details: "Lead deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete lead");
     res.status(500).json({ error: "Internal server error" });
@@ -96,7 +106,7 @@ router.post("/leads/:id/convert", async (req, res) => {
 
       const [project] = await tx.insert(projects).values({
         name: `${lead.company || lead.name} Project`,
-        description: `Project for ${lead.name}. Service: ${lead.service || 'TBD'}. Budget: ${lead.budget || 'TBD'}`,
+        description: `Project for ${lead.name}. Service: ${lead.service || "TBD"}. Budget: ${lead.budget || "TBD"}`,
         status: "active",
         type: "website",
         clientId: client.id,
@@ -112,6 +122,10 @@ router.post("/leads/:id/convert", async (req, res) => {
     emitEvent("lead_converted", "LEAD", `Lead converted to client: ${lead.name}`, {
       entityId: lead.id, entityType: "lead", meta: { ...result, leadName: lead.name }
     }).catch(() => {});
+    writeAudit("lead.convert", "lead", {
+      entityId: lead.id,
+      details: `Lead "${lead.name}" converted to client — clientId: ${result.clientId}, projectId: ${result.projectId}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to convert lead");
     res.status(500).json({ error: "Internal server error" });

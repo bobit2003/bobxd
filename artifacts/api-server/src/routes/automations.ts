@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { automations } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { CreateAutomationBody, UpdateAutomationBody, UpdateAutomationParams, DeleteAutomationParams, RunAutomationParams } from "@workspace/api-zod";
+import { writeAudit } from "../audit-writer.js";
 
 const router = Router();
 
@@ -31,6 +32,10 @@ router.post("/automations", async (req, res) => {
     const now = new Date();
     const [row] = await db.insert(automations).values({ ...body, createdAt: now, updatedAt: now }).returning();
     res.status(201).json(serialize(row));
+    writeAudit("automation.create", "automation", {
+      entityId: row.id,
+      details: `Automation "${row.name}" created`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create automation");
     res.status(400).json({ error: "Bad request" });
@@ -44,6 +49,10 @@ router.put("/automations/:id", async (req, res) => {
     const [row] = await db.update(automations).set({ ...body, updatedAt: new Date() }).where(eq(automations.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize(row));
+    writeAudit("automation.update", "automation", {
+      entityId: row.id,
+      details: `Automation "${row.name}" updated — status: ${row.status}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update automation");
     res.status(400).json({ error: "Bad request" });
@@ -56,13 +65,13 @@ router.delete("/automations/:id", async (req, res) => {
     const deleted = await db.delete(automations).where(eq(automations.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    writeAudit("automation.delete", "automation", { entityId: id, details: "Automation deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete automation");
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Run automation
 router.post("/automations/:id/run", async (req, res) => {
   try {
     const { id } = RunAutomationParams.parse({ id: Number(req.params.id) });
@@ -70,11 +79,9 @@ router.post("/automations/:id/run", async (req, res) => {
     if (!row) return res.status(404).json({ error: "Not found" });
 
     const runAt = new Date();
-    // Simulate running the script — evaluate in sandbox
     let output = "";
     let success = true;
     try {
-      // Basic safe eval for simple JS expressions
       const fn = new Function(row.script);
       const result = fn();
       output = result !== undefined ? String(result) : "Script executed successfully";
@@ -86,6 +93,10 @@ router.post("/automations/:id/run", async (req, res) => {
     await db.update(automations).set({ lastRunAt: runAt, lastResult: output, updatedAt: runAt }).where(eq(automations.id, id));
 
     res.json({ success, output, runAt: runAt.toISOString() });
+    writeAudit("automation.run", "automation", {
+      entityId: id,
+      details: `Automation "${row.name}" run — ${success ? "success" : "failed"}: ${output.substring(0, 100)}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to run automation");
     res.status(500).json({ error: "Internal server error" });

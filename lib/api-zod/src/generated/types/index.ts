@@ -6,6 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./agentStats";
+export * from "./agentStatsAiBrain";
+export * from "./agentStatsAutomation";
+export * from "./agentStatsOperations";
+export * from "./agentStatsRevenue";
+export * from "./alertItem";
+export * from "./alertItemSeverity";
 export * from "./auditLogEntry";
 export * from "./automation";
 export * from "./automationRunResult";

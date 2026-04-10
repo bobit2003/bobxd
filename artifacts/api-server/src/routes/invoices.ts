@@ -4,6 +4,7 @@ import { invoices } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { CreateInvoiceBody, UpdateInvoiceBody } from "@workspace/api-zod";
 import { emitEvent } from "../events.js";
+import { writeAudit } from "../audit-writer.js";
 
 const router = Router();
 
@@ -36,6 +37,10 @@ router.post("/invoices", async (req, res) => {
     emitEvent("invoice_created", "FIN", `Invoice created: ${row.invoiceNumber} — $${row.amount}`, {
       entityId: row.id, entityType: "invoice", meta: { amount: row.amount, status: row.status }
     }).catch(() => {});
+    writeAudit("invoice.create", "invoice", {
+      entityId: row.id,
+      details: `Invoice ${row.invoiceNumber} created — $${row.amount}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create invoice");
     res.status(400).json({ error: "Bad request" });
@@ -56,6 +61,12 @@ router.put("/invoices/:id", async (req, res) => {
       isPaid ? `Payment received: ${row.invoiceNumber} — $${row.amount}` : `Invoice updated: ${row.invoiceNumber}`,
       { entityId: row.id, entityType: "invoice", meta: { amount: row.amount, status: row.status } }
     ).catch(() => {});
+    writeAudit(isPaid ? "invoice.paid" : "invoice.update", "invoice", {
+      entityId: row.id,
+      details: isPaid
+        ? `Payment received: ${row.invoiceNumber} — $${row.amount}`
+        : `Invoice ${row.invoiceNumber} updated — status: ${row.status}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update invoice");
     res.status(400).json({ error: "Bad request" });
@@ -71,6 +82,7 @@ router.delete("/invoices/:id", async (req, res) => {
     emitEvent("invoice_deleted", "FIN", `Invoice removed`, {
       entityId: id, entityType: "invoice"
     }).catch(() => {});
+    writeAudit("invoice.delete", "invoice", { entityId: id, details: "Invoice deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete invoice");
     res.status(500).json({ error: "Internal server error" });

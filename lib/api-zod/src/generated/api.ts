@@ -1331,6 +1331,50 @@ export const ListEventsResponseItem = zod.object({
 export const ListEventsResponse = zod.array(ListEventsResponseItem);
 
 /**
+ * @summary Get proactive system alerts — overdue tasks, habits unlogged, past-due invoices, hot leads idle
+ */
+export const GetIntelligenceAlertsResponseItem = zod.object({
+  type: zod
+    .string()
+    .describe(
+      "Alert type identifier (e.g. overdue_tasks, habits_unlogged, invoices_overdue, hot_leads_idle)",
+    ),
+  severity: zod.enum(["high", "medium", "low"]),
+  message: zod.string().describe("Human-readable alert message"),
+  link: zod.string().describe("Frontend route to navigate to for this alert"),
+});
+export const GetIntelligenceAlertsResponse = zod.array(
+  GetIntelligenceAlertsResponseItem,
+);
+
+/**
+ * @summary Get live stats for the Living Agent Map — AI Brain, Operations, Revenue, Automation node data
+ */
+export const GetAgentStatsResponse = zod.object({
+  aiBrain: zod.object({
+    conversationCount: zod.number(),
+    messageCount: zod.number(),
+  }),
+  operations: zod.object({
+    activeTasks: zod.number(),
+    pendingTasks: zod.number(),
+    totalTasks: zod.number(),
+  }),
+  revenue: zod.object({
+    pipelineValue: zod.number(),
+    paidRevenue: zod.number(),
+    hotLeads: zod.number(),
+    totalLeads: zod.number(),
+    activeClients: zod.number(),
+    totalClients: zod.number(),
+  }),
+  automation: zod.object({
+    totalAutomations: zod.number(),
+    activeAutomations: zod.number(),
+  }),
+});
+
+/**
  * @summary Get unified system context — aggregated state across all modules
  */
 export const GetSystemContextResponse = zod.object({

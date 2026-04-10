@@ -4,6 +4,7 @@ import { tasks } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { CreateTaskBody, UpdateTaskBody, UpdateTaskParams, DeleteTaskParams } from "@workspace/api-zod";
 import { emitEvent } from "../events.js";
+import { writeAudit } from "../audit-writer.js";
 
 const router = Router();
 
@@ -43,6 +44,10 @@ router.post("/tasks", async (req, res) => {
     emitEvent("task_created", "TASK", `Task created: ${row.title}`, {
       entityId: row.id, entityType: "task", meta: { priority: row.priority, status: row.status }
     }).catch(() => {});
+    writeAudit("task.create", "task", {
+      entityId: row.id,
+      details: `Created task "${row.title}" [${row.priority} priority]`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create task");
     res.status(400).json({ error: "Bad request" });
@@ -60,12 +65,17 @@ router.put("/tasks/:id", async (req, res) => {
     }).where(eq(tasks.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize(row));
-    const eventTitle = row.status === "done"
-      ? `Task completed: ${row.title}`
-      : `Task updated: ${row.title}`;
-    emitEvent(row.status === "done" ? "task_completed" : "task_updated", "TASK", eventTitle, {
-      entityId: row.id, entityType: "task", meta: { priority: row.priority, status: row.status }
-    }).catch(() => {});
+    const isComplete = row.status === "done";
+    emitEvent(isComplete ? "task_completed" : "task_updated", "TASK",
+      isComplete ? `Task completed: ${row.title}` : `Task updated: ${row.title}`,
+      { entityId: row.id, entityType: "task", meta: { priority: row.priority, status: row.status } }
+    ).catch(() => {});
+    writeAudit(isComplete ? "task.complete" : "task.update", "task", {
+      entityId: row.id,
+      details: isComplete
+        ? `Completed task "${row.title}"`
+        : `Updated task "${row.title}" — status: ${row.status}`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update task");
     res.status(400).json({ error: "Bad request" });
@@ -81,6 +91,7 @@ router.delete("/tasks/:id", async (req, res) => {
     emitEvent("task_deleted", "TASK", `Task removed`, {
       entityId: id, entityType: "task"
     }).catch(() => {});
+    writeAudit("task.delete", "task", { entityId: id, details: "Task deleted" });
   } catch (err) {
     req.log.error({ err }, "Failed to delete task");
     res.status(500).json({ error: "Internal server error" });

@@ -17,6 +17,8 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AgentStats,
+  AlertItem,
   AuditLogEntry,
   Automation,
   AutomationRunResult,
@@ -6416,6 +6418,231 @@ export function useStreamEvents<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getStreamEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary SSE stream of the audit log — sends last 20 entries on connect then polls for new ones
+ */
+export const getStreamAuditLogUrl = () => {
+  return `/api/audit/stream`;
+};
+
+export const streamAuditLog = async (
+  options?: RequestInit,
+): Promise<unknown> => {
+  return customFetch<unknown>(getStreamAuditLogUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getStreamAuditLogQueryKey = () => {
+  return [`/api/audit/stream`] as const;
+};
+
+export const getStreamAuditLogQueryOptions = <
+  TData = Awaited<ReturnType<typeof streamAuditLog>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof streamAuditLog>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getStreamAuditLogQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof streamAuditLog>>> = ({
+    signal,
+  }) => streamAuditLog({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof streamAuditLog>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type StreamAuditLogQueryResult = NonNullable<
+  Awaited<ReturnType<typeof streamAuditLog>>
+>;
+export type StreamAuditLogQueryError = ErrorType<unknown>;
+
+/**
+ * @summary SSE stream of the audit log — sends last 20 entries on connect then polls for new ones
+ */
+
+export function useStreamAuditLog<
+  TData = Awaited<ReturnType<typeof streamAuditLog>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof streamAuditLog>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getStreamAuditLogQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get proactive system alerts — overdue tasks, habits unlogged, past-due invoices, hot leads idle
+ */
+export const getGetIntelligenceAlertsUrl = () => {
+  return `/api/intelligence/alerts`;
+};
+
+export const getIntelligenceAlerts = async (
+  options?: RequestInit,
+): Promise<AlertItem[]> => {
+  return customFetch<AlertItem[]>(getGetIntelligenceAlertsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetIntelligenceAlertsQueryKey = () => {
+  return [`/api/intelligence/alerts`] as const;
+};
+
+export const getGetIntelligenceAlertsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getIntelligenceAlerts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getIntelligenceAlerts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetIntelligenceAlertsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getIntelligenceAlerts>>
+  > = ({ signal }) => getIntelligenceAlerts({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getIntelligenceAlerts>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetIntelligenceAlertsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getIntelligenceAlerts>>
+>;
+export type GetIntelligenceAlertsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get proactive system alerts — overdue tasks, habits unlogged, past-due invoices, hot leads idle
+ */
+
+export function useGetIntelligenceAlerts<
+  TData = Awaited<ReturnType<typeof getIntelligenceAlerts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getIntelligenceAlerts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetIntelligenceAlertsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get live stats for the Living Agent Map — AI Brain, Operations, Revenue, Automation node data
+ */
+export const getGetAgentStatsUrl = () => {
+  return `/api/intelligence/agent-stats`;
+};
+
+export const getAgentStats = async (
+  options?: RequestInit,
+): Promise<AgentStats> => {
+  return customFetch<AgentStats>(getGetAgentStatsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAgentStatsQueryKey = () => {
+  return [`/api/intelligence/agent-stats`] as const;
+};
+
+export const getGetAgentStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAgentStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAgentStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAgentStatsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAgentStats>>> = ({
+    signal,
+  }) => getAgentStats({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAgentStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAgentStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAgentStats>>
+>;
+export type GetAgentStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get live stats for the Living Agent Map — AI Brain, Operations, Revenue, Automation node data
+ */
+
+export function useGetAgentStats<
+  TData = Awaited<ReturnType<typeof getAgentStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAgentStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAgentStatsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
