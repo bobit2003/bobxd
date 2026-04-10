@@ -3,3 +3,7 @@ node_modules/
 *.log
 tmp/
 .DS_Store
+
+# Build artifacts (generated, don't commit)
+artifacts/openclaw/dist/
+
