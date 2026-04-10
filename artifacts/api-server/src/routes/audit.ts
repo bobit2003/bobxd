@@ -19,4 +19,22 @@ router.get("/audit", async (req, res) => {
   }
 });
 
+router.post("/audit", async (req, res) => {
+  try {
+    const body = req.body;
+    const [row] = await db.insert(auditLog).values({
+      action: body.action || "unknown",
+      entity: body.entity ?? null,
+      entityId: body.entityId ?? null,
+      details: body.details ?? null,
+      userName: body.user ?? "system",
+      createdAt: new Date(),
+    }).returning();
+    res.status(201).json(serialize(row));
+  } catch (err) {
+    req.log.error({ err }, "Failed to create audit log");
+    res.status(400).json({ error: "Bad request" });
+  }
+});
+
 export default router;

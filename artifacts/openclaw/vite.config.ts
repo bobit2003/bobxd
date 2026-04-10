@@ -59,6 +59,12 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
+    },
     port,
     host: "0.0.0.0",
     allowedHosts: true,
@@ -68,6 +74,12 @@ export default defineConfig({
     },
   },
   preview: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
+    },
     port,
     host: "0.0.0.0",
     allowedHosts: true,
