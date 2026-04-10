@@ -20485,27 +20485,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router25;
+    module.exports = Router27;
     module.exports.Route = Route;
-    function Router25(options) {
-      if (!(this instanceof Router25)) {
-        return new Router25(options);
+    function Router27(options) {
+      if (!(this instanceof Router27)) {
+        return new Router27(options);
       }
       const opts = options || {};
-      function router25(req, res, next) {
-        router25.handle(req, res, next);
+      function router27(req, res, next) {
+        router27.handle(req, res, next);
       }
-      Object.setPrototypeOf(router25, this);
-      router25.caseSensitive = opts.caseSensitive;
-      router25.mergeParams = opts.mergeParams;
-      router25.params = {};
-      router25.strict = opts.strict;
-      router25.stack = [];
-      return router25;
+      Object.setPrototypeOf(router27, this);
+      router27.caseSensitive = opts.caseSensitive;
+      router27.mergeParams = opts.mergeParams;
+      router27.params = {};
+      router27.strict = opts.strict;
+      router27.stack = [];
+      return router27;
     }
-    Router25.prototype = function() {
+    Router27.prototype = function() {
     };
-    Router25.prototype.param = function param(name, fn) {
+    Router27.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20525,7 +20525,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router25.prototype.handle = function handle(req, res, callback) {
+    Router27.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20652,7 +20652,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router25.prototype.use = function use(handler) {
+    Router27.prototype.use = function use(handler) {
       let offset = 0;
       let path2 = "/";
       if (typeof handler !== "function") {
@@ -20685,7 +20685,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router25.prototype.route = function route(path2) {
+    Router27.prototype.route = function route(path2) {
       const route2 = new Route(path2);
       const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
@@ -20700,7 +20700,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router25.prototype[method] = function(path2) {
+      Router27.prototype[method] = function(path2) {
         const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -20883,13 +20883,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router25 = require_router();
+    var Router27 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router25 = null;
+      var router27 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -20898,13 +20898,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router25 === null) {
-            router25 = new Router25({
+          if (router27 === null) {
+            router27 = new Router27({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router25;
+          return router27;
         }
       });
     };
@@ -20975,15 +20975,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router25 = this.router;
+      var router27 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router25.use(path2, fn2);
+          return router27.use(path2, fn2);
         }
         debug(".use app under %s", path2);
         fn2.mountpath = path2;
         fn2.parent = this;
-        router25.use(path2, function mounted_app(req, res, next) {
+        router27.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -23510,7 +23510,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router25 = require_router();
+    var Router27 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23532,8 +23532,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router25.Route;
-    exports.Router = Router25;
+    exports.Route = Router27.Route;
+    exports.Router = Router27;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -33496,12 +33496,12 @@ var require_lib5 = __commonJS({
 });
 
 // src/app.ts
-var import_express25 = __toESM(require_express2(), 1);
+var import_express27 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 
 // src/routes/index.ts
-var import_express24 = __toESM(require_express2(), 1);
+var import_express26 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -38332,6 +38332,76 @@ var GetFinancialSummaryResponse = objectType({
       date: stringType().optional()
     })
   ).optional()
+});
+var listEventsQueryLimitDefault = 50;
+var ListEventsQueryParams = objectType({
+  limit: coerce.number().default(listEventsQueryLimitDefault)
+});
+var ListEventsResponseItem = objectType({
+  id: numberType(),
+  type: stringType(),
+  category: stringType(),
+  title: stringType(),
+  description: stringType().nullish(),
+  entityId: stringType().nullish(),
+  entityType: stringType().nullish(),
+  meta: objectType({}).passthrough().nullish(),
+  createdAt: coerce.date()
+});
+var ListEventsResponse = arrayType(ListEventsResponseItem);
+var GetSystemContextResponse = objectType({
+  timestamp: coerce.date(),
+  revenue: objectType({
+    total: numberType(),
+    unpaid: numberType(),
+    overdueCount: numberType(),
+    paidInvoiceCount: numberType()
+  }),
+  clients: objectType({
+    total: numberType(),
+    active: numberType(),
+    reactivationTargets: numberType()
+  }),
+  leads: objectType({
+    total: numberType(),
+    hot: numberType(),
+    stale: numberType(),
+    active: numberType()
+  }),
+  tasks: objectType({
+    total: numberType(),
+    pending: numberType(),
+    highPriority: numberType(),
+    overdue: numberType()
+  }),
+  recentEvents: arrayType(
+    objectType({
+      id: numberType(),
+      type: stringType(),
+      category: stringType(),
+      title: stringType(),
+      description: stringType().nullish(),
+      entityId: stringType().nullish(),
+      entityType: stringType().nullish(),
+      meta: objectType({}).passthrough().nullish(),
+      createdAt: coerce.date()
+    })
+  ),
+  topMemories: arrayType(
+    objectType({
+      id: numberType().optional(),
+      content: stringType().optional(),
+      category: stringType().optional(),
+      importance: stringType().optional()
+    })
+  ),
+  alerts: arrayType(
+    objectType({
+      type: stringType(),
+      message: stringType(),
+      urgency: enumType(["high", "medium", "low"])
+    })
+  )
 });
 
 // src/routes/health.ts
@@ -45326,6 +45396,7 @@ __export(schema_exports, {
   clients: () => clients,
   contentItems: () => contentItems,
   conversations: () => conversations,
+  events: () => events,
   expenses: () => expenses,
   goals: () => goals,
   habitLogs: () => habitLogs,
@@ -45335,6 +45406,7 @@ __export(schema_exports, {
   insertClientSchema: () => insertClientSchema,
   insertContentItemSchema: () => insertContentItemSchema,
   insertConversationSchema: () => insertConversationSchema,
+  insertEventSchema: () => insertEventSchema,
   insertExpenseSchema: () => insertExpenseSchema,
   insertGoalSchema: () => insertGoalSchema,
   insertHabitLogSchema: () => insertHabitLogSchema,
@@ -56903,6 +56975,20 @@ var auditLog = pgTable("audit_log", {
 });
 var insertAuditLogSchema = createInsertSchema(auditLog).omit({ id: true, createdAt: true });
 
+// ../../lib/db/src/schema/events.ts
+var events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(),
+  category: text("category").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  entityId: text("entity_id"),
+  entityType: text("entity_type"),
+  meta: jsonb("meta"),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+var insertEventSchema = createInsertSchema(events).omit({ id: true, createdAt: true });
+
 // ../../lib/db/src/schema/metrics.ts
 var metrics = pgTable("metrics", {
   id: serial("id").primaryKey(),
@@ -64515,6 +64601,50 @@ var projects_default = router3;
 
 // src/routes/clients.ts
 var import_express4 = __toESM(require_express2(), 1);
+
+// src/events.ts
+var subscribers = /* @__PURE__ */ new Set();
+function subscribeToEvents(res) {
+  subscribers.add(res);
+  res.on("close", () => {
+    subscribers.delete(res);
+  });
+}
+async function emitEvent(type, category, title, opts) {
+  const [row] = await db.insert(events).values({
+    type,
+    category,
+    title,
+    description: opts?.description ?? null,
+    entityId: opts?.entityId != null ? String(opts.entityId) : null,
+    entityType: opts?.entityType ?? null,
+    meta: opts?.meta ?? null
+  }).returning();
+  const payload = {
+    id: row.id,
+    type: row.type,
+    category: row.category,
+    title: row.title,
+    description: row.description,
+    entityId: row.entityId,
+    entityType: row.entityType,
+    meta: row.meta,
+    createdAt: row.createdAt.toISOString()
+  };
+  const data = `data: ${JSON.stringify(payload)}
+
+`;
+  for (const res of subscribers) {
+    try {
+      res.write(data);
+    } catch {
+      subscribers.delete(res);
+    }
+  }
+  return payload;
+}
+
+// src/routes/clients.ts
 var router4 = (0, import_express4.Router)();
 function serialize2(c) {
   return { ...c, createdAt: c.createdAt.toISOString(), updatedAt: c.updatedAt.toISOString() };
@@ -64534,6 +64664,12 @@ router4.post("/clients", async (req, res) => {
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(clients).values({ ...body, createdAt: now, updatedAt: now }).returning();
     res.status(201).json(serialize2(row));
+    emitEvent("client_created", "CLIENT", `Client created: ${row.name}`, {
+      entityId: row.id,
+      entityType: "client",
+      meta: { company: row.company, status: row.status }
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create client");
     res.status(400).json({ error: "Bad request" });
@@ -64546,6 +64682,11 @@ router4.put("/clients/:id", async (req, res) => {
     const [row] = await db.update(clients).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(clients.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize2(row));
+    emitEvent("client_updated", "CLIENT", `Client updated: ${row.name}`, {
+      entityId: row.id,
+      entityType: "client"
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update client");
     res.status(400).json({ error: "Bad request" });
@@ -64557,6 +64698,11 @@ router4.delete("/clients/:id", async (req, res) => {
     const deleted = await db.delete(clients).where(eq(clients.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    emitEvent("client_deleted", "CLIENT", `Client removed`, {
+      entityId: id,
+      entityType: "client"
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to delete client");
     res.status(500).json({ error: "Internal server error" });
@@ -64594,6 +64740,12 @@ router5.post("/tasks", async (req, res) => {
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(tasks).values({ ...body, dueDate: body.dueDate ? new Date(body.dueDate) : null, createdAt: now, updatedAt: now }).returning();
     res.status(201).json(serialize3(row));
+    emitEvent("task_created", "TASK", `Task created: ${row.title}`, {
+      entityId: row.id,
+      entityType: "task",
+      meta: { priority: row.priority, status: row.status }
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create task");
     res.status(400).json({ error: "Bad request" });
@@ -64610,6 +64762,13 @@ router5.put("/tasks/:id", async (req, res) => {
     }).where(eq(tasks.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize3(row));
+    const eventTitle = row.status === "done" ? `Task completed: ${row.title}` : `Task updated: ${row.title}`;
+    emitEvent(row.status === "done" ? "task_completed" : "task_updated", "TASK", eventTitle, {
+      entityId: row.id,
+      entityType: "task",
+      meta: { priority: row.priority, status: row.status }
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update task");
     res.status(400).json({ error: "Bad request" });
@@ -64621,6 +64780,11 @@ router5.delete("/tasks/:id", async (req, res) => {
     const deleted = await db.delete(tasks).where(eq(tasks.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    emitEvent("task_deleted", "TASK", `Task removed`, {
+      entityId: id,
+      entityType: "task"
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to delete task");
     res.status(500).json({ error: "Internal server error" });
@@ -65250,6 +65414,12 @@ router16.post("/leads", async (req, res) => {
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(leads).values({ ...body, createdAt: now, updatedAt: now }).returning();
     res.status(201).json(serialize11(row));
+    emitEvent("lead_created", "LEAD", `New ${row.score} lead: ${row.name}`, {
+      entityId: row.id,
+      entityType: "lead",
+      meta: { score: row.score, stage: row.stage, company: row.company }
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create lead");
     res.status(400).json({ error: "Bad request" });
@@ -65262,6 +65432,12 @@ router16.put("/leads/:id", async (req, res) => {
     const [row] = await db.update(leads).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(leads.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize11(row));
+    emitEvent("lead_updated", "LEAD", `Lead updated: ${row.name} \u2014 ${row.stage}`, {
+      entityId: row.id,
+      entityType: "lead",
+      meta: { stage: row.stage, score: row.score }
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update lead");
     res.status(400).json({ error: "Bad request" });
@@ -65273,6 +65449,11 @@ router16.delete("/leads/:id", async (req, res) => {
     const deleted = await db.delete(leads).where(eq(leads.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    emitEvent("lead_deleted", "LEAD", `Lead removed`, {
+      entityId: id,
+      entityType: "lead"
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to delete lead");
     res.status(500).json({ error: "Internal server error" });
@@ -65311,6 +65492,12 @@ router16.post("/leads/:id/convert", async (req, res) => {
       return { clientId: client.id, projectId: project.id };
     });
     res.json(result);
+    emitEvent("lead_converted", "LEAD", `Lead converted to client: ${lead.name}`, {
+      entityId: lead.id,
+      entityType: "lead",
+      meta: { ...result, leadName: lead.name }
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to convert lead");
     res.status(500).json({ error: "Internal server error" });
@@ -65345,6 +65532,12 @@ router17.post("/invoices", async (req, res) => {
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(invoices).values({ ...body, createdAt: now, updatedAt: now }).returning();
     res.status(201).json(serialize12(row));
+    emitEvent("invoice_created", "FIN", `Invoice created: ${row.invoiceNumber} \u2014 $${row.amount}`, {
+      entityId: row.id,
+      entityType: "invoice",
+      meta: { amount: row.amount, status: row.status }
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create invoice");
     res.status(400).json({ error: "Bad request" });
@@ -65357,6 +65550,14 @@ router17.put("/invoices/:id", async (req, res) => {
     const [row] = await db.update(invoices).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(invoices.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
     res.json(serialize12(row));
+    const isPaid = row.status === "paid";
+    emitEvent(
+      isPaid ? "invoice_paid" : "invoice_updated",
+      "FIN",
+      isPaid ? `Payment received: ${row.invoiceNumber} \u2014 $${row.amount}` : `Invoice updated: ${row.invoiceNumber}`,
+      { entityId: row.id, entityType: "invoice", meta: { amount: row.amount, status: row.status } }
+    ).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to update invoice");
     res.status(400).json({ error: "Bad request" });
@@ -65368,6 +65569,11 @@ router17.delete("/invoices/:id", async (req, res) => {
     const deleted = await db.delete(invoices).where(eq(invoices.id, id)).returning();
     if (!deleted.length) return res.status(404).json({ error: "Not found" });
     res.status(204).end();
+    emitEvent("invoice_deleted", "FIN", `Invoice removed`, {
+      entityId: id,
+      entityType: "invoice"
+    }).catch(() => {
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to delete invoice");
     res.status(500).json({ error: "Internal server error" });
@@ -65863,32 +66069,191 @@ router23.get("/intelligence/revenue", async (req, res) => {
 });
 var intelligence_default = router23;
 
-// src/routes/index.ts
+// src/routes/events.ts
+var import_express24 = __toESM(require_express2(), 1);
 var router24 = (0, import_express24.Router)();
-router24.use(health_default);
-router24.use(openai_default);
-router24.use(intelligence_default);
-router24.use(projects_default);
-router24.use(clients_default);
-router24.use(tasks_default);
-router24.use(automations_default);
-router24.use(dashboard_default);
-router24.use(notes_default);
-router24.use(habits_default);
-router24.use(goals_default);
-router24.use(memories_default);
-router24.use(audit_default);
-router24.use(metrics_default);
-router24.use(search_default);
-router24.use(briefing_default);
-router24.use(leads_default);
-router24.use(invoices_default);
-router24.use(expenses_default);
-router24.use(time_entries_default);
-router24.use(milestones_default);
-router24.use(content_default);
-router24.use(financial_default);
-var routes_default = router24;
+router24.get("/events/stream", async (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+  subscribeToEvents(res);
+  const recent = await db.select().from(events).orderBy(desc(events.createdAt)).limit(30);
+  for (const row of recent.reverse()) {
+    const payload = {
+      id: row.id,
+      type: row.type,
+      category: row.category,
+      title: row.title,
+      description: row.description,
+      entityId: row.entityId,
+      entityType: row.entityType,
+      meta: row.meta,
+      createdAt: row.createdAt.toISOString()
+    };
+    res.write(`data: ${JSON.stringify(payload)}
+
+`);
+  }
+  const heartbeat = setInterval(() => {
+    try {
+      res.write(": heartbeat\n\n");
+    } catch {
+      clearInterval(heartbeat);
+    }
+  }, 25e3);
+  req.on("close", () => {
+    clearInterval(heartbeat);
+  });
+});
+router24.get("/events", async (req, res) => {
+  try {
+    const limit2 = Math.min(Number(req.query.limit) || 50, 200);
+    const rows = await db.select().from(events).orderBy(desc(events.createdAt)).limit(limit2);
+    res.json(rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list events");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+router24.delete("/events/old", async (req, res) => {
+  try {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1e3);
+    await db.delete(events).where(lt(events.createdAt, cutoff));
+    res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to prune events");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+var events_default = router24;
+
+// src/routes/system-context.ts
+var import_express25 = __toESM(require_express2(), 1);
+var router25 = (0, import_express25.Router)();
+router25.get("/system-context", async (req, res) => {
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1e3);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const [
+      allTasks,
+      allLeads,
+      allInvoices,
+      allClients,
+      allMemories,
+      recentEvents
+    ] = await Promise.all([
+      db.select().from(tasks).orderBy(desc(tasks.createdAt)).limit(100),
+      db.select().from(leads).orderBy(desc(leads.createdAt)),
+      db.select().from(invoices).orderBy(desc(invoices.createdAt)),
+      db.select().from(clients).orderBy(desc(clients.createdAt)),
+      db.select().from(memories).orderBy(desc(memories.createdAt)).limit(10),
+      db.select().from(events).orderBy(desc(events.createdAt)).limit(20)
+    ]);
+    const paidInvoices = allInvoices.filter((i) => i.status === "paid");
+    const unpaidInvoices = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled");
+    const totalRevenue = paidInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const totalUnpaid = unpaidInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const overdueCount = unpaidInvoices.filter((i) => i.dueDate && new Date(i.dueDate) < today).length;
+    const staleLeads = allLeads.filter((l) => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return lastUpdate < sevenDaysAgo;
+    });
+    const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+    const pendingTasks = allTasks.filter((t) => t.status !== "done");
+    const highPriorityTasks = pendingTasks.filter((t) => t.priority === "high");
+    const overdueTasks = pendingTasks.filter((t) => t.dueDate && new Date(t.dueDate) < today);
+    const reactivationTargets = allClients.filter((c) => {
+      const clientPaid = paidInvoices.filter((i) => i.clientId === c.id);
+      if (clientPaid.length === 0) return false;
+      const lastPaid = clientPaid.reduce((latest, inv) => {
+        const d = inv.paidDate ? new Date(inv.paidDate) : new Date(inv.updatedAt);
+        return d > latest ? d : latest;
+      }, /* @__PURE__ */ new Date(0));
+      return lastPaid < thirtyDaysAgo;
+    });
+    res.json({
+      timestamp: now.toISOString(),
+      revenue: {
+        total: totalRevenue,
+        unpaid: totalUnpaid,
+        overdueCount,
+        paidInvoiceCount: paidInvoices.length
+      },
+      clients: {
+        total: allClients.length,
+        active: allClients.filter((c) => c.status === "active").length,
+        reactivationTargets: reactivationTargets.length
+      },
+      leads: {
+        total: allLeads.length,
+        hot: hotLeads.length,
+        stale: staleLeads.length,
+        active: allLeads.filter((l) => l.stage !== "won" && l.stage !== "lost").length
+      },
+      tasks: {
+        total: allTasks.length,
+        pending: pendingTasks.length,
+        highPriority: highPriorityTasks.length,
+        overdue: overdueTasks.length
+      },
+      recentEvents: recentEvents.map((e) => ({
+        ...e,
+        createdAt: e.createdAt.toISOString()
+      })),
+      topMemories: allMemories.map((m) => ({
+        id: m.id,
+        content: m.content,
+        category: m.category,
+        importance: m.importance
+      })),
+      alerts: [
+        ...overdueCount > 0 ? [{ type: "overdue_invoice", message: `${overdueCount} overdue invoice${overdueCount > 1 ? "s" : ""}`, urgency: "high" }] : [],
+        ...staleLeads.length > 0 ? [{ type: "stale_leads", message: `${staleLeads.length} lead${staleLeads.length > 1 ? "s" : ""} need follow-up`, urgency: "medium" }] : [],
+        ...highPriorityTasks.length > 0 ? [{ type: "high_priority_tasks", message: `${highPriorityTasks.length} high-priority task${highPriorityTasks.length > 1 ? "s" : ""} pending`, urgency: "high" }] : [],
+        ...reactivationTargets.length > 0 ? [{ type: "reactivation", message: `${reactivationTargets.length} client${reactivationTargets.length > 1 ? "s" : ""} ready for reactivation`, urgency: "medium" }] : [],
+        ...overdueTasks.length > 0 ? [{ type: "overdue_tasks", message: `${overdueTasks.length} overdue task${overdueTasks.length > 1 ? "s" : ""}`, urgency: "high" }] : []
+      ]
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get system context");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+var system_context_default = router25;
+
+// src/routes/index.ts
+var router26 = (0, import_express26.Router)();
+router26.use(health_default);
+router26.use(openai_default);
+router26.use(intelligence_default);
+router26.use(projects_default);
+router26.use(clients_default);
+router26.use(tasks_default);
+router26.use(automations_default);
+router26.use(dashboard_default);
+router26.use(notes_default);
+router26.use(habits_default);
+router26.use(goals_default);
+router26.use(memories_default);
+router26.use(audit_default);
+router26.use(metrics_default);
+router26.use(search_default);
+router26.use(briefing_default);
+router26.use(leads_default);
+router26.use(invoices_default);
+router26.use(expenses_default);
+router26.use(time_entries_default);
+router26.use(milestones_default);
+router26.use(content_default);
+router26.use(financial_default);
+router26.use(events_default);
+router26.use(system_context_default);
+var routes_default = router26;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -65909,7 +66274,7 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express25.default)();
+var app = (0, import_express27.default)();
 app.use(
   (0, import_pino_http.default)({
     logger,
@@ -65930,8 +66295,8 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
-app.use(import_express25.default.json());
-app.use(import_express25.default.urlencoded({ extended: true }));
+app.use(import_express27.default.json());
+app.use(import_express27.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 var app_default = app;
 

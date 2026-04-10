@@ -51,6 +51,7 @@ import type {
   Invoice,
   Lead,
   LeadConvertResult,
+  ListEventsParams,
   ListTasksParams,
   Memory,
   MetricEntry,
@@ -64,6 +65,8 @@ import type {
   RevenueIntelligence,
   SearchResults,
   SendOpenaiMessageBody,
+  SystemContext,
+  SystemEvent,
   Task,
   TimeEntry,
   UpdateAutomationBody,
@@ -6246,6 +6249,248 @@ export function useGetFinancialSummary<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetFinancialSummaryQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List recent system events
+ */
+export const getListEventsUrl = (params?: ListEventsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/events?${stringifiedParams}`
+    : `/api/events`;
+};
+
+export const listEvents = async (
+  params?: ListEventsParams,
+  options?: RequestInit,
+): Promise<SystemEvent[]> => {
+  return customFetch<SystemEvent[]>(getListEventsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEventsQueryKey = (params?: ListEventsParams) => {
+  return [`/api/events`, ...(params ? [params] : [])] as const;
+};
+
+export const getListEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listEvents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEventsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvents>>> = ({
+    signal,
+  }) => listEvents(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEvents>>
+>;
+export type ListEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List recent system events
+ */
+
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listEvents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEventsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary SSE stream of real-time system events
+ */
+export const getStreamEventsUrl = () => {
+  return `/api/events/stream`;
+};
+
+export const streamEvents = async (options?: RequestInit): Promise<unknown> => {
+  return customFetch<unknown>(getStreamEventsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getStreamEventsQueryKey = () => {
+  return [`/api/events/stream`] as const;
+};
+
+export const getStreamEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof streamEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof streamEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getStreamEventsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof streamEvents>>> = ({
+    signal,
+  }) => streamEvents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof streamEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type StreamEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof streamEvents>>
+>;
+export type StreamEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary SSE stream of real-time system events
+ */
+
+export function useStreamEvents<
+  TData = Awaited<ReturnType<typeof streamEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof streamEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getStreamEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get unified system context — aggregated state across all modules
+ */
+export const getGetSystemContextUrl = () => {
+  return `/api/system-context`;
+};
+
+export const getSystemContext = async (
+  options?: RequestInit,
+): Promise<SystemContext> => {
+  return customFetch<SystemContext>(getGetSystemContextUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSystemContextQueryKey = () => {
+  return [`/api/system-context`] as const;
+};
+
+export const getGetSystemContextQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSystemContext>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSystemContext>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSystemContextQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSystemContext>>
+  > = ({ signal }) => getSystemContext({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSystemContext>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSystemContextQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSystemContext>>
+>;
+export type GetSystemContextQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get unified system context — aggregated state across all modules
+ */
+
+export function useGetSystemContext<
+  TData = Awaited<ReturnType<typeof getSystemContext>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSystemContext>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSystemContextQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

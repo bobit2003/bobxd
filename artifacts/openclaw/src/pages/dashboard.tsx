@@ -1,234 +1,237 @@
-import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useListProjects, getListProjectsQueryKey, useListTasks, getListTasksQueryKey, useListMilestones, useGetRevenueIntelligence, getGetRevenueIntelligenceQueryKey } from "@workspace/api-client-react";
-import { FolderKanban, CheckSquare, Users, Zap, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, CalendarDays, Flag, TrendingUp, ArrowUpRight } from "lucide-react";
+import {
+  useGetDashboardSummary, getGetDashboardSummaryQueryKey,
+  useListProjects, getListProjectsQueryKey,
+  useListTasks, getListTasksQueryKey,
+  useListMilestones,
+  useGetRevenueIntelligence, getGetRevenueIntelligenceQueryKey,
+  useGetSystemContext, getGetSystemContextQueryKey,
+} from "@workspace/api-client-react";
+import { FolderKanban, CheckSquare, Users, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, TrendingUp, ArrowUpRight, Radio, Zap, ShieldAlert, Bell } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
-function AnimatedCounter({ value }: { value: number }) {
-  const [count, setCount] = useState(0);
-  
+type LiveEvent = {
+  id: number;
+  type: string;
+  category: string;
+  title: string;
+  description?: string | null;
+  createdAt: string;
+};
+
+const categoryColor: Record<string, string> = {
+  CLIENT: "text-primary",
+  LEAD: "text-green-400",
+  TASK: "text-violet-400",
+  FIN: "text-amber-400",
+  AI: "text-purple-400",
+  AUTO: "text-cyan-400",
+  SYS: "text-white/60",
+};
+
+function useLiveEventFeed() {
+  const [events, setEvents] = useState<LiveEvent[]>([]);
+  const queryClient = useQueryClient();
+
+  const addEvent = useCallback((ev: LiveEvent) => {
+    setEvents(prev => {
+      const next = [ev, ...prev];
+      if (next.length > 60) next.pop();
+      return next;
+    });
+    queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetSystemContextQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetRevenueIntelligenceQueryKey() });
+  }, [queryClient]);
+
   useEffect(() => {
-    let start = 0;
-    const end = value;
-    if (start === end) return;
-    
-    let totalDuration = 1000;
-    let incrementTime = (totalDuration / end);
-    
-    let timer = setInterval(() => {
-      start += 1;
-      setCount(start);
-      if (start === end) clearInterval(timer);
-    }, incrementTime);
-    
-    return () => clearInterval(timer);
-  }, [value]);
+    const url = "/api/events/stream";
+    let evtSource: EventSource;
+    let retry: ReturnType<typeof setTimeout>;
 
-  return <span>{count}</span>;
+    function connect() {
+      evtSource = new EventSource(url);
+
+      evtSource.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data) as LiveEvent;
+          addEvent(data);
+        } catch {}
+      };
+
+      evtSource.onerror = () => {
+        evtSource.close();
+        retry = setTimeout(connect, 3000);
+      };
+    }
+
+    connect();
+    return () => {
+      evtSource?.close();
+      clearTimeout(retry);
+    };
+  }, [addEvent]);
+
+  return events;
 }
 
-function StatCard({ title, value, icon: Icon, subtitle, href, delay }: { title: string, value: number, icon: any, subtitle?: string, href: string, delay: number }) {
+function StatCard({ title, value, icon: Icon, subtitle, href, delay, accent }: {
+  title: string; value: number | string; icon: React.ElementType; subtitle?: string; href: string; delay: number; accent?: string;
+}) {
   return (
     <Link href={href}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay, duration: 0.4 }}
-      >
-        <div className="glass-card p-4 rounded-lg cursor-pointer h-full relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors pointer-events-none" />
-          <div className="flex justify-between items-start mb-4 relative z-10">
-            <h3 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">{title}</h3>
-            <Icon className="h-4 w-4 text-primary group-hover:glow-text transition-all" />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.35 }}>
+        <div className={`glass-card p-4 rounded-lg cursor-pointer h-full relative overflow-hidden group border ${accent ? accent : 'border-white/5'}`}>
+          <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors pointer-events-none" />
+          <div className="flex justify-between items-start mb-3 relative z-10">
+            <h3 className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{title}</h3>
+            <Icon className="h-3.5 w-3.5 text-primary/70 group-hover:text-primary transition-all" />
           </div>
-          <div className="text-4xl font-bold font-mono text-foreground mb-1 relative z-10">
-            <AnimatedCounter value={value} />
-          </div>
-          {subtitle && (
-            <div className="text-[10px] text-muted-foreground/70 uppercase tracking-widest relative z-10">
-              {subtitle}
-            </div>
-          )}
-          
-          <div className="absolute bottom-0 left-0 w-full h-8 opacity-20 pointer-events-none">
-            <svg viewBox="0 0 100 20" preserveAspectRatio="none" className="w-full h-full">
-              <path d={`M0,${20 - Math.random()*15} L20,${20 - Math.random()*15} L40,${20 - Math.random()*15} L60,${20 - Math.random()*15} L80,${20 - Math.random()*15} L100,${20 - Math.random()*15}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-            </svg>
-          </div>
+          <div className="text-3xl font-bold font-mono text-foreground mb-1 relative z-10">{value}</div>
+          {subtitle && <div className="text-[9px] text-muted-foreground/60 uppercase tracking-widest relative z-10">{subtitle}</div>}
         </div>
       </motion.div>
     </Link>
   );
 }
 
-function FinanceCard({ label, value, color, delay }: { label: string; value: string; color: string; delay: number }) {
+function AlertBadge({ type, message }: { type: string; message: string }) {
+  const isHigh = type.includes("overdue") || type.includes("high");
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.4 }}
-      className={`${color} rounded-lg p-3 border`}>
-      <p className="text-[10px] uppercase tracking-widest opacity-70">{label}</p>
-      <p className="text-xl font-bold font-mono mt-1">${value}</p>
-    </motion.div>
+    <div className={`flex items-center gap-2 px-3 py-2 rounded border text-xs ${isHigh ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
+      <ShieldAlert className="w-3 h-3 shrink-0" />
+      <span className="truncate">{message}</span>
+    </div>
   );
 }
 
-const fakeLogs = [
-  { type: 'AI', msg: 'Neural model weights synchronized.' },
-  { type: 'TASK', msg: 'Background cleanup job finished.' },
-  { type: 'SYS', msg: 'Memory allocation optimized.' },
-  { type: 'AUTO', msg: 'Trigger [DataSync] fired successfully.' },
-  { type: 'SEC', msg: 'Firewall definitions updated.' },
-  { type: 'CLIENT', msg: 'Incoming connection established.' },
-  { type: 'LEAD', msg: 'Hot lead scoring updated.' },
-  { type: 'FIN', msg: 'Invoice payment processed.' },
-];
-
 export default function Dashboard() {
-  const { data, isLoading } = useGetDashboardSummary({
-    query: { queryKey: getGetDashboardSummaryQueryKey() }
-  });
-
-  const { data: projects } = useListProjects({
-    query: { queryKey: getListProjectsQueryKey() }
-  });
-
-  const { data: tasks } = useListTasks({
-    query: { queryKey: getListTasksQueryKey() }
-  });
-
+  const { data, isLoading } = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
+  const { data: projects } = useListProjects({ query: { queryKey: getListProjectsQueryKey() } });
+  const { data: tasks } = useListTasks({ query: { queryKey: getListTasksQueryKey() } });
   const { data: milestones } = useListMilestones();
+  const { data: revenueIntel } = useGetRevenueIntelligence({ query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 60000 } });
+  const { data: sysCtx } = useGetSystemContext({ query: { queryKey: getGetSystemContextQueryKey(), staleTime: 30000 } });
 
-  const { data: revenueIntel } = useGetRevenueIntelligence({
-    query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 60000 }
-  });
+  const liveEvents = useLiveEventFeed();
+  const feedRef = useRef<HTMLDivElement>(null);
 
-  const activeProjects = projects?.filter(p => p.status === 'active') || [];
+  useEffect(() => {
+    if (feedRef.current) feedRef.current.scrollTop = 0;
+  }, [liveEvents.length]);
+
+  const activeProjects = projects?.filter(p => p.status === "active") ?? [];
 
   const getProjectProgress = (projectId: number) => {
-    const projMilestones = milestones?.filter(m => m.projectId === projectId) || [];
+    const projMilestones = milestones?.filter(m => m.projectId === projectId) ?? [];
     if (projMilestones.length === 0) {
-      const projTasks = tasks?.filter(t => (t as any).projectId === projectId) || [];
+      const projTasks = tasks?.filter(t => t.projectId === projectId) ?? [];
       if (projTasks.length === 0) return 0;
-      const done = projTasks.filter(t => t.status === 'done').length;
-      return Math.round((done / projTasks.length) * 100);
+      return Math.round((projTasks.filter(t => t.status === "done").length / projTasks.length) * 100);
     }
-    const completed = projMilestones.filter(m => m.status === 'completed').length;
-    return Math.round((completed / projMilestones.length) * 100);
+    return Math.round((projMilestones.filter(m => m.status === "completed").length / projMilestones.length) * 100);
   };
-  const pendingTasks = tasks?.filter(t => t.status !== 'done').sort((a, b) => {
-    const p = { high: 3, medium: 2, low: 1 };
-    return p[b.priority as keyof typeof p] - p[a.priority as keyof typeof p];
-  }) || [];
 
-  const [logs, setLogs] = useState<{id: number, time: string, type: string, msg: string}[]>([]);
-  const logEndRef = useRef<HTMLDivElement>(null);
+  const pendingTasks = tasks?.filter(t => t.status !== "done").sort((a, b) => {
+    const p: Record<string, number> = { high: 3, medium: 2, low: 1 };
+    return (p[b.priority] ?? 0) - (p[a.priority] ?? 0);
+  }).slice(0, 8) ?? [];
 
-  useEffect(() => {
-    const initialLogs = Array.from({length: 5}).map((_, i) => ({
-      id: Date.now() - (5-i)*1000,
-      time: new Date(Date.now() - (5-i)*1000).toLocaleTimeString('en-US', { hour12: false }),
-      ...fakeLogs[Math.floor(Math.random() * fakeLogs.length)]
-    }));
-    setLogs(initialLogs);
-
-    const interval = setInterval(() => {
-      setLogs(prev => {
-        const newLog = {
-          id: Date.now(),
-          time: new Date().toLocaleTimeString('en-US', { hour12: false }),
-          ...fakeLogs[Math.floor(Math.random() * fakeLogs.length)]
-        };
-        const next = [...prev, newLog];
-        if (next.length > 50) next.shift();
-        return next;
-      });
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (logEndRef.current) {
-      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [logs]);
+  const alerts = sysCtx?.alerts ?? [];
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-6 h-full flex flex-col"
-    >
-      <div>
-        <h1 className="text-2xl font-bold tracking-widest mb-1 text-primary uppercase glow-text">Command Center</h1>
-        <p className="text-xs text-muted-foreground uppercase tracking-widest">Global Telemetry & Oversight</p>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col gap-4 overflow-hidden">
+      {/* Header */}
+      <div className="shrink-0 flex items-end justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-widest text-primary uppercase glow-text">Command Center</h1>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Global Telemetry & Oversight</p>
+        </div>
+        {sysCtx && (
+          <div className="flex items-center gap-1.5">
+            <Radio className="w-3 h-3 text-green-400 animate-pulse" />
+            <span className="text-[9px] text-green-400 uppercase tracking-widest font-mono">Live</span>
+          </div>
+        )}
       </div>
 
+      {/* Stat Row */}
       {isLoading ? (
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-5 shrink-0">
-          {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="glass-card p-4 rounded-lg h-28">
-              <Skeleton className="h-3 w-16 mb-4 bg-white/5" />
-              <Skeleton className="h-8 w-12 bg-white/5" />
-            </div>
-          ))}
+        <div className="grid gap-3 grid-cols-3 md:grid-cols-5 shrink-0">
+          {[1,2,3,4,5].map(i => <div key={i} className="glass-card rounded-lg h-20"><Skeleton className="h-full bg-white/5" /></div>)}
         </div>
       ) : data ? (
-        <>
-          <div className="grid gap-3 grid-cols-2 md:grid-cols-5 shrink-0">
-            <StatCard delay={0.0} title="Projects" value={data.totalProjects} subtitle={`${data.activeProjects} active`} icon={FolderKanban} href="/projects" />
-            <StatCard delay={0.05} title="Tasks" value={data.totalTasks} subtitle={`${data.pendingTasks} pending`} icon={CheckSquare} href="/tasks" />
-            <StatCard delay={0.1} title="Clients" value={data.totalClients} subtitle={`${data.activeClients} active`} icon={Users} href="/clients" />
-            <StatCard delay={0.15} title="Leads" value={data.totalLeads} subtitle={`${data.hotLeads} hot`} icon={Target} href="/leads" />
-            <StatCard delay={0.2} title="AI Links" value={data.totalConversations} subtitle="Neural Active" icon={MessageSquare} href="/ai" />
-          </div>
-
-          <div className="grid gap-3 grid-cols-2 md:grid-cols-4 shrink-0">
-            <FinanceCard delay={0.25} label="Revenue" value={data.revenue} color="bg-green-500/10 border-green-500/20 text-green-400" />
-            <FinanceCard delay={0.3} label="Unpaid" value={data.unpaidAmount} color="bg-amber-500/10 border-amber-500/20 text-amber-400" />
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}
-              className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-primary">
-              <p className="text-[10px] uppercase tracking-widest opacity-70">Billable Hours</p>
-              <p className="text-xl font-bold font-mono mt-1">{data.billableHours}h</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.4 }}
-              className="bg-violet-500/10 border border-violet-500/20 rounded-lg p-3 text-violet-400 flex items-center gap-3">
-              <div className="flex-1">
-                <p className="text-[10px] uppercase tracking-widest opacity-70">Pipeline</p>
-                <div className="flex gap-3 mt-1 text-sm font-mono font-bold">
-                  <span className="flex items-center gap-1"><Flag className="w-3 h-3" />{data.milestonesInProgress}</span>
-                  <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" />{data.contentScheduled}</span>
-                  <span className="flex items-center gap-1"><Zap className="w-3 h-3" />{data.activeAutomations}</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </>
+        <div className="grid gap-2.5 grid-cols-3 md:grid-cols-5 shrink-0">
+          <StatCard delay={0.0} title="Projects" value={data.totalProjects} subtitle={`${data.activeProjects} active`} icon={FolderKanban} href="/projects" />
+          <StatCard delay={0.05} title="Tasks" value={data.totalTasks} subtitle={`${data.pendingTasks} pending`} icon={CheckSquare} href="/tasks" />
+          <StatCard delay={0.1} title="Clients" value={data.totalClients} subtitle={`${data.activeClients} active`} icon={Users} href="/clients" />
+          <StatCard delay={0.15} title="Leads" value={data.totalLeads} subtitle={`${data.hotLeads} hot`} icon={Target} href="/leads" />
+          <StatCard delay={0.2} title="AI Sessions" value={data.totalConversations} subtitle="Neural active" icon={MessageSquare} href="/ai" />
+        </div>
       ) : null}
+
+      {/* Finance + Alerts Row */}
+      {data && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 shrink-0">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+            className="bg-green-500/10 border border-green-500/15 rounded-lg p-3">
+            <p className="text-[9px] uppercase tracking-widest text-green-400/70 flex items-center gap-1"><DollarSign className="w-3 h-3" /> Revenue</p>
+            <p className="text-xl font-bold font-mono text-green-400 mt-1">${data.revenue}</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="bg-amber-500/10 border border-amber-500/15 rounded-lg p-3">
+            <p className="text-[9px] uppercase tracking-widest text-amber-400/70 flex items-center gap-1"><Clock className="w-3 h-3" /> Unpaid</p>
+            <p className="text-xl font-bold font-mono text-amber-400 mt-1">${data.unpaidAmount}</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+            className="bg-primary/10 border border-primary/15 rounded-lg p-3">
+            <p className="text-[9px] uppercase tracking-widest text-primary/70 flex items-center gap-1"><Activity className="w-3 h-3" /> Billable</p>
+            <p className="text-xl font-bold font-mono text-primary mt-1">{data.billableHours}h</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+            className="bg-violet-500/10 border border-violet-500/15 rounded-lg p-3">
+            <p className="text-[9px] uppercase tracking-widest text-violet-400/70 flex items-center gap-1"><Zap className="w-3 h-3" /> Automations</p>
+            <p className="text-xl font-bold font-mono text-violet-400 mt-1">{data.activeAutomations}</p>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Alerts Banner */}
+      {alerts.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+          className="flex items-center gap-2 flex-wrap shrink-0">
+          <Bell className="w-3 h-3 text-muted-foreground shrink-0" />
+          {alerts.slice(0, 3).map((a, i) => (
+            <AlertBadge key={i} type={a.type} message={a.message} />
+          ))}
+        </motion.div>
+      )}
 
       {/* Revenue Engine Panel */}
       {revenueIntel && revenueIntel.opportunities.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
           className="glass-card rounded-lg border border-amber-500/20 bg-amber-500/5 shrink-0">
-          <div className="flex items-center justify-between p-3 border-b border-amber-500/15">
-            <h2 className="text-xs font-bold tracking-widest text-amber-400 uppercase flex items-center gap-2">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-amber-500/10">
+            <h2 className="text-[10px] font-bold tracking-widest text-amber-400 uppercase flex items-center gap-2">
               <TrendingUp className="w-3 h-3" /> Revenue Engine
             </h2>
             <Link href="/clients">
               <span className="text-[9px] text-amber-400/60 uppercase tracking-widest hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1">
-                View Intelligence <ArrowUpRight className="w-3 h-3" />
+                Intelligence <ArrowUpRight className="w-3 h-3" />
               </span>
             </Link>
           </div>
-          <div className="divide-y divide-amber-500/10">
+          <div className="flex flex-wrap divide-x divide-amber-500/10">
             {revenueIntel.opportunities.slice(0, 3).map((opp, i) => (
-              <div key={i} className="flex items-center gap-3 p-3">
-                <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${opp.urgency === 'high' ? 'bg-red-400 shadow-[0_0_5px_rgba(239,68,68,0.6)]' : opp.urgency === 'medium' ? 'bg-amber-400' : 'bg-primary/50'}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs text-foreground/90 truncate">{opp.label}</div>
-                  <div className={`text-[9px] uppercase tracking-widest mt-0.5 ${opp.urgency === 'high' ? 'text-red-400' : opp.urgency === 'medium' ? 'text-amber-400' : 'text-muted-foreground'}`}>
-                    {opp.type.replace('_', ' ')} — {opp.urgency} priority
+              <div key={i} className="flex-1 min-w-0 flex items-center gap-2.5 px-4 py-2.5">
+                <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${opp.urgency === "high" ? "bg-red-400 shadow-[0_0_5px_rgba(239,68,68,0.6)]" : opp.urgency === "medium" ? "bg-amber-400" : "bg-primary/50"}`} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] text-foreground/90 truncate leading-tight">{opp.label}</div>
+                  <div className={`text-[9px] uppercase tracking-widest ${opp.urgency === "high" ? "text-red-400" : opp.urgency === "medium" ? "text-amber-400" : "text-muted-foreground"}`}>
+                    {opp.urgency} priority
                   </div>
                 </div>
                 {opp.value && opp.value !== "Unknown" && (
@@ -240,92 +243,114 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        <div className="lg:col-span-1 flex flex-col min-h-0">
-          <h2 className="text-xs font-bold tracking-widest mb-3 text-primary/70 uppercase flex items-center gap-2 shrink-0">
-            <Activity className="w-3 h-3" /> System Activity Feed
-          </h2>
-          <div className="glass-card flex-1 rounded-lg p-3 overflow-y-auto font-mono text-[11px] leading-relaxed relative">
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/50 via-transparent to-transparent h-8 z-10" />
-            <div className="space-y-1 mt-2">
-              {logs.map((log) => (
-                <div key={log.id} className="flex gap-3 hover:bg-white/5 px-1 py-0.5 rounded transition-colors group">
-                  <span className="text-primary/50 shrink-0">[{log.time}]</span>
-                  <span className={`shrink-0 w-12 ${
-                    log.type === 'AI' ? 'text-purple-400' :
-                    log.type === 'AUTO' ? 'text-amber-400' :
-                    log.type === 'SEC' ? 'text-red-400' :
-                    log.type === 'LEAD' ? 'text-green-400' :
-                    log.type === 'FIN' ? 'text-emerald-400' :
-                    'text-primary'
-                  }`}>{log.type}</span>
-                  <span className="text-foreground/80 group-hover:text-foreground transition-colors break-words">{log.msg}</span>
-                </div>
-              ))}
-              <div ref={logEndRef} />
-            </div>
+      {/* Main 3-column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0 overflow-hidden">
+
+        {/* Live Event Feed */}
+        <div className="flex flex-col min-h-0">
+          <div className="flex items-center gap-2 mb-2 shrink-0">
+            <Radio className="w-3 h-3 text-primary animate-pulse" />
+            <h2 className="text-[10px] font-bold tracking-widest text-primary/70 uppercase">Live Event Feed</h2>
+            {liveEvents.length > 0 && (
+              <span className="ml-auto text-[9px] text-muted-foreground font-mono">{liveEvents.length} events</span>
+            )}
+          </div>
+          <div ref={feedRef} className="glass-card flex-1 rounded-lg overflow-y-auto font-mono text-[11px] leading-relaxed">
+            {liveEvents.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground/40 uppercase tracking-widest">
+                Waiting for events...
+              </div>
+            ) : (
+              <div className="divide-y divide-white/5">
+                {liveEvents.map((ev) => (
+                  <div key={ev.id} className="flex gap-2 px-3 py-2 hover:bg-white/5 transition-colors">
+                    <span className="text-muted-foreground/40 shrink-0 text-[9px] mt-0.5 tabular-nums">
+                      {new Date(ev.createdAt).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    </span>
+                    <span className={`shrink-0 w-10 text-[9px] font-bold uppercase mt-0.5 ${categoryColor[ev.category] ?? "text-muted-foreground"}`}>
+                      {ev.category}
+                    </span>
+                    <span className="text-foreground/80 flex-1 min-w-0 break-words">{ev.title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
-          <div className="flex flex-col min-h-0">
-            <h2 className="text-xs font-bold tracking-widest mb-3 text-primary/70 uppercase flex items-center gap-2 shrink-0">
-              <FolderKanban className="w-3 h-3" /> Active Directives
-            </h2>
-            <div className="glass-card flex-1 rounded-lg p-3 overflow-y-auto space-y-3">
-              {activeProjects.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground uppercase tracking-widest">No active directives.</div>
-              ) : activeProjects.map(p => {
-                const progress = getProjectProgress(p.id);
-                return (
-                  <div key={p.id} className="bg-black/40 border border-white/5 rounded p-3 hover:border-primary/30 transition-colors group">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-bold text-sm tracking-tight text-foreground group-hover:text-primary transition-colors">{p.name}</span>
-                      <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                    </div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{p.type}</span>
-                      <span className="text-[10px] font-mono text-primary/70">{progress}%</span>
-                    </div>
-                    <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
-                      <div className="bg-primary h-full transition-all duration-500" style={{ width: `${progress}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        {/* Active Projects */}
+        <div className="flex flex-col min-h-0">
+          <div className="flex items-center gap-2 mb-2 shrink-0">
+            <FolderKanban className="w-3 h-3 text-primary/70" />
+            <h2 className="text-[10px] font-bold tracking-widest text-primary/70 uppercase">Active Directives</h2>
+            <Link href="/projects">
+              <span className="ml-auto text-[9px] text-muted-foreground hover:text-primary transition-colors cursor-pointer uppercase tracking-widest">
+                All
+              </span>
+            </Link>
           </div>
-
-          <div className="flex flex-col min-h-0">
-            <h2 className="text-xs font-bold tracking-widest mb-3 text-primary/70 uppercase flex items-center gap-2 shrink-0">
-              <AlertTriangle className="w-3 h-3" /> Priority Queue
-            </h2>
-            <div className="glass-card flex-1 rounded-lg p-3 overflow-y-auto space-y-2">
-              {pendingTasks.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground uppercase tracking-widest">Queue empty.</div>
-              ) : pendingTasks.map(t => (
-                <div key={t.id} className="flex items-start gap-3 bg-black/40 border border-white/5 rounded p-2.5 hover:border-white/10 transition-colors">
-                  <div className={`w-1 h-full min-h-[30px] rounded-full shrink-0 ${
-                    t.priority === 'high' ? 'bg-destructive shadow-[0_0_5px_rgba(239,68,68,0.5)]' :
-                    t.priority === 'medium' ? 'bg-amber-500 shadow-[0_0_5px_rgba(245,158,11,0.5)]' :
-                    'bg-white/20'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-foreground truncate">{t.title}</div>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1 flex items-center gap-2">
-                      <span className={t.priority === 'high' ? 'text-destructive' : t.priority === 'medium' ? 'text-amber-500' : ''}>
-                        {t.priority} PRI
-                      </span>
-                      <span>-</span>
-                      <span>{t.status}</span>
-                    </div>
+          <div className="glass-card flex-1 rounded-lg p-3 overflow-y-auto space-y-2.5">
+            {activeProjects.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground/40 uppercase tracking-widest">
+                No active directives
+              </div>
+            ) : activeProjects.map(p => {
+              const progress = getProjectProgress(p.id);
+              return (
+                <div key={p.id} className="bg-black/40 border border-white/5 rounded p-3 hover:border-primary/20 transition-colors group">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold text-xs tracking-tight truncate text-foreground group-hover:text-primary transition-colors">{p.name}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)] shrink-0 ml-2" />
+                  </div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[9px] text-muted-foreground uppercase tracking-widest">{p.type}</span>
+                    <span className="text-[9px] font-mono text-primary/70">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-white/5 h-0.5 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full transition-all duration-700" style={{ width: `${progress}%` }} />
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-
         </div>
+
+        {/* Priority Queue */}
+        <div className="flex flex-col min-h-0">
+          <div className="flex items-center gap-2 mb-2 shrink-0">
+            <AlertTriangle className="w-3 h-3 text-primary/70" />
+            <h2 className="text-[10px] font-bold tracking-widest text-primary/70 uppercase">Priority Queue</h2>
+            <Link href="/tasks">
+              <span className="ml-auto text-[9px] text-muted-foreground hover:text-primary transition-colors cursor-pointer uppercase tracking-widest">
+                All
+              </span>
+            </Link>
+          </div>
+          <div className="glass-card flex-1 rounded-lg p-3 overflow-y-auto space-y-2">
+            {pendingTasks.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground/40 uppercase tracking-widest">
+                Queue empty
+              </div>
+            ) : pendingTasks.map(t => (
+              <div key={t.id} className="flex items-start gap-2.5 bg-black/40 border border-white/5 rounded p-2.5 hover:border-white/10 transition-colors">
+                <div className={`w-0.5 h-full min-h-[28px] rounded-full shrink-0 ${
+                  t.priority === "high" ? "bg-destructive shadow-[0_0_5px_rgba(239,68,68,0.5)]" :
+                  t.priority === "medium" ? "bg-amber-500" : "bg-white/15"
+                }`} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium text-foreground truncate">{t.title}</div>
+                  <div className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">
+                    <span className={t.priority === "high" ? "text-destructive" : t.priority === "medium" ? "text-amber-500" : ""}>
+                      {t.priority}
+                    </span>
+                    {" — "}{t.status}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </motion.div>
   );

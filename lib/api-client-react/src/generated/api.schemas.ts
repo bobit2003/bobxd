@@ -9,6 +9,80 @@ export interface HealthStatus {
   status: string;
 }
 
+export type SystemEventMeta = { [key: string]: unknown } | null;
+
+export interface SystemEvent {
+  id: number;
+  type: string;
+  category: string;
+  title: string;
+  description?: string | null;
+  entityId?: string | null;
+  entityType?: string | null;
+  meta?: SystemEventMeta;
+  createdAt: string;
+}
+
+export type SystemContextRevenue = {
+  total: number;
+  unpaid: number;
+  overdueCount: number;
+  paidInvoiceCount: number;
+};
+
+export type SystemContextClients = {
+  total: number;
+  active: number;
+  reactivationTargets: number;
+};
+
+export type SystemContextLeads = {
+  total: number;
+  hot: number;
+  stale: number;
+  active: number;
+};
+
+export type SystemContextTasks = {
+  total: number;
+  pending: number;
+  highPriority: number;
+  overdue: number;
+};
+
+export type SystemContextTopMemoriesItem = {
+  id?: number;
+  content?: string;
+  category?: string;
+  importance?: string;
+};
+
+export type SystemContextAlertsItemUrgency =
+  (typeof SystemContextAlertsItemUrgency)[keyof typeof SystemContextAlertsItemUrgency];
+
+export const SystemContextAlertsItemUrgency = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+} as const;
+
+export type SystemContextAlertsItem = {
+  type: string;
+  message: string;
+  urgency: SystemContextAlertsItemUrgency;
+};
+
+export interface SystemContext {
+  timestamp: string;
+  revenue: SystemContextRevenue;
+  clients: SystemContextClients;
+  leads: SystemContextLeads;
+  tasks: SystemContextTasks;
+  recentEvents: SystemEvent[];
+  topMemories: SystemContextTopMemoriesItem[];
+  alerts: SystemContextAlertsItem[];
+}
+
 export interface OpenaiConversation {
   id: number;
   title: string;
@@ -917,4 +991,8 @@ export const ListTasksStatus = {
 
 export type GlobalSearchParams = {
   q: string;
+};
+
+export type ListEventsParams = {
+  limit?: number;
 };

@@ -22,6 +22,8 @@ import milestonesRouter from "./milestones";
 import contentRouter from "./content";
 import financialRouter from "./financial";
 import intelligenceRouter from "./intelligence";
+import eventsRouter from "./events";
+import systemContextRouter from "./system-context";
 
 const router: IRouter = Router();
 
@@ -48,5 +50,7 @@ router.use(timeEntriesRouter);
 router.use(milestonesRouter);
 router.use(contentRouter);
 router.use(financialRouter);
+router.use(eventsRouter);
+router.use(systemContextRouter);
 
 export default router;

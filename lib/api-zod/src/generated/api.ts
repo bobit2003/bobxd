@@ -1280,3 +1280,83 @@ export const GetFinancialSummaryResponse = zod.object({
     )
     .optional(),
 });
+
+/**
+ * @summary List recent system events
+ */
+export const listEventsQueryLimitDefault = 50;
+
+export const ListEventsQueryParams = zod.object({
+  limit: zod.coerce.number().default(listEventsQueryLimitDefault),
+});
+
+export const ListEventsResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  category: zod.string(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  entityId: zod.string().nullish(),
+  entityType: zod.string().nullish(),
+  meta: zod.object({}).passthrough().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListEventsResponse = zod.array(ListEventsResponseItem);
+
+/**
+ * @summary Get unified system context — aggregated state across all modules
+ */
+export const GetSystemContextResponse = zod.object({
+  timestamp: zod.coerce.date(),
+  revenue: zod.object({
+    total: zod.number(),
+    unpaid: zod.number(),
+    overdueCount: zod.number(),
+    paidInvoiceCount: zod.number(),
+  }),
+  clients: zod.object({
+    total: zod.number(),
+    active: zod.number(),
+    reactivationTargets: zod.number(),
+  }),
+  leads: zod.object({
+    total: zod.number(),
+    hot: zod.number(),
+    stale: zod.number(),
+    active: zod.number(),
+  }),
+  tasks: zod.object({
+    total: zod.number(),
+    pending: zod.number(),
+    highPriority: zod.number(),
+    overdue: zod.number(),
+  }),
+  recentEvents: zod.array(
+    zod.object({
+      id: zod.number(),
+      type: zod.string(),
+      category: zod.string(),
+      title: zod.string(),
+      description: zod.string().nullish(),
+      entityId: zod.string().nullish(),
+      entityType: zod.string().nullish(),
+      meta: zod.object({}).passthrough().nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  topMemories: zod.array(
+    zod.object({
+      id: zod.number().optional(),
+      content: zod.string().optional(),
+      category: zod.string().optional(),
+      importance: zod.string().optional(),
+    }),
+  ),
+  alerts: zod.array(
+    zod.object({
+      type: zod.string(),
+      message: zod.string(),
+      urgency: zod.enum(["high", "medium", "low"]),
+    }),
+  ),
+});

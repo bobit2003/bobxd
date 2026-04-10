@@ -1,0 +1,147 @@
+Continue building and completing the OpenClaw AI Operating System. The current system is partially implemented (Revenue Engine, Clients, Leads, Dashboard, API endpoints exist), but it is NOT yet fully integrated or complete.
+Your task is to transform it into a fully unified AI operating system where all modules, pages, and engines are connected, real-time, and intelligent.
+🧠 CRITICAL GOAL
+Make OpenClaw behave like a single connected intelligence system, not separate features.
+Everything must be:
+connected
+real-time
+data-driven (NO fake/mock data)
+AI-aware
+event-driven
+🔥 1. SYSTEM-WIDE INTEGRATION (MOST IMPORTANT)
+Right now modules exist separately. Fix this.
+You must ensure:
+ALL SYSTEMS SHARE ONE UNIFIED DATA LAYER:
+Clients
+Leads
+Tasks
+Revenue Engine
+Events
+AI insights
+Create or enforce a single source of truth:
+/system-context endpoint (or equivalent internal service)
+This must return:
+clients
+leads
+tasks
+revenue insights
+recent events
+AI suggestions
+EVERY PAGE must use this system context.
+⚙️ 2. EVENT SYSTEM (MAKE EVERYTHING LIVE)
+Implement a unified event-driven system.
+Every action must generate an event:
+Examples:
+client created
+lead updated
+task completed
+revenue opportunity detected
+invoice overdue
+Events must:
+be stored in database
+be broadcast in real-time (WebSockets or SSE)
+appear in dashboard Live Feed
+🧠 3. AI LAYER INTEGRATION (CRITICAL GAP FIX)
+Connect AI logic to ALL modules.
+AI must be able to:
+read system context
+analyze clients + leads + revenue
+generate recommendations
+trigger task suggestions
+detect opportunities
+Add or complete endpoint:
+/ai/analyze-system
+This returns:
+top priorities
+revenue opportunities
+risks
+recommended actions
+💰 4. REVENUE ENGINE FINALIZATION
+Complete Revenue Engine so it is fully integrated across system:
+It must:
+run automatically when data changes
+update client value scores in real-time
+detect:
+inactive clients (7+ days)
+lost leads (no activity)
+upsell opportunities
+overdue invoices
+feed results into:
+dashboard
+clients page
+leads page
+No manual refresh logic.
+📊 5. DASHBOARD COMPLETION
+Fix and complete dashboard so it becomes a real command center:
+Must include:
+Live activity feed (EVENT SYSTEM)
+Revenue opportunities (real-time)
+Client risk alerts
+Lead urgency alerts
+Task summary
+AI daily briefing widget
+Everything must update automatically.
+⚙️ 6. TASK SYSTEM COMPLETION
+Ensure tasks are fully integrated:
+tasks link to clients + projects
+status changes generate events
+overdue tasks trigger alerts
+tasks affect analytics + revenue insights
+Add:
+drag & drop must persist to backend
+real-time sync across pages
+🧠 7. AI COMMAND CENTER INTEGRATION
+Complete AI command system:
+AI input must:
+access full system context
+allow actions:
+create task
+update client
+generate follow-up message
+suggest revenue actions
+AI responses must ALWAYS include:
+insight
+recommended action
+optional automation trigger
+🔔 8. SMART ALERT SYSTEM (MISSING FEATURE)
+Implement global alert engine:
+Triggers:
+overdue tasks
+inactive clients
+unpaid invoices
+high revenue opportunity detected
+Alerts must appear:
+dashboard
+sidebar badges
+real-time notifications
+🔄 9. REAL-TIME SYNCHRONIZATION (IMPORTANT FIX)
+Ensure ALL updates are instant across system:
+If something changes:
+client
+lead
+task
+revenue
+Then:
+update UI immediately
+refresh dashboard data
+emit event
+update AI context
+🧩 10. REMOVE ALL MOCK / FAKE LOGIC
+Audit system and remove:
+fake logs
+simulated data
+placeholder revenue logic
+static dashboards
+Everything must come from:
+real database + real computed logic
+⚡ FINAL SYSTEM REQUIREMENT
+OpenClaw must behave as:
+A unified AI operating system where revenue, clients, leads, tasks, and AI intelligence are all connected in real-time and continuously update each other.
+🚀 SUCCESS CRITERIA
+The system is COMPLETE when:
+Dashboard reflects real system state instantly
+Revenue Engine updates automatically
+Clients + Leads fully connected to AI insights
+Events stream live in UI
+AI can analyze entire system in one request
+No disconnected modules exist

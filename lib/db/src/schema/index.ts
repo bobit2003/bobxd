@@ -28,6 +28,7 @@ export * from "./habits";
 export * from "./goals";
 export * from "./memories";
 export * from "./audit-log";
+export * from "./events";
 export * from "./metrics";
 export * from "./leads";
 export * from "./invoices";

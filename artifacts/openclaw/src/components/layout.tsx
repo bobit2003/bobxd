@@ -87,6 +87,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
 
+  const [apiPing, setApiPing] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    async function ping() {
+      const t = Date.now();
+      try {
+        await fetch("/api/healthz");
+        if (!cancelled) setApiPing(Date.now() - t);
+      } catch {
+        if (!cancelled) setApiPing(null);
+      }
+    }
+    ping();
+    const interval = setInterval(ping, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
   const { data: searchResults } = useGlobalSearch(
     { q: debouncedQuery }, 
     { query: { enabled: debouncedQuery.length > 1, queryKey: ['globalSearch', debouncedQuery] as any } }
@@ -150,7 +167,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <span>UPTIME: {uptime}</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1"><div className="w-1 h-1 bg-green-500 rounded-full" /> API: OK (12ms)</span>
+          <span className="flex items-center gap-1">
+            <div className={`w-1 h-1 rounded-full ${apiPing !== null ? 'bg-green-500' : 'bg-red-500'}`} />
+            {apiPing !== null ? `API: OK (${apiPing}ms)` : 'API: ERR'}
+          </span>
           <span>SYS.TIME: {currentTime}</span>
         </div>
       </div>
