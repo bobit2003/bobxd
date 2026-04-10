@@ -8,12 +8,26 @@ import {
   useAnalyzeSystemContext,
   type Directive,
 } from "@workspace/api-client-react";
-import { FolderKanban, CheckSquare, Users, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, TrendingUp, ArrowUpRight, Radio, Zap, X, Brain, Check, Loader2 } from "lucide-react";
+
+// ── CEO Priority Engine hook ──
+function usePriorityEngine() {
+  return useQuery({
+    queryKey: ["priority-engine"],
+    queryFn: async () => {
+      const r = await fetch("/api/priority-engine");
+      if (!r.ok) throw new Error("priority engine failed");
+      return r.json();
+    },
+    staleTime: 3 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+  });
+}
+import { FolderKanban, CheckSquare, Users, MessageSquare, Activity, AlertTriangle, DollarSign, AlertCircle, Shield, Target, Clock, TrendingUp, ArrowUpRight, Radio, Zap, X, Brain, Check, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import type { AlertItem } from "@workspace/api-client-react";
 
 type AuditEntry = {
@@ -159,6 +173,7 @@ export default function Dashboard() {
   const { data: revenueIntel } = useGetRevenueIntelligence({ query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 60000 } });
   const { data: rawAlerts } = useGetIntelligenceAlerts({ query: { queryKey: getGetIntelligenceAlertsQueryKey(), staleTime: 30000 } });
   const { data: directives, isLoading: directivesLoading } = useListDirectives({ query: { queryKey: getListDirectivesQueryKey() } });
+  const { data: priorityData } = usePriorityEngine();
   const updateDirective = useUpdateDirective();
   const analyzeCtx = useAnalyzeSystemContext();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -289,6 +304,68 @@ export default function Dashboard() {
             <p className="text-xl font-bold font-mono text-violet-400 mt-1">{data.activeAutomations}</p>
           </motion.div>
         </div>
+      )}
+
+      {/* CEO Briefing — Priority Engine */}
+      {priorityData && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.42 }}
+          className="shrink-0 bg-gradient-to-r from-violet-500/10 via-indigo-500/5 to-violet-500/10 border border-violet-500/20 rounded-lg overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-violet-500/10">
+            <div className="flex items-center gap-2">
+              <Shield className="w-3 h-3 text-violet-400" />
+              <h2 className="text-[10px] font-bold tracking-widest text-violet-400 uppercase">CEO Briefing</h2>
+              <span className="text-[9px] text-violet-400/50 font-mono">{priorityData.greeting ?? "Good morning"}</span>
+            </div>
+            <Link href="/ai">
+              <span className="text-[9px] text-violet-400/60 uppercase tracking-widest hover:text-violet-400 transition-colors cursor-pointer flex items-center gap-1">
+                Full AI <ArrowUpRight className="w-3 h-3" />
+              </span>
+            </Link>
+          </div>
+          {priorityData.headline && (
+            <div className="px-4 py-1.5 border-b border-violet-500/10 bg-violet-500/5">
+              <p className="text-[11px] text-violet-300/90 truncate">{priorityData.headline}</p>
+            </div>
+          )}
+          <div className="grid grid-cols-4 divide-x divide-violet-500/10">
+            {/* Revenue Actions */}
+            <div className="px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-amber-400/70 font-bold mb-1.5 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Revenue</p>
+              {priorityData.revenueActions?.slice(0, 2).map((a: any, i: number) => (
+                <Link key={i} href={a.entityType ? `/${a.entityType}s` : "/ai"}>
+                  <div className="text-[10px] text-foreground/80 hover:text-amber-300 cursor-pointer leading-tight mb-1 truncate">{a.action}</div>
+                </Link>
+              ))}
+              {(!priorityData.revenueActions?.length) && <p className="text-[10px] text-muted-foreground/40 italic">No revenue actions</p>}
+            </div>
+            {/* Urgent Tasks */}
+            <div className="px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-red-400/70 font-bold mb-1.5 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Urgent</p>
+              {priorityData.urgentTasks?.slice(0, 2).map((t: any, i: number) => (
+                <Link key={i} href="/tasks">
+                  <div className="text-[10px] text-foreground/80 hover:text-red-300 cursor-pointer leading-tight mb-1 truncate">{t.action}</div>
+                </Link>
+              ))}
+              {(!priorityData.urgentTasks?.length) && <p className="text-[10px] text-muted-foreground/40 italic">All clear</p>}
+            </div>
+            {/* Risks */}
+            <div className="px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-orange-400/70 font-bold mb-1.5 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Risks</p>
+              {priorityData.risks?.slice(0, 2).map((r: any, i: number) => (
+                <div key={i} className="text-[10px] text-orange-300/80 leading-tight mb-1 truncate">{r.action}</div>
+              ))}
+              {(!priorityData.risks?.length) && <p className="text-[10px] text-muted-foreground/40 italic">No risks detected</p>}
+            </div>
+            {/* Opportunities */}
+            <div className="px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-green-400/70 font-bold mb-1.5 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Opportunities</p>
+              {priorityData.opportunities?.slice(0, 2).map((o: any, i: number) => (
+                <div key={i} className="text-[10px] text-green-300/80 leading-tight mb-1 truncate">{o.action}</div>
+              ))}
+              {(!priorityData.opportunities?.length) && <p className="text-[10px] text-muted-foreground/40 italic">No opportunities</p>}
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {/* Revenue Engine Panel */}
