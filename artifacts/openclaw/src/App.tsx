@@ -3,26 +3,29 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
+import { Layout } from "@/components/layout";
+import Dashboard from "@/pages/dashboard";
+import AiBrain from "@/pages/ai";
+import Projects from "@/pages/projects";
+import Tasks from "@/pages/tasks";
+import Clients from "@/pages/clients";
+import Automations from "@/pages/automations";
 
 const queryClient = new QueryClient();
 
-function Home() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Replit Agent is building...</h1>
-        <p className="mt-2 text-sm text-gray-600">Your app will appear here once it's ready.</p>
-      </div>
-    </div>
-  );
-}
-
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
+    <Layout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/ai" component={AiBrain} />
+        <Route path="/projects" component={Projects} />
+        <Route path="/tasks" component={Tasks} />
+        <Route path="/clients" component={Clients} />
+        <Route path="/automations" component={Automations} />
+        <Route component={NotFound} />
+      </Switch>
+    </Layout>
   );
 }
 
