@@ -48,63 +48,70 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-flow: flow 2s linear infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes flow {
+  to { stroke-dashoffset: -20; }
 }
 
 :root {
-  --button-outline: rgba(255, 255, 255, 0.1);
-  --badge-outline: rgba(255, 255, 255, 0.05);
-  --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255, 255, 255, 0.04);
-  --elevate-2: rgba(255, 255, 255, 0.09);
-
-  --background: 0 0% 3%;
+  --background: 0 0% 4%; /* #0a0a0a */
   --foreground: 0 0% 95%;
   --border: 0 0% 12%;
   --input: 0 0% 12%;
-  --ring: 210 100% 50%;
+  --ring: 195 100% 50%; /* Electric Blue: #00bfff */
   
-  --card: 0 0% 5%;
+  --card: 0 0% 6%;
   --card-foreground: 0 0% 95%;
   --card-border: 0 0% 12%;
   
-  --popover: 0 0% 5%;
+  --popover: 0 0% 6%;
   --popover-foreground: 0 0% 95%;
   --popover-border: 0 0% 12%;
   
-  --primary: 210 100% 50%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 195 100% 50%;
+  --primary-foreground: 0 0% 0%;
   
-  --secondary: 0 0% 10%;
+  --secondary: 0 0% 12%;
   --secondary-foreground: 0 0% 95%;
   
   --muted: 0 0% 10%;
   --muted-foreground: 0 0% 60%;
   
-  --accent: 210 100% 50%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 195 100% 50%;
+  --accent-foreground: 0 0% 0%;
   
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   
-  --sidebar: 0 0% 3%;
+  --sidebar: 0 0% 2%;
   --sidebar-foreground: 0 0% 95%;
   --sidebar-border: 0 0% 12%;
-  --sidebar-primary: 210 100% 50%;
-  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary: 195 100% 50%;
+  --sidebar-primary-foreground: 0 0% 0%;
   --sidebar-accent: 0 0% 10%;
   --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-ring: 210 100% 50%;
+  --sidebar-ring: 195 100% 50%;
 
   --app-font-sans: 'Space Mono', 'JetBrains Mono', monospace;
   --app-font-serif: Georgia, serif;
   --app-font-mono: 'Space Mono', 'JetBrains Mono', monospace;
   
   --radius: 0px; 
-  
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
 }
 
 .dark {
@@ -116,21 +123,51 @@
     @apply border-border;
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
+    @apply font-mono antialiased bg-background text-foreground selection:bg-primary/30 selection:text-primary overflow-hidden h-screen;
+    background-image: radial-gradient(circle at 50% 50%, rgba(0, 191, 255, 0.05) 0%, transparent 80%),
+                      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
   }
   
   /* Matrix-like glow effects */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: hsl(var(--background));
   }
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
+    border-radius: 0;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    background: hsl(var(--primary) / 0.5);
   }
+}
+
+.glass-card {
+  background: rgba(15, 15, 15, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 191, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 191, 255, 0.1) inset;
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+}
+
+.glow-text-amber {
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.glow-text-purple {
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
 }

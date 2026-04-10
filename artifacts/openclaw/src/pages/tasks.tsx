@@ -7,25 +7,19 @@ import {
   useListProjects, getListProjectsQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, CheckCircle2, Circle, AlertCircle, Clock, Trash2, Calendar } from "lucide-react";
-import { format } from "date-fns";
+import { Loader2, Plus, CheckCircle2, Circle, AlertTriangle, Trash2, GripVertical } from "lucide-react";
+import { motion } from "framer-motion";
 
-const priorityColors = {
-  low: "text-muted-foreground",
-  medium: "text-yellow-500",
-  high: "text-destructive"
+const priorityConfig = {
+  high: { color: "text-destructive", bg: "bg-destructive/10 border-destructive/30" },
+  medium: { color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/30" },
+  low: { color: "text-muted-foreground", bg: "bg-white/5 border-white/10" }
 };
 
 export default function Tasks() {
   const queryClient = useQueryClient();
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskPriority, setNewTaskPriority] = useState("medium");
-  const [newTaskProjectId, setNewTaskProjectId] = useState("none");
+  const [newTaskValues, setNewTaskValues] = useState<Record<string, string>>({ todo: '', in_progress: '', done: '' });
 
   const { data: tasks, isLoading } = useListTasks({
     query: { queryKey: getListTasksQueryKey() }
@@ -39,21 +33,22 @@ export default function Tasks() {
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = (status: string, e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskTitle.trim()) return;
+    const title = newTaskValues[status];
+    if (!title?.trim()) return;
 
     createTask.mutate({
       data: {
-        title: newTaskTitle,
-        priority: newTaskPriority as any,
-        status: "todo",
-        projectId: newTaskProjectId !== "none" ? parseInt(newTaskProjectId) : null
+        title,
+        priority: "medium",
+        status: status as any,
+        projectId: null
       }
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() });
-        setNewTaskTitle("");
+        setNewTaskValues(prev => ({...prev, [status]: ''}));
       }
     });
   };
@@ -75,157 +70,104 @@ export default function Tasks() {
     });
   };
 
-  const filteredTasks = tasks?.filter(t => {
-    if (filterStatus === "all") return true;
-    return t.status === filterStatus;
-  }).sort((a, b) => {
-    if (a.status === "done" && b.status !== "done") return 1;
-    if (a.status !== "done" && b.status === "done") return -1;
-    
-    const pWeight = { high: 3, medium: 2, low: 1 };
-    return pWeight[b.priority as keyof typeof pWeight] - pWeight[a.priority as keyof typeof pWeight];
-  });
+  const columns = [
+    { id: "todo", title: "Pending" },
+    { id: "in_progress", title: "In Progress" },
+    { id: "done", title: "Completed" }
+  ];
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tighter mb-2 text-primary uppercase">Task Spooler</h1>
-          <p className="text-muted-foreground">Action items and execution queue.</p>
-        </div>
-        
-        <div className="flex items-center gap-2 bg-card border border-border p-1 rounded-md">
-          <Button 
-            variant={filterStatus === "all" ? "secondary" : "ghost"} 
-            size="sm" 
-            onClick={() => setFilterStatus("all")}
-            className="text-xs uppercase tracking-wider h-8"
-          >
-            All
-          </Button>
-          <Button 
-            variant={filterStatus === "todo" ? "secondary" : "ghost"} 
-            size="sm" 
-            onClick={() => setFilterStatus("todo")}
-            className="text-xs uppercase tracking-wider h-8"
-          >
-            Pending
-          </Button>
-          <Button 
-            variant={filterStatus === "done" ? "secondary" : "ghost"} 
-            size="sm" 
-            onClick={() => setFilterStatus("done")}
-            className="text-xs uppercase tracking-wider h-8"
-          >
-            Done
-          </Button>
-        </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="h-full flex flex-col"
+    >
+      <div className="shrink-0 mb-6">
+        <h1 className="text-2xl font-bold tracking-widest mb-1 text-primary uppercase glow-text">Task Spooler</h1>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest">Execution Queue & Kanban</p>
       </div>
 
-      <Card className="p-2 border-border bg-card">
-        <form onSubmit={handleCreate} className="flex items-center gap-2">
-          <Input 
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            placeholder="Add new task..."
-            className="border-none bg-transparent focus-visible:ring-0 shadow-none font-sans"
-          />
-          
-          <Select value={newTaskPriority} onValueChange={setNewTaskPriority}>
-            <SelectTrigger className="w-[120px] h-9 border-border/50 bg-background text-xs uppercase tracking-wider">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Low Pri</SelectItem>
-              <SelectItem value="medium">Med Pri</SelectItem>
-              <SelectItem value="high">High Pri</SelectItem>
-            </SelectContent>
-          </Select>
+      {isLoading ? (
+        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+      ) : (
+        <div className="flex-1 flex gap-4 overflow-x-auto overflow-y-hidden pb-4 snap-x">
+          {columns.map(col => {
+            const colTasks = tasks?.filter(t => t.status === col.id).sort((a, b) => {
+              const p = { high: 3, medium: 2, low: 1 };
+              return p[b.priority as keyof typeof p] - p[a.priority as keyof typeof p];
+            }) || [];
 
-          <Select value={newTaskProjectId} onValueChange={setNewTaskProjectId}>
-            <SelectTrigger className="w-[140px] h-9 border-border/50 bg-background text-xs uppercase tracking-wider hidden sm:flex">
-              <SelectValue placeholder="Project" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No Project</SelectItem>
-              {projects?.map(p => (
-                <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button type="submit" size="sm" className="h-9 px-4 shrink-0" disabled={!newTaskTitle.trim() || createTask.isPending}>
-            {createTask.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-          </Button>
-        </form>
-      </Card>
-
-      <div className="space-y-2">
-        {isLoading ? (
-          <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-        ) : filteredTasks?.length === 0 ? (
-          <div className="text-center p-12 border border-dashed border-border rounded-lg text-muted-foreground uppercase tracking-widest text-sm font-bold">
-            Queue Empty
-          </div>
-        ) : (
-          filteredTasks?.map(task => {
-            const project = projects?.find(p => p.id === task.projectId);
-            const isDone = task.status === "done";
-            
             return (
-              <div 
-                key={task.id} 
-                className={`
-                  flex items-center gap-4 p-4 rounded-md border transition-all group
-                  ${isDone 
-                    ? 'bg-card/50 border-border/30 opacity-60' 
-                    : 'bg-card border-border hover:border-primary/30'
-                  }
-                `}
-              >
-                <button 
-                  onClick={() => handleToggleStatus(task.id, task.status)}
-                  className={`shrink-0 transition-colors ${isDone ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  {isDone ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
-                </button>
+              <div key={col.id} className="flex-1 min-w-[300px] max-w-[400px] flex flex-col bg-black/40 rounded-lg border border-white/5 snap-center">
+                <div className="p-3 border-b border-white/5 flex justify-between items-center bg-black/60 rounded-t-lg">
+                  <div className="text-xs font-bold uppercase tracking-widest text-primary/80">{col.title}</div>
+                  <div className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-muted-foreground">{colTasks.length}</div>
+                </div>
                 
-                <div className="flex-1 min-w-0 font-sans">
-                  <div className={`text-base font-medium truncate ${isDone ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                    {task.title}
-                  </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs uppercase tracking-wider font-mono">
-                    <span className={`flex items-center gap-1 ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
-                      <AlertCircle className="w-3 h-3" /> {task.priority}
-                    </span>
+                <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                  {colTasks.map(task => {
+                    const project = projects?.find(p => p.id === task.projectId);
+                    const priConfig = priorityConfig[task.priority as keyof typeof priorityConfig];
                     
-                    {project && (
-                      <span className="text-muted-foreground flex items-center gap-1">
-                        <span className="text-border mx-1">|</span> {project.name}
-                      </span>
-                    )}
-                    
-                    {task.dueDate && (
-                      <span className="text-muted-foreground flex items-center gap-1">
-                        <span className="text-border mx-1">|</span> <Calendar className="w-3 h-3" /> {format(new Date(task.dueDate), 'MMM d')}
-                      </span>
-                    )}
-                  </div>
+                    return (
+                      <div key={task.id} className="glass-card rounded p-3 group border border-white/5 hover:border-white/20 transition-colors flex gap-2">
+                        <button 
+                          onClick={() => handleToggleStatus(task.id, task.status)}
+                          className="mt-0.5 shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          {task.status === 'done' ? <CheckCircle2 className="w-4 h-4 text-primary" /> : <Circle className="w-4 h-4" />}
+                        </button>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className={`text-sm font-sans mb-2 leading-tight ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                            {task.title}
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${priConfig.bg} ${priConfig.color}`}>
+                              {task.priority} PRI
+                            </span>
+                            {project && (
+                              <span className="text-[9px] uppercase tracking-widest text-muted-foreground px-1.5 py-0.5 bg-white/5 rounded border border-white/5 truncate max-w-[120px]">
+                                {project.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center justify-between shrink-0">
+                          <GripVertical className="w-3 h-3 text-white/10 cursor-grab active:cursor-grabbing" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleDelete(task.id)}
+                            className="w-6 h-6 opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-all"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => handleDelete(task.id)}
-                  className="opacity-0 group-hover:opacity-100 hover:text-destructive shrink-0"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="p-2 border-t border-white/5 bg-black/60 rounded-b-lg">
+                  <form onSubmit={(e) => handleCreate(col.id, e)} className="flex items-center gap-2">
+                    <Plus className="w-3 h-3 text-muted-foreground ml-2 shrink-0" />
+                    <input 
+                      value={newTaskValues[col.id] || ''}
+                      onChange={(e) => setNewTaskValues(prev => ({...prev, [col.id]: e.target.value}))}
+                      placeholder="Fast append..."
+                      className="bg-transparent border-0 text-xs font-sans text-foreground placeholder:text-muted-foreground/50 focus:ring-0 flex-1 py-1.5 px-0 outline-none"
+                    />
+                  </form>
+                </div>
               </div>
             );
-          })
-        )}
-      </div>
-    </div>
+          })}
+        </div>
+      )}
+    </motion.div>
   );
 }
