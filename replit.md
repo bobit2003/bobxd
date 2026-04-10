@@ -53,11 +53,17 @@ BobXD OS is an ultimate AI-powered command center — a personal operating syste
 
 ## Enhanced Features
 
-- **Cmd+K Command Palette** — global search across all data (projects, tasks, clients, notes, conversations) + navigation
+- **Cmd+K Command Palette** — global search across all data (projects, tasks, clients, notes, leads, invoices, content) + navigation
 - **Global Search API** — search endpoint that queries all entities simultaneously
 - **AI Memory Engine** — store and retrieve persistent AI memories across conversations
 - **Habit Streaks** — automatic streak calculation with best streak tracking
-- **Daily Briefing** — AI-generated personalized morning brief using real data
+- **Daily Briefing** — AI-generated personalized morning brief with tasks, financials, leads, milestones, content intel
+- **Sidebar Sections** — nav items grouped into Command, Intelligence, Operations, Business, System
+- **Live Timer** — start/stop timer on Time Tracker that auto-logs billable entries
+- **Cross-linking** — invoices show clickable client/project names, milestones show project names
+- **Real Progress** — dashboard project progress calculated from milestones/tasks, not random
+- **Integrated Dashboard** — financial cards (revenue, unpaid, billable hours) + pipeline stats on Command Center
+- **Integrated Briefing** — 8-card layout with unpaid invoices, hot leads, billable hours, content queued, upcoming milestones/content
 
 ## Key Commands
 

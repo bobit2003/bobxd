@@ -20,28 +20,58 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-const navItems = [
-  { href: "/", label: "Command", icon: Terminal, key: 'totalProjects' },
-  { href: "/briefing", label: "Briefing", icon: Sunrise, key: '' },
-  { href: "/agent-map", label: "Agent Map", icon: Network, key: 'totalConversations' },
-  { href: "/ai", label: "AI Brain", icon: Bot, key: 'totalConversations' },
-  { href: "/memories", label: "Memories", icon: Brain, key: '' },
-  { href: "/projects", label: "Projects", icon: FolderKanban, key: 'activeProjects' },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare, key: 'pendingTasks' },
-  { href: "/goals", label: "Goals", icon: Target, key: '' },
-  { href: "/clients", label: "Clients", icon: Users, key: 'activeClients' },
-  { href: "/notes", label: "Notes", icon: BookOpen, key: '' },
-  { href: "/habits", label: "Habits", icon: Flame, key: '' },
-  { href: "/metrics", label: "Metrics", icon: BarChart3, key: '' },
-  { href: "/leads", label: "Leads", icon: UserPlus, key: '' },
-  { href: "/invoices", label: "Invoices", icon: FileText, key: '' },
-  { href: "/expenses", label: "Expenses", icon: Receipt, key: '' },
-  { href: "/time", label: "Time", icon: Clock, key: '' },
-  { href: "/milestones", label: "Milestones", icon: Flag, key: '' },
-  { href: "/content", label: "Content", icon: CalendarDays, key: '' },
-  { href: "/automations", label: "Automations", icon: Zap, key: 'activeAutomations' },
-  { href: "/command-log", label: "Command Log", icon: ScrollText, key: '' },
+type NavItem = { href: string; label: string; icon: any; key: string };
+type NavSection = { section: string; items: NavItem[] };
+
+const navSections: NavSection[] = [
+  {
+    section: "Command",
+    items: [
+      { href: "/", label: "Command", icon: Terminal, key: 'totalProjects' },
+      { href: "/briefing", label: "Briefing", icon: Sunrise, key: '' },
+      { href: "/command-log", label: "Command Log", icon: ScrollText, key: '' },
+    ],
+  },
+  {
+    section: "Intelligence",
+    items: [
+      { href: "/ai", label: "AI Brain", icon: Bot, key: 'totalConversations' },
+      { href: "/memories", label: "Memories", icon: Brain, key: '' },
+      { href: "/agent-map", label: "Agent Map", icon: Network, key: '' },
+      { href: "/notes", label: "Notes", icon: BookOpen, key: '' },
+    ],
+  },
+  {
+    section: "Operations",
+    items: [
+      { href: "/projects", label: "Projects", icon: FolderKanban, key: 'activeProjects' },
+      { href: "/tasks", label: "Tasks", icon: CheckSquare, key: 'pendingTasks' },
+      { href: "/milestones", label: "Milestones", icon: Flag, key: '' },
+      { href: "/goals", label: "Goals", icon: Target, key: '' },
+      { href: "/habits", label: "Habits", icon: Flame, key: '' },
+      { href: "/time", label: "Time", icon: Clock, key: '' },
+      { href: "/content", label: "Content", icon: CalendarDays, key: '' },
+    ],
+  },
+  {
+    section: "Business",
+    items: [
+      { href: "/clients", label: "Clients", icon: Users, key: 'activeClients' },
+      { href: "/leads", label: "Leads", icon: UserPlus, key: '' },
+      { href: "/invoices", label: "Invoices", icon: FileText, key: '' },
+      { href: "/expenses", label: "Expenses", icon: Receipt, key: '' },
+      { href: "/metrics", label: "Metrics", icon: BarChart3, key: '' },
+    ],
+  },
+  {
+    section: "System",
+    items: [
+      { href: "/automations", label: "Automations", icon: Zap, key: 'activeAutomations' },
+    ],
+  },
 ];
+
+const navItems = navSections.flatMap(s => s.items);
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -138,32 +168,41 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Button>
           </div>
           
-          <nav className="flex-1 py-4 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-none px-2">
-            {navItems.map((item) => {
-              const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-              const Icon = item.icon;
-              
-              return (
-                <Link key={item.href} href={item.href}>
-                  <div 
-                    className={`
-                      flex items-center gap-3 px-3 py-2 rounded-sm transition-all duration-200 cursor-pointer overflow-hidden whitespace-nowrap
-                      ${isActive 
-                        ? 'bg-primary/10 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,191,255,0.1)]' 
-                        : 'text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent'
-                      }
-                      ${(!isMobileMenuOpen && isSidebarCollapsed) ? 'justify-center px-0' : ''}
-                    `}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    title={item.label}
-                  >
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'glow-text' : ''}`} />
-                    <span className={`text-xs tracking-widest uppercase transition-opacity ${(!isMobileMenuOpen && isSidebarCollapsed) ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto inline-block'}`}>{item.label}</span>
-                    {(!isSidebarCollapsed || isMobileMenuOpen) && getStatusIndicator(item.key)}
-                  </div>
-                </Link>
-              );
-            })}
+          <nav className="flex-1 py-2 overflow-y-auto overflow-x-hidden scrollbar-none px-2">
+            {navSections.map((section) => (
+              <div key={section.section} className="mb-1">
+                {(!isSidebarCollapsed || isMobileMenuOpen) && (
+                  <div className="px-3 pt-3 pb-1 text-[9px] font-bold tracking-[0.2em] uppercase text-primary/40">{section.section}</div>
+                )}
+                {isSidebarCollapsed && !isMobileMenuOpen && (
+                  <div className="my-1 mx-2 border-t border-white/5" />
+                )}
+                {section.items.map((item) => {
+                  const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                  const Icon = item.icon;
+                  return (
+                    <Link key={item.href} href={item.href}>
+                      <div 
+                        className={`
+                          flex items-center gap-3 px-3 py-1.5 rounded-sm transition-all duration-200 cursor-pointer overflow-hidden whitespace-nowrap
+                          ${isActive 
+                            ? 'bg-primary/10 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,191,255,0.1)]' 
+                            : 'text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent'
+                          }
+                          ${(!isMobileMenuOpen && isSidebarCollapsed) ? 'justify-center px-0' : ''}
+                        `}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        title={item.label}
+                      >
+                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'glow-text' : ''}`} />
+                        <span className={`text-xs tracking-widest uppercase transition-opacity ${(!isMobileMenuOpen && isSidebarCollapsed) ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto inline-block'}`}>{item.label}</span>
+                        {(!isSidebarCollapsed || isMobileMenuOpen) && getStatusIndicator(item.key)}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
         </aside>
 

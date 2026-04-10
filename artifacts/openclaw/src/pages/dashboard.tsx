@@ -1,4 +1,4 @@
-import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useListProjects, getListProjectsQueryKey, useListTasks, getListTasksQueryKey } from "@workspace/api-client-react";
+import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useListProjects, getListProjectsQueryKey, useListTasks, getListTasksQueryKey, useListMilestones } from "@workspace/api-client-react";
 import { FolderKanban, CheckSquare, Users, Zap, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, CalendarDays, Flag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
@@ -96,7 +96,21 @@ export default function Dashboard() {
     query: { queryKey: getListTasksQueryKey() }
   });
 
+  const { data: milestones } = useListMilestones();
+
   const activeProjects = projects?.filter(p => p.status === 'active') || [];
+
+  const getProjectProgress = (projectId: number) => {
+    const projMilestones = milestones?.filter(m => m.projectId === projectId) || [];
+    if (projMilestones.length === 0) {
+      const projTasks = tasks?.filter(t => (t as any).projectId === projectId) || [];
+      if (projTasks.length === 0) return 0;
+      const done = projTasks.filter(t => t.status === 'done').length;
+      return Math.round((done / projTasks.length) * 100);
+    }
+    const completed = projMilestones.filter(m => m.status === 'completed').length;
+    return Math.round((completed / projMilestones.length) * 100);
+  };
   const pendingTasks = tasks?.filter(t => t.status !== 'done').sort((a, b) => {
     const p = { high: 3, medium: 2, low: 1 };
     return p[b.priority as keyof typeof p] - p[a.priority as keyof typeof p];
@@ -225,16 +239,19 @@ export default function Dashboard() {
               {activeProjects.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground uppercase tracking-widest">No active directives.</div>
               ) : activeProjects.map(p => {
-                const fakeProgress = Math.floor(Math.random() * 40) + 20;
+                const progress = getProjectProgress(p.id);
                 return (
                   <div key={p.id} className="bg-black/40 border border-white/5 rounded p-3 hover:border-primary/30 transition-colors group">
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-bold text-sm tracking-tight text-foreground group-hover:text-primary transition-colors">{p.name}</span>
                       <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
                     </div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">{p.type}</div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{p.type}</span>
+                      <span className="text-[10px] font-mono text-primary/70">{progress}%</span>
+                    </div>
                     <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
-                      <div className="bg-primary h-full" style={{ width: `${fakeProgress}%` }} />
+                      <div className="bg-primary h-full transition-all duration-500" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
                 );

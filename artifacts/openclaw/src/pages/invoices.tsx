@@ -2,7 +2,8 @@ import { useState } from "react";
 import {
   useListInvoices, getListInvoicesQueryKey,
   useCreateInvoice, useUpdateInvoice, useDeleteInvoice,
-  useGetFinancialSummary, getGetFinancialSummaryQueryKey
+  useGetFinancialSummary, getGetFinancialSummaryQueryKey,
+  useListClients, useListProjects
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Plus, Trash2, FileText, DollarSign, AlertTriangle, CheckCircle } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 
 const statusColors: Record<string, string> = {
   draft: "bg-white/10 text-white/60 border-white/20",
@@ -24,11 +26,13 @@ export default function Invoices() {
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [formData, setFormData] = useState({
-    invoiceNumber: "", amount: "", currency: "USD", status: "draft", dueDate: "", items: "", notes: ""
+    invoiceNumber: "", amount: "", currency: "USD", status: "draft", dueDate: "", items: "", notes: "", clientId: "", projectId: ""
   });
 
   const { data: invoices, isLoading } = useListInvoices();
   const { data: summary } = useGetFinancialSummary();
+  const { data: clients } = useListClients();
+  const { data: projects } = useListProjects();
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
   const deleteInvoice = useDeleteInvoice();
@@ -40,10 +44,19 @@ export default function Invoices() {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    createInvoice.mutate({ data: { ...formData, dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined } as any }, {
-      onSuccess: () => { invalidate(); setIsCreateOpen(false); setFormData({ invoiceNumber: "", amount: "", currency: "USD", status: "draft", dueDate: "", items: "", notes: "" }); }
+    const { clientId, projectId, ...rest } = formData;
+    createInvoice.mutate({ data: {
+      ...rest,
+      clientId: clientId ? Number(clientId) : undefined,
+      projectId: projectId ? Number(projectId) : undefined,
+      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined
+    } as any }, {
+      onSuccess: () => { invalidate(); setIsCreateOpen(false); setFormData({ invoiceNumber: "", amount: "", currency: "USD", status: "draft", dueDate: "", items: "", notes: "", clientId: "", projectId: "" }); }
     });
   };
+
+  const clientName = (cid: number | null | undefined) => clients?.find(c => c.id === cid)?.name;
+  const projectName = (pid: number | null | undefined) => projects?.find(p => p.id === pid)?.name;
 
   const handleMarkPaid = (id: number) => {
     updateInvoice.mutate({ id, data: { status: "paid", paidDate: new Date().toISOString() } }, { onSuccess: invalidate });
@@ -75,6 +88,22 @@ export default function Invoices() {
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
               <Input placeholder="Invoice # *" value={formData.invoiceNumber} onChange={e => setFormData(p => ({ ...p, invoiceNumber: e.target.value }))} className="bg-white/5 border-white/10" required />
               <Input placeholder="Amount *" type="number" step="0.01" value={formData.amount} onChange={e => setFormData(p => ({ ...p, amount: e.target.value }))} className="bg-white/5 border-white/10" required />
+              {clients?.length ? (
+                <Select value={formData.clientId} onValueChange={v => setFormData(p => ({ ...p, clientId: v }))}>
+                  <SelectTrigger className="bg-white/5 border-white/10"><SelectValue placeholder="Select client (optional)" /></SelectTrigger>
+                  <SelectContent>
+                    {clients.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : null}
+              {projects?.length ? (
+                <Select value={formData.projectId} onValueChange={v => setFormData(p => ({ ...p, projectId: v }))}>
+                  <SelectTrigger className="bg-white/5 border-white/10"><SelectValue placeholder="Select project (optional)" /></SelectTrigger>
+                  <SelectContent>
+                    {projects.map(p => <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : null}
               <Input placeholder="Due date" type="date" value={formData.dueDate} onChange={e => setFormData(p => ({ ...p, dueDate: e.target.value }))} className="bg-white/5 border-white/10" />
               <Input placeholder="Line items" value={formData.items} onChange={e => setFormData(p => ({ ...p, items: e.target.value }))} className="bg-white/5 border-white/10" />
               <Input placeholder="Notes" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} className="bg-white/5 border-white/10" />
@@ -126,7 +155,17 @@ export default function Invoices() {
                         {inv.status?.toUpperCase()}
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1 flex gap-3">
+                    <div className="text-xs text-muted-foreground mt-1 flex gap-3 flex-wrap">
+                      {clientName((inv as any).clientId) && (
+                        <Link href="/clients" onClick={e => e.stopPropagation()}>
+                          <span className="text-primary/60 hover:text-primary hover:underline cursor-pointer">{clientName((inv as any).clientId)}</span>
+                        </Link>
+                      )}
+                      {projectName((inv as any).projectId) && (
+                        <Link href="/projects" onClick={e => e.stopPropagation()}>
+                          <span className="text-violet-400/60 hover:text-violet-400 hover:underline cursor-pointer">{projectName((inv as any).projectId)}</span>
+                        </Link>
+                      )}
                       {inv.items && <span className="truncate max-w-[200px]">{inv.items}</span>}
                       {inv.dueDate && <span>Due: {new Date(inv.dueDate).toLocaleDateString()}</span>}
                     </div>
