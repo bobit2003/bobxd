@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { tasks, leads, invoices, milestones, clients, timeEntries, habits, automations, conversations, messages, projects, auditLog } from "@workspace/db";
-import { eq, count, isNotNull, and, gte } from "drizzle-orm";
+import { tasks, leads, invoices, milestones, clients, timeEntries, habits, automations, conversations, messages, projects, auditLog, directives, memories } from "@workspace/db";
+import { eq, count, isNotNull, and, gte, desc, ne } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { writeAudit } from "../audit-writer.js";
 
 const router = Router();
 
@@ -424,6 +425,141 @@ router.get("/intelligence/agent-stats", async (req, res) => {
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get agent stats");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── Directives ──────────────────────────────────────────────────────────────
+
+router.get("/intelligence/directives", async (req, res) => {
+  try {
+    const rows = await db.select().from(directives)
+      .where(ne(directives.status, "dismissed"))
+      .orderBy(desc(directives.createdAt))
+      .limit(20);
+    res.json(rows.map(r => ({ ...r, createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString() })));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list directives");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/intelligence/directives/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { status } = req.body as { status: string };
+    if (!["active", "dismissed", "completed"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+    const [updated] = await db.update(directives)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(directives.id, id))
+      .returning();
+    if (!updated) return res.status(404).json({ error: "Not found" });
+    res.json({ ...updated, createdAt: updated.createdAt.toISOString(), updatedAt: updated.updatedAt.toISOString() });
+  } catch (err) {
+    req.log.error({ err }, "Failed to update directive");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /intelligence/analyze — AI analyzes system context and generates directives
+router.post("/intelligence/analyze", async (req, res) => {
+  try {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [allTasks, allLeads, allInvoices, allClients, allProjects, topMemories] = await Promise.all([
+      db.select().from(tasks),
+      db.select().from(leads),
+      db.select().from(invoices),
+      db.select().from(clients),
+      db.select().from(projects),
+      db.select().from(memories).orderBy(desc(memories.createdAt)).limit(5),
+    ]);
+
+    const pendingTasks = allTasks.filter(t => t.status !== "done");
+    const highPri = pendingTasks.filter(t => t.priority === "high");
+    const overdueTasks = pendingTasks.filter(t => t.dueDate && new Date(t.dueDate) < today);
+    const unpaidInvoices = allInvoices.filter(i => i.status !== "paid" && i.status !== "cancelled");
+    const overdueInv = unpaidInvoices.filter(i => i.dueDate && new Date(i.dueDate) < today);
+    const totalUnpaid = unpaidInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const totalRevenue = allInvoices.filter(i => i.status === "paid").reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const hotLeads = allLeads.filter(l => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+    const staleLeads = allLeads.filter(l => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return last < sevenDaysAgo;
+    });
+    const activeProjects = allProjects.filter(p => p.status === "active");
+
+    const contextBlock = `SYSTEM STATE — ${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+
+TASKS: ${pendingTasks.length} pending | ${highPri.length} high-priority | ${overdueTasks.length} overdue
+REVENUE: $${totalRevenue.toFixed(0)} collected | $${totalUnpaid.toFixed(0)} unpaid | ${overdueInv.length} overdue invoices
+LEADS: ${hotLeads.length} hot | ${staleLeads.length} stale (7+ days idle) | ${allLeads.filter(l => l.stage !== "won" && l.stage !== "lost").length} active
+CLIENTS: ${allClients.filter(c => c.status === "active").length} active of ${allClients.length} total
+PROJECTS: ${activeProjects.length} active of ${allProjects.length} total
+
+KEY ITEMS:
+- High-priority tasks: ${highPri.slice(0, 3).map(t => t.title).join("; ") || "none"}
+- Overdue tasks: ${overdueTasks.slice(0, 3).map(t => t.title).join("; ") || "none"}
+- Hot leads: ${hotLeads.slice(0, 3).map(l => `${l.name}${l.budget ? " $" + l.budget : ""}`).join("; ") || "none"}
+- Stale leads: ${staleLeads.slice(0, 3).map(l => l.name).join("; ") || "none"}
+- Overdue invoices: ${overdueInv.slice(0, 3).map(i => `${i.title || "Invoice"} $${i.amount}`).join("; ") || "none"}
+${topMemories.length > 0 ? `\nMEMORIES: ${topMemories.slice(0, 3).map(m => m.content).join(" | ")}` : ""}`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 800,
+      messages: [
+        {
+          role: "system",
+          content: `You are a multi-agent AI operating system. Analyze the system state and generate exactly 5 actionable directives. Each directive must:
+- Be specific and actionable (not generic advice)
+- Reference actual data from the context
+- Be assigned to the most appropriate agent: CEO Agent, Revenue Agent, Ops Agent, Analytics Agent, or Communication Agent
+- Have a priority: high, medium, or low
+- Have a type: revenue, ops, analytics, communication, or system
+
+Respond with ONLY a JSON array of 5 objects. Each object: { "content": string, "type": string, "priority": string, "source": string }
+
+Example: [{"content": "Follow up with 3 hot leads worth $15,000 combined before end of week", "type": "revenue", "priority": "high", "source": "Revenue Agent"}]`
+        },
+        { role: "user", content: contextBlock }
+      ],
+    });
+
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "[]";
+    let parsed: Array<{ content: string; type: string; priority: string; source: string }> = [];
+    try {
+      const match = raw.match(/\[[\s\S]*\]/);
+      parsed = match ? JSON.parse(match[0]) : [];
+    } catch { parsed = []; }
+
+    if (parsed.length === 0) {
+      return res.status(500).json({ error: "AI analysis returned no directives" });
+    }
+
+    // Dismiss old active directives, replace with new ones
+    await db.update(directives).set({ status: "dismissed", updatedAt: new Date() }).where(eq(directives.status, "active"));
+
+    const inserted = await db.insert(directives).values(
+      parsed.slice(0, 5).map(d => ({
+        content: d.content,
+        type: d.type || "system",
+        priority: d.priority || "medium",
+        source: d.source || "System",
+        status: "active",
+      }))
+    ).returning();
+
+    writeAudit({ action: "intelligence.analyze", entity: "system", entityId: null, details: `AI generated ${inserted.length} directives`, source: "ai" });
+
+    res.json(inserted.map(r => ({ ...r, createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString() })));
+  } catch (err) {
+    req.log.error({ err }, "Failed to analyze system context");
     res.status(500).json({ error: "Internal server error" });
   }
 });

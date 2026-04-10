@@ -42,6 +42,7 @@ import type {
   CreateTimeEntryBody,
   DailyBriefing,
   DashboardSummary,
+  Directive,
   Expense,
   FinancialSummary,
   GenerateOpenaiImageBody,
@@ -74,6 +75,7 @@ import type {
   UpdateAutomationBody,
   UpdateClientBody,
   UpdateContentBody,
+  UpdateDirectiveBody,
   UpdateGoalBody,
   UpdateHabitBody,
   UpdateInvoiceBody,
@@ -6725,3 +6727,246 @@ export function useGetSystemContext<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List active AI-generated directives
+ */
+export const getListDirectivesUrl = () => {
+  return `/api/intelligence/directives`;
+};
+
+export const listDirectives = async (
+  options?: RequestInit,
+): Promise<Directive[]> => {
+  return customFetch<Directive[]>(getListDirectivesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListDirectivesQueryKey = () => {
+  return [`/api/intelligence/directives`] as const;
+};
+
+export const getListDirectivesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listDirectives>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listDirectives>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListDirectivesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listDirectives>>> = ({
+    signal,
+  }) => listDirectives({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listDirectives>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListDirectivesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listDirectives>>
+>;
+export type ListDirectivesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active AI-generated directives
+ */
+
+export function useListDirectives<
+  TData = Awaited<ReturnType<typeof listDirectives>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listDirectives>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListDirectivesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update directive status (dismiss or complete)
+ */
+export const getUpdateDirectiveUrl = (id: number) => {
+  return `/api/intelligence/directives/${id}`;
+};
+
+export const updateDirective = async (
+  id: number,
+  updateDirectiveBody: UpdateDirectiveBody,
+  options?: RequestInit,
+): Promise<Directive> => {
+  return customFetch<Directive>(getUpdateDirectiveUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateDirectiveBody),
+  });
+};
+
+export const getUpdateDirectiveMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDirective>>,
+    TError,
+    { id: number; data: BodyType<UpdateDirectiveBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateDirective>>,
+  TError,
+  { id: number; data: BodyType<UpdateDirectiveBody> },
+  TContext
+> => {
+  const mutationKey = ["updateDirective"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateDirective>>,
+    { id: number; data: BodyType<UpdateDirectiveBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateDirective(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateDirectiveMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateDirective>>
+>;
+export type UpdateDirectiveMutationBody = BodyType<UpdateDirectiveBody>;
+export type UpdateDirectiveMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update directive status (dismiss or complete)
+ */
+export const useUpdateDirective = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDirective>>,
+    TError,
+    { id: number; data: BodyType<UpdateDirectiveBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateDirective>>,
+  TError,
+  { id: number; data: BodyType<UpdateDirectiveBody> },
+  TContext
+> => {
+  return useMutation(getUpdateDirectiveMutationOptions(options));
+};
+
+/**
+ * @summary Trigger AI analysis of system context — generates fresh directives from all agents
+ */
+export const getAnalyzeSystemContextUrl = () => {
+  return `/api/intelligence/analyze`;
+};
+
+export const analyzeSystemContext = async (
+  options?: RequestInit,
+): Promise<Directive[]> => {
+  return customFetch<Directive[]>(getAnalyzeSystemContextUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getAnalyzeSystemContextMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeSystemContext>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof analyzeSystemContext>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["analyzeSystemContext"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof analyzeSystemContext>>,
+    void
+  > = () => {
+    return analyzeSystemContext(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AnalyzeSystemContextMutationResult = NonNullable<
+  Awaited<ReturnType<typeof analyzeSystemContext>>
+>;
+
+export type AnalyzeSystemContextMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Trigger AI analysis of system context — generates fresh directives from all agents
+ */
+export const useAnalyzeSystemContext = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeSystemContext>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof analyzeSystemContext>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getAnalyzeSystemContextMutationOptions(options));
+};

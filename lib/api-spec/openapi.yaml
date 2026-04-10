@@ -1417,6 +1417,61 @@ paths:
               schema:
                 $ref: "#/components/schemas/SystemContext"
 
+  /intelligence/directives:
+    get:
+      operationId: listDirectives
+      tags: [intelligence]
+      summary: List active AI-generated directives
+      responses:
+        "200":
+          description: List of directives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Directive"
+
+  /intelligence/directives/{id}:
+    patch:
+      operationId: updateDirective
+      tags: [intelligence]
+      summary: Update directive status (dismiss or complete)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDirectiveBody"
+      responses:
+        "200":
+          description: Updated directive
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Directive"
+
+  /intelligence/analyze:
+    post:
+      operationId: analyzeSystemContext
+      tags: [intelligence]
+      summary: Trigger AI analysis of system context — generates fresh directives from all agents
+      responses:
+        "200":
+          description: Generated directives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Directive"
+
 components:
   schemas:
     HealthStatus:
@@ -2955,6 +3010,35 @@ components:
           type: string
           description: Frontend route to navigate to for this alert
       required: [type, severity, message, link]
+
+    Directive:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        type:
+          type: string
+        priority:
+          type: string
+        source:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, content, type, priority, source, status, createdAt, updatedAt]
+
+    UpdateDirectiveBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, dismissed, completed]
+      required: [status]
 
     AgentStats:
       type: object

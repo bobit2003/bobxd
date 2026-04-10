@@ -36,3 +36,4 @@ export * from "./expenses";
 export * from "./time-entries";
 export * from "./milestones";
 export * from "./content-items";
+export * from "./directives";

@@ -1435,3 +1435,57 @@ export const GetSystemContextResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary List active AI-generated directives
+ */
+export const ListDirectivesResponseItem = zod.object({
+  id: zod.number(),
+  content: zod.string(),
+  type: zod.string(),
+  priority: zod.string(),
+  source: zod.string(),
+  status: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListDirectivesResponse = zod.array(ListDirectivesResponseItem);
+
+/**
+ * @summary Update directive status (dismiss or complete)
+ */
+export const UpdateDirectiveParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateDirectiveBody = zod.object({
+  status: zod.enum(["active", "dismissed", "completed"]),
+});
+
+export const UpdateDirectiveResponse = zod.object({
+  id: zod.number(),
+  content: zod.string(),
+  type: zod.string(),
+  priority: zod.string(),
+  source: zod.string(),
+  status: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Trigger AI analysis of system context — generates fresh directives from all agents
+ */
+export const AnalyzeSystemContextResponseItem = zod.object({
+  id: zod.number(),
+  content: zod.string(),
+  type: zod.string(),
+  priority: zod.string(),
+  source: zod.string(),
+  status: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const AnalyzeSystemContextResponse = zod.array(
+  AnalyzeSystemContextResponseItem,
+);

@@ -1,12 +1,14 @@
 import {
   useGetDashboardSummary, getGetDashboardSummaryQueryKey,
-  useListProjects, getListProjectsQueryKey,
   useListTasks, getListTasksQueryKey,
-  useListMilestones,
   useGetRevenueIntelligence, getGetRevenueIntelligenceQueryKey,
   useGetIntelligenceAlerts, getGetIntelligenceAlertsQueryKey,
+  useListDirectives, getListDirectivesQueryKey,
+  useUpdateDirective,
+  useAnalyzeSystemContext,
+  type Directive,
 } from "@workspace/api-client-react";
-import { FolderKanban, CheckSquare, Users, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, TrendingUp, ArrowUpRight, Radio, Zap, X } from "lucide-react";
+import { FolderKanban, CheckSquare, Users, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, TrendingUp, ArrowUpRight, Radio, Zap, X, Brain, Check, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,6 +54,8 @@ function useAuditFeed() {
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetRevenueIntelligenceQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetIntelligenceAlertsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getListDirectivesQueryKey() });
   }, [queryClient]);
 
   useEffect(() => {
@@ -149,12 +153,37 @@ function AlertStrip({ alerts, onDismiss }: { alerts: AlertItem[]; onDismiss: (ty
 }
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
-  const { data: projects } = useListProjects({ query: { queryKey: getListProjectsQueryKey() } });
   const { data: tasks } = useListTasks({ query: { queryKey: getListTasksQueryKey() } });
-  const { data: milestones } = useListMilestones();
   const { data: revenueIntel } = useGetRevenueIntelligence({ query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 60000 } });
   const { data: rawAlerts } = useGetIntelligenceAlerts({ query: { queryKey: getGetIntelligenceAlertsQueryKey(), staleTime: 30000 } });
+  const { data: directives, isLoading: directivesLoading } = useListDirectives({ query: { queryKey: getListDirectivesQueryKey() } });
+  const updateDirective = useUpdateDirective();
+  const analyzeCtx = useAnalyzeSystemContext();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+
+  const handleAnalyze = () => {
+    setIsAnalyzing(true);
+    setAnalyzeError(null);
+    analyzeCtx.mutate(undefined, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListDirectivesQueryKey() });
+        setIsAnalyzing(false);
+      },
+      onError: () => {
+        setAnalyzeError("Analysis failed");
+        setIsAnalyzing(false);
+      }
+    });
+  };
+
+  const handleDirectiveAction = (id: number, status: "dismissed" | "completed") => {
+    updateDirective.mutate({ id, updateDirectiveBody: { status } }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListDirectivesQueryKey() })
+    });
+  };
 
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(() => {
     try {
@@ -165,7 +194,7 @@ export default function Dashboard() {
     }
   });
 
-  const activeAlerts = (rawAlerts ?? []).filter(a => !dismissedAlerts.has(a.type));
+  const activeAlerts = (rawAlerts ?? []).filter((a: AlertItem) => !dismissedAlerts.has(a.type));
   const dismissAlert = (type: string) => {
     setDismissedAlerts(prev => {
       const next = new Set([...prev, type]);
@@ -181,19 +210,10 @@ export default function Dashboard() {
     if (feedRef.current) feedRef.current.scrollTop = 0;
   }, [auditEntries.length]);
 
-  const activeProjects = projects?.filter(p => p.status === "active") ?? [];
+  const activeDirectives = (directives ?? []).filter((d: Directive) => d.status === "active");
 
-  const getProjectProgress = (projectId: number) => {
-    const projMilestones = milestones?.filter(m => m.projectId === projectId) ?? [];
-    if (projMilestones.length === 0) {
-      const projTasks = tasks?.filter(t => t.projectId === projectId) ?? [];
-      if (projTasks.length === 0) return 0;
-      return Math.round((projTasks.filter(t => t.status === "done").length / projTasks.length) * 100);
-    }
-    return Math.round((projMilestones.filter(m => m.status === "completed").length / projMilestones.length) * 100);
-  };
-
-  const pendingTasks = tasks?.filter(t => t.status !== "done").sort((a, b) => {
+  type TaskRow = { status: string; priority: string; id: number; title: string; projectId?: number | null };
+  const pendingTasks = tasks?.filter((t: TaskRow) => t.status !== "done").sort((a: TaskRow, b: TaskRow) => {
     const p: Record<string, number> = { high: 3, medium: 2, low: 1 };
     return (p[b.priority] ?? 0) - (p[a.priority] ?? 0);
   }).slice(0, 8) ?? [];
@@ -206,9 +226,20 @@ export default function Dashboard() {
           <h1 className="text-xl font-bold tracking-widest text-primary uppercase glow-text">Command Center</h1>
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Global Telemetry & Oversight</p>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Radio className="w-3 h-3 text-green-400 animate-pulse" />
-          <span className="text-[9px] text-green-400 uppercase tracking-widest font-mono">Live</span>
+        <div className="flex items-center gap-3">
+          {analyzeError && <span className="text-[9px] text-red-400 uppercase tracking-widest">{analyzeError}</span>}
+          <button
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-violet-500/30 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-all text-[9px] uppercase tracking-widest font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3" />}
+            {isAnalyzing ? "Analyzing..." : "Analyze"}
+          </button>
+          <div className="flex items-center gap-1.5">
+            <Radio className="w-3 h-3 text-green-400 animate-pulse" />
+            <span className="text-[9px] text-green-400 uppercase tracking-widest font-mono">Live</span>
+          </div>
         </div>
       </div>
 
@@ -275,7 +306,7 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="flex flex-wrap divide-x divide-amber-500/10">
-            {revenueIntel.opportunities.slice(0, 3).map((opp, i) => (
+            {revenueIntel.opportunities.slice(0, 3).map((opp: { label: string; urgency: string; value?: string | null }, i: number) => (
               <div key={i} className="flex-1 min-w-0 flex items-center gap-2.5 px-4 py-2.5">
                 <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${opp.urgency === "high" ? "bg-red-400 shadow-[0_0_5px_rgba(239,68,68,0.6)]" : opp.urgency === "medium" ? "bg-amber-400" : "bg-primary/50"}`} />
                 <div className="min-w-0 flex-1">
@@ -330,40 +361,57 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Active Projects */}
+        {/* AI Active Directives */}
         <div className="flex flex-col min-h-0">
           <div className="flex items-center gap-2 mb-2 shrink-0">
-            <FolderKanban className="w-3 h-3 text-primary/70" />
-            <h2 className="text-[10px] font-bold tracking-widest text-primary/70 uppercase">Active Directives</h2>
-            <Link href="/projects">
-              <span className="ml-auto text-[9px] text-muted-foreground hover:text-primary transition-colors cursor-pointer uppercase tracking-widest">
-                All
-              </span>
-            </Link>
+            <Brain className="w-3 h-3 text-violet-400/70" />
+            <h2 className="text-[10px] font-bold tracking-widest text-violet-400/70 uppercase">Active Directives</h2>
+            <span className="ml-auto text-[9px] text-muted-foreground font-mono">{activeDirectives.length} active</span>
           </div>
-          <div className="glass-card flex-1 rounded-lg p-3 overflow-y-auto space-y-2.5">
-            {activeProjects.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground/40 uppercase tracking-widest">
-                No active directives
+          <div className="glass-card flex-1 rounded-lg overflow-y-auto">
+            {directivesLoading ? (
+              <div className="p-3 space-y-2">
+                {[1,2,3].map(i => <Skeleton key={i} className="h-14 w-full bg-white/5" />)}
               </div>
-            ) : activeProjects.map(p => {
-              const progress = getProjectProgress(p.id);
-              return (
-                <div key={p.id} className="bg-black/40 border border-white/5 rounded p-3 hover:border-primary/20 transition-colors group">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-xs tracking-tight truncate text-foreground group-hover:text-primary transition-colors">{p.name}</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)] shrink-0 ml-2" />
-                  </div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[9px] text-muted-foreground uppercase tracking-widest">{p.type}</span>
-                    <span className="text-[9px] font-mono text-primary/70">{progress}%</span>
-                  </div>
-                  <div className="w-full bg-white/5 h-0.5 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full transition-all duration-700" style={{ width: `${progress}%` }} />
-                  </div>
-                </div>
-              );
-            })}
+            ) : activeDirectives.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-4">
+                <Brain className="w-6 h-6 text-violet-400/20" />
+                <p className="text-[10px] text-muted-foreground/40 uppercase tracking-widest">No directives</p>
+                <button onClick={handleAnalyze} disabled={isAnalyzing} className="text-[9px] text-violet-400/60 hover:text-violet-400 uppercase tracking-widest transition-colors">
+                  {isAnalyzing ? "Analyzing..." : "Run Analysis"}
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-white/5">
+                {activeDirectives.slice(0, 6).map((d: Directive) => {
+                  const priorityColor = d.priority === "high" ? "bg-red-400 shadow-[0_0_4px_rgba(239,68,68,0.5)]" : d.priority === "medium" ? "bg-amber-400" : "bg-primary/40";
+                  const typeColor = d.type === "revenue" ? "text-amber-400/70" : d.type === "ops" ? "text-primary/70" : d.type === "analytics" ? "text-cyan-400/70" : d.type === "communication" ? "text-green-400/70" : "text-violet-400/70";
+                  return (
+                    <motion.div key={d.id} layout initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                      className="px-3 py-2.5 hover:bg-white/[0.02] transition-colors group">
+                      <div className="flex items-start gap-2">
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${priorityColor}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] text-foreground/85 leading-snug">{d.content}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`text-[9px] uppercase tracking-widest font-bold ${typeColor}`}>{d.source}</span>
+                            <span className="text-[9px] text-muted-foreground/30 uppercase">{d.type}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <button onClick={() => handleDirectiveAction(d.id, "completed")} className="p-1 rounded hover:bg-green-500/20 text-muted-foreground/40 hover:text-green-400 transition-colors" title="Mark complete">
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button onClick={() => handleDirectiveAction(d.id, "dismissed")} className="p-1 rounded hover:bg-white/10 text-muted-foreground/40 hover:text-white/60 transition-colors" title="Dismiss">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -383,7 +431,7 @@ export default function Dashboard() {
               <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground/40 uppercase tracking-widest">
                 Queue empty
               </div>
-            ) : pendingTasks.map(t => (
+            ) : pendingTasks.map((t: TaskRow) => (
               <div key={t.id} className="flex items-start gap-2.5 bg-black/40 border border-white/5 rounded p-2.5 hover:border-white/10 transition-colors">
                 <div className={`w-0.5 h-full min-h-[28px] rounded-full shrink-0 ${
                   t.priority === "high" ? "bg-destructive shadow-[0_0_5px_rgba(239,68,68,0.5)]" :

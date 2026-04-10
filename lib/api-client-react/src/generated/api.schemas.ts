@@ -1031,6 +1031,30 @@ export interface AlertItem {
   link: string;
 }
 
+export interface Directive {
+  id: number;
+  content: string;
+  type: string;
+  priority: string;
+  source: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UpdateDirectiveBodyStatus =
+  (typeof UpdateDirectiveBodyStatus)[keyof typeof UpdateDirectiveBodyStatus];
+
+export const UpdateDirectiveBodyStatus = {
+  active: "active",
+  dismissed: "dismissed",
+  completed: "completed",
+} as const;
+
+export interface UpdateDirectiveBody {
+  status: UpdateDirectiveBodyStatus;
+}
+
 export type AgentStatsAiBrain = {
   conversationCount: number;
   messageCount: number;
