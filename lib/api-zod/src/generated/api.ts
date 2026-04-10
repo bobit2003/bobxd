@@ -108,6 +108,59 @@ export const GenerateOpenaiImageResponse = zod.object({
 });
 
 /**
+ * @summary Get revenue intelligence data — client rankings, stale leads, overdue collections, opportunities
+ */
+export const GetRevenueIntelligenceResponse = zod.object({
+  clientRankings: zod.array(
+    zod.object({
+      id: zod.number().optional(),
+      name: zod.string().optional(),
+      company: zod.string().optional(),
+      lifetimeValue: zod.number().optional(),
+      valueTier: zod.string().optional(),
+      lastInvoiceDate: zod.string().optional(),
+      paidInvoiceCount: zod.number().optional(),
+    }),
+  ),
+  staleLeads: zod.array(
+    zod.object({
+      id: zod.number().optional(),
+      name: zod.string().optional(),
+      company: zod.string().optional(),
+      score: zod.string().optional(),
+      stage: zod.string().optional(),
+      budget: zod.string().optional(),
+      daysSinceUpdate: zod.number().optional(),
+    }),
+  ),
+  overdueCollections: zod.array(
+    zod.object({
+      id: zod.number().optional(),
+      invoiceNumber: zod.string().optional(),
+      clientName: zod.string().optional(),
+      amount: zod.string().optional(),
+      daysOverdue: zod.number().optional(),
+    }),
+  ),
+  reactivationTargets: zod.array(
+    zod.object({
+      id: zod.number().optional(),
+      name: zod.string().optional(),
+      lifetimeValue: zod.number().optional(),
+      daysSinceLastInvoice: zod.number().optional(),
+    }),
+  ),
+  opportunities: zod.array(
+    zod.object({
+      type: zod.string().optional(),
+      label: zod.string().optional(),
+      value: zod.string().optional(),
+      urgency: zod.string().optional(),
+    }),
+  ),
+});
+
+/**
  * @summary List all projects
  */
 export const ListProjectsResponseItem = zod.object({
@@ -413,6 +466,8 @@ export const GetDashboardSummaryResponse = zod.object({
   billableHours: zod.string(),
   contentScheduled: zod.number(),
   milestonesInProgress: zod.number(),
+  staleLeadsCount: zod.number(),
+  reactivationTargetsCount: zod.number(),
 });
 
 /**

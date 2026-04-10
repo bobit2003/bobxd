@@ -20,7 +20,7 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-type NavItem = { href: string; label: string; icon: any; key: string };
+type NavItem = { href: string; label: string; icon: any; key: string; badgeKey?: string };
 type NavSection = { section: string; items: NavItem[] };
 
 const navSections: NavSection[] = [
@@ -56,8 +56,8 @@ const navSections: NavSection[] = [
   {
     section: "Business",
     items: [
-      { href: "/clients", label: "Clients", icon: Users, key: 'activeClients' },
-      { href: "/leads", label: "Leads", icon: UserPlus, key: '' },
+      { href: "/clients", label: "Clients", icon: Users, key: 'activeClients', badgeKey: 'reactivationTargetsCount' },
+      { href: "/leads", label: "Leads", icon: UserPlus, key: '', badgeKey: 'staleLeadsCount' },
       { href: "/invoices", label: "Invoices", icon: FileText, key: '' },
       { href: "/expenses", label: "Expenses", icon: Receipt, key: '' },
       { href: "/metrics", label: "Metrics", icon: BarChart3, key: '' },
@@ -120,10 +120,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getStatusIndicator = (key: string) => {
-    if (!summary) return null;
+    if (!summary || !key) return null;
     const val = summary[key as keyof typeof summary] as number;
     if (val > 0) {
       return <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse ml-auto" title={`${val} active`} />;
+    }
+    return null;
+  };
+
+  const getOpportunityBadge = (badgeKey: string | undefined) => {
+    if (!summary || !badgeKey) return null;
+    const val = summary[badgeKey as keyof typeof summary] as number;
+    if (val > 0) {
+      return (
+        <span className="ml-auto min-w-[18px] h-[18px] flex items-center justify-center rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[9px] font-bold font-mono px-1">
+          {val}
+        </span>
+      );
     }
     return null;
   };
@@ -196,7 +209,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       >
                         <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'glow-text' : ''}`} />
                         <span className={`text-xs tracking-widest uppercase transition-opacity ${(!isMobileMenuOpen && isSidebarCollapsed) ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto inline-block'}`}>{item.label}</span>
-                        {(!isSidebarCollapsed || isMobileMenuOpen) && getStatusIndicator(item.key)}
+                        {(!isSidebarCollapsed || isMobileMenuOpen) && (
+                          item.badgeKey
+                            ? getOpportunityBadge(item.badgeKey)
+                            : getStatusIndicator(item.key)
+                        )}
                       </div>
                     </Link>
                   );

@@ -402,6 +402,8 @@ export interface DashboardSummary {
   billableHours: string;
   contentScheduled: number;
   milestonesInProgress: number;
+  staleLeadsCount: number;
+  reactivationTargetsCount: number;
 }
 
 export interface Note {
@@ -846,6 +848,56 @@ export interface FinancialSummary {
   paidInvoices: number;
   totalBillableHours: string;
   recentTransactions?: FinancialSummaryRecentTransactionsItem[];
+}
+
+export type RevenueIntelligenceClientRankingsItem = {
+  id?: number;
+  name?: string;
+  company?: string;
+  lifetimeValue?: number;
+  valueTier?: string;
+  lastInvoiceDate?: string;
+  paidInvoiceCount?: number;
+};
+
+export type RevenueIntelligenceStaleLeadsItem = {
+  id?: number;
+  name?: string;
+  company?: string;
+  score?: string;
+  stage?: string;
+  budget?: string;
+  daysSinceUpdate?: number;
+};
+
+export type RevenueIntelligenceOverdueCollectionsItem = {
+  id?: number;
+  invoiceNumber?: string;
+  clientName?: string;
+  amount?: string;
+  daysOverdue?: number;
+};
+
+export type RevenueIntelligenceReactivationTargetsItem = {
+  id?: number;
+  name?: string;
+  lifetimeValue?: number;
+  daysSinceLastInvoice?: number;
+};
+
+export type RevenueIntelligenceOpportunitiesItem = {
+  type?: string;
+  label?: string;
+  value?: string;
+  urgency?: string;
+};
+
+export interface RevenueIntelligence {
+  clientRankings: RevenueIntelligenceClientRankingsItem[];
+  staleLeads: RevenueIntelligenceStaleLeadsItem[];
+  overdueCollections: RevenueIntelligenceOverdueCollectionsItem[];
+  reactivationTargets: RevenueIntelligenceReactivationTargetsItem[];
+  opportunities: RevenueIntelligenceOpportunitiesItem[];
 }
 
 export type ListTasksParams = {

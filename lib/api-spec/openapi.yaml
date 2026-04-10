@@ -200,6 +200,19 @@ paths:
           content:
             text/event-stream: {}
 
+  /intelligence/revenue:
+    get:
+      operationId: getRevenueIntelligence
+      tags: [intelligence]
+      summary: Get revenue intelligence data — client rankings, stale leads, overdue collections, opportunities
+      responses:
+        "200":
+          description: Revenue intelligence report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueIntelligence"
+
   /projects:
     get:
       operationId: listProjects
@@ -1765,6 +1778,10 @@ components:
           type: integer
         milestonesInProgress:
           type: integer
+        staleLeadsCount:
+          type: integer
+        reactivationTargetsCount:
+          type: integer
       required:
         - totalProjects
         - activeProjects
@@ -1783,6 +1800,8 @@ components:
         - billableHours
         - contentScheduled
         - milestonesInProgress
+        - staleLeadsCount
+        - reactivationTargetsCount
 
     Note:
       type: object
@@ -2625,3 +2644,60 @@ components:
               date:
                 type: string
       required: [totalRevenue, totalExpenses, netProfit, unpaidInvoices, unpaidAmount, paidInvoices, totalBillableHours]
+
+    RevenueIntelligence:
+      type: object
+      properties:
+        clientRankings:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              company: { type: string }
+              lifetimeValue: { type: number }
+              valueTier: { type: string }
+              lastInvoiceDate: { type: string }
+              paidInvoiceCount: { type: integer }
+        staleLeads:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              company: { type: string }
+              score: { type: string }
+              stage: { type: string }
+              budget: { type: string }
+              daysSinceUpdate: { type: integer }
+        overdueCollections:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              invoiceNumber: { type: string }
+              clientName: { type: string }
+              amount: { type: string }
+              daysOverdue: { type: integer }
+        reactivationTargets:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              lifetimeValue: { type: number }
+              daysSinceLastInvoice: { type: integer }
+        opportunities:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string }
+              label: { type: string }
+              value: { type: string }
+              urgency: { type: string }
+      required: [clientRankings, staleLeads, overdueCollections, reactivationTargets, opportunities]

@@ -61,6 +61,7 @@ import type {
   OpenaiError,
   OpenaiMessage,
   Project,
+  RevenueIntelligence,
   SearchResults,
   SendOpenaiMessageBody,
   Task,
@@ -826,6 +827,82 @@ export function useGetDailyPlan<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetDailyPlanQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get revenue intelligence data — client rankings, stale leads, overdue collections, opportunities
+ */
+export const getGetRevenueIntelligenceUrl = () => {
+  return `/api/intelligence/revenue`;
+};
+
+export const getRevenueIntelligence = async (
+  options?: RequestInit,
+): Promise<RevenueIntelligence> => {
+  return customFetch<RevenueIntelligence>(getGetRevenueIntelligenceUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetRevenueIntelligenceQueryKey = () => {
+  return [`/api/intelligence/revenue`] as const;
+};
+
+export const getGetRevenueIntelligenceQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRevenueIntelligence>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRevenueIntelligence>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRevenueIntelligenceQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRevenueIntelligence>>
+  > = ({ signal }) => getRevenueIntelligence({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRevenueIntelligence>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRevenueIntelligenceQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRevenueIntelligence>>
+>;
+export type GetRevenueIntelligenceQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get revenue intelligence data — client rankings, stale leads, overdue collections, opportunities
+ */
+
+export function useGetRevenueIntelligence<
+  TData = Awaited<ReturnType<typeof getRevenueIntelligence>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRevenueIntelligence>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRevenueIntelligenceQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -37454,6 +37454,55 @@ var GenerateOpenaiImageBody = objectType({
 var GenerateOpenaiImageResponse = objectType({
   b64_json: stringType()
 });
+var GetRevenueIntelligenceResponse = objectType({
+  clientRankings: arrayType(
+    objectType({
+      id: numberType().optional(),
+      name: stringType().optional(),
+      company: stringType().optional(),
+      lifetimeValue: numberType().optional(),
+      valueTier: stringType().optional(),
+      lastInvoiceDate: stringType().optional(),
+      paidInvoiceCount: numberType().optional()
+    })
+  ),
+  staleLeads: arrayType(
+    objectType({
+      id: numberType().optional(),
+      name: stringType().optional(),
+      company: stringType().optional(),
+      score: stringType().optional(),
+      stage: stringType().optional(),
+      budget: stringType().optional(),
+      daysSinceUpdate: numberType().optional()
+    })
+  ),
+  overdueCollections: arrayType(
+    objectType({
+      id: numberType().optional(),
+      invoiceNumber: stringType().optional(),
+      clientName: stringType().optional(),
+      amount: stringType().optional(),
+      daysOverdue: numberType().optional()
+    })
+  ),
+  reactivationTargets: arrayType(
+    objectType({
+      id: numberType().optional(),
+      name: stringType().optional(),
+      lifetimeValue: numberType().optional(),
+      daysSinceLastInvoice: numberType().optional()
+    })
+  ),
+  opportunities: arrayType(
+    objectType({
+      type: stringType().optional(),
+      label: stringType().optional(),
+      value: stringType().optional(),
+      urgency: stringType().optional()
+    })
+  )
+});
 var ListProjectsResponseItem = objectType({
   id: numberType(),
   name: stringType(),
@@ -37673,7 +37722,9 @@ var GetDashboardSummaryResponse = objectType({
   unpaidAmount: stringType(),
   billableHours: stringType(),
   contentScheduled: numberType(),
-  milestonesInProgress: numberType()
+  milestonesInProgress: numberType(),
+  staleLeadsCount: numberType(),
+  reactivationTargetsCount: numberType()
 });
 var ListNotesResponseItem = objectType({
   id: numberType(),
@@ -64681,6 +64732,23 @@ router7.get("/dashboard/summary", async (req, res) => {
     const billableHrs = allTime.filter((t) => t.billable === "true").reduce((s, t) => s + parseFloat(t.hours || "0"), 0);
     const [contentScheduled] = await db.select({ count: count() }).from(contentItems).where(eq(contentItems.status, "scheduled"));
     const [milestonesInProgress] = await db.select({ count: count() }).from(milestones).where(eq(milestones.status, "in_progress"));
+    const now = /* @__PURE__ */ new Date();
+    const staleLeadsCount = allLeads.filter((l) => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return (now.getTime() - lastUpdate.getTime()) / (1e3 * 60 * 60 * 24) >= 7;
+    }).length;
+    const allClients = await db.select().from(clients);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
+    const reactivationTargetsCount = allClients.filter((c) => {
+      const clientPaidInvs = allInvoices.filter((i) => i.clientId === c.id && i.status === "paid");
+      if (clientPaidInvs.length === 0) return false;
+      const lastPaid = clientPaidInvs.reduce((latest, inv) => {
+        const d = inv.paidDate ? new Date(inv.paidDate) : new Date(inv.updatedAt);
+        return d > latest ? d : latest;
+      }, /* @__PURE__ */ new Date(0));
+      return lastPaid < thirtyDaysAgo;
+    }).length;
     res.json({
       totalProjects: Number(totalProjects.count),
       activeProjects: Number(activeProjects.count),
@@ -64698,7 +64766,9 @@ router7.get("/dashboard/summary", async (req, res) => {
       unpaidAmount: unpaidAmt.toFixed(2),
       billableHours: billableHrs.toFixed(1),
       contentScheduled: Number(contentScheduled.count),
-      milestonesInProgress: Number(milestonesInProgress.count)
+      milestonesInProgress: Number(milestonesInProgress.count),
+      staleLeadsCount,
+      reactivationTargetsCount
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get dashboard summary");
@@ -65662,6 +65732,133 @@ Be specific. Use real names and numbers from the data. No vague advice.`;
 
 `);
     res.end();
+  }
+});
+router23.get("/intelligence/revenue", async (req, res) => {
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const allClients = await db.select().from(clients);
+    const allInvoices = await db.select().from(invoices);
+    const allLeads = await db.select().from(leads);
+    const clientRankings = allClients.map((c) => {
+      const clientPaidInvoices = allInvoices.filter((i) => i.clientId === c.id && i.status === "paid");
+      const lifetimeValue = clientPaidInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+      const lastInvoice = clientPaidInvoices.reduce((latest, inv) => {
+        const d = inv.paidDate ? new Date(inv.paidDate) : new Date(inv.updatedAt);
+        return d > latest ? d : latest;
+      }, /* @__PURE__ */ new Date(0));
+      let valueTier;
+      if (lifetimeValue >= 5e3) valueTier = "high";
+      else if (lifetimeValue >= 1e3) valueTier = "medium";
+      else valueTier = "low";
+      return {
+        id: c.id,
+        name: c.name,
+        company: c.company ?? null,
+        lifetimeValue,
+        valueTier,
+        lastInvoiceDate: lastInvoice.getTime() === 0 ? null : lastInvoice.toISOString(),
+        paidInvoiceCount: clientPaidInvoices.length
+      };
+    }).sort((a, b) => b.lifetimeValue - a.lifetimeValue);
+    const staleLeads = allLeads.filter((l) => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      const daysSince = (now.getTime() - lastUpdate.getTime()) / (1e3 * 60 * 60 * 24);
+      return daysSince >= 7;
+    }).map((l) => {
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      const daysSinceUpdate = Math.floor((now.getTime() - lastUpdate.getTime()) / (1e3 * 60 * 60 * 24));
+      return {
+        id: l.id,
+        name: l.name,
+        company: l.company ?? null,
+        score: l.score,
+        stage: l.stage,
+        budget: l.budget ?? null,
+        daysSinceUpdate
+      };
+    }).sort((a, b) => b.daysSinceUpdate - a.daysSinceUpdate);
+    const overdueCollections = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled" && i.dueDate && new Date(i.dueDate) < today).map((i) => {
+      const client = allClients.find((c) => c.id === i.clientId);
+      const daysOverdue = Math.floor((now.getTime() - new Date(i.dueDate).getTime()) / (1e3 * 60 * 60 * 24));
+      return {
+        id: i.id,
+        invoiceNumber: i.invoiceNumber,
+        clientName: client?.name ?? "Unknown Client",
+        amount: i.amount,
+        daysOverdue
+      };
+    }).sort((a, b) => b.daysOverdue - a.daysOverdue);
+    const reactivationTargets = allClients.filter((c) => {
+      const clientPaidInvs = allInvoices.filter((i) => i.clientId === c.id && i.status === "paid");
+      if (clientPaidInvs.length === 0) return false;
+      const lastPaid = clientPaidInvs.reduce((latest, inv) => {
+        const d = inv.paidDate ? new Date(inv.paidDate) : new Date(inv.updatedAt);
+        return d > latest ? d : latest;
+      }, /* @__PURE__ */ new Date(0));
+      return lastPaid < thirtyDaysAgo;
+    }).map((c) => {
+      const clientPaidInvs = allInvoices.filter((i) => i.clientId === c.id && i.status === "paid");
+      const lifetimeValue = clientPaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+      const lastPaid = clientPaidInvs.reduce((latest, inv) => {
+        const d = inv.paidDate ? new Date(inv.paidDate) : new Date(inv.updatedAt);
+        return d > latest ? d : latest;
+      }, /* @__PURE__ */ new Date(0));
+      const daysSinceLastInvoice = Math.floor((now.getTime() - lastPaid.getTime()) / (1e3 * 60 * 60 * 24));
+      return { id: c.id, name: c.name, lifetimeValue, daysSinceLastInvoice };
+    }).sort((a, b) => b.lifetimeValue - a.lifetimeValue);
+    const opportunities = [];
+    const totalOverdue = overdueCollections.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    if (overdueCollections.length > 0) {
+      opportunities.push({
+        type: "collection",
+        label: `Collect $${totalOverdue.toFixed(0)} overdue across ${overdueCollections.length} invoice${overdueCollections.length > 1 ? "s" : ""}`,
+        value: `$${totalOverdue.toFixed(0)}`,
+        urgency: "high"
+      });
+    }
+    const hotStaleLead = staleLeads.find((l) => l.score === "hot");
+    if (hotStaleLead) {
+      opportunities.push({
+        type: "lead_followup",
+        label: `Follow up on hot lead ${hotStaleLead.name}${hotStaleLead.company ? ` (${hotStaleLead.company})` : ""} \u2014 ${hotStaleLead.daysSinceUpdate} days idle${hotStaleLead.budget ? `, $${hotStaleLead.budget}` : ""}`,
+        value: hotStaleLead.budget ? `$${hotStaleLead.budget}` : "Unknown",
+        urgency: "high"
+      });
+    } else if (staleLeads.length > 0) {
+      const sl = staleLeads[0];
+      opportunities.push({
+        type: "lead_followup",
+        label: `Follow up on ${sl.name}${sl.company ? ` (${sl.company})` : ""} \u2014 ${sl.daysSinceUpdate} days with no contact`,
+        value: sl.budget ? `$${sl.budget}` : "Unknown",
+        urgency: "medium"
+      });
+    }
+    if (reactivationTargets.length > 0) {
+      const rt = reactivationTargets[0];
+      opportunities.push({
+        type: "reactivation",
+        label: `Reactivate ${rt.name} \u2014 $${rt.lifetimeValue.toFixed(0)} lifetime value, ${rt.daysSinceLastInvoice} days since last invoice`,
+        value: `$${rt.lifetimeValue.toFixed(0)}`,
+        urgency: rt.lifetimeValue >= 5e3 ? "high" : "medium"
+      });
+    }
+    const highValueClient = clientRankings.find((c) => c.valueTier === "high");
+    if (highValueClient && !reactivationTargets.some((r) => r.id === highValueClient.id)) {
+      opportunities.push({
+        type: "upsell",
+        label: `Upsell opportunity: ${highValueClient.name} \u2014 $${highValueClient.lifetimeValue.toFixed(0)} LTV, consider expanding scope`,
+        value: `$${highValueClient.lifetimeValue.toFixed(0)} LTV`,
+        urgency: "low"
+      });
+    }
+    res.json({ clientRankings, staleLeads, overdueCollections, reactivationTargets, opportunities });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get revenue intelligence");
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 var intelligence_default = router23;

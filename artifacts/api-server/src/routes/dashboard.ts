@@ -32,6 +32,28 @@ router.get("/dashboard/summary", async (req, res) => {
     const [contentScheduled] = await db.select({ count: count() }).from(contentItems).where(eq(contentItems.status, "scheduled"));
     const [milestonesInProgress] = await db.select({ count: count() }).from(milestones).where(eq(milestones.status, "in_progress"));
 
+    const now = new Date();
+
+    // Stale leads: not updated in 7+ days, not won/lost
+    const staleLeadsCount = allLeads.filter(l => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24) >= 7;
+    }).length;
+
+    // Reactivation targets: clients with paid invoices but nothing in 30+ days
+    const allClients = await db.select().from(clients);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const reactivationTargetsCount = allClients.filter(c => {
+      const clientPaidInvs = allInvoices.filter(i => i.clientId === c.id && i.status === "paid");
+      if (clientPaidInvs.length === 0) return false;
+      const lastPaid = clientPaidInvs.reduce((latest, inv) => {
+        const d = inv.paidDate ? new Date(inv.paidDate) : new Date(inv.updatedAt);
+        return d > latest ? d : latest;
+      }, new Date(0));
+      return lastPaid < thirtyDaysAgo;
+    }).length;
+
     res.json({
       totalProjects: Number(totalProjects.count),
       activeProjects: Number(activeProjects.count),
@@ -50,6 +72,8 @@ router.get("/dashboard/summary", async (req, res) => {
       billableHours: billableHrs.toFixed(1),
       contentScheduled: Number(contentScheduled.count),
       milestonesInProgress: Number(milestonesInProgress.count),
+      staleLeadsCount,
+      reactivationTargetsCount,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get dashboard summary");

@@ -1,5 +1,5 @@
-import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useListProjects, getListProjectsQueryKey, useListTasks, getListTasksQueryKey, useListMilestones } from "@workspace/api-client-react";
-import { FolderKanban, CheckSquare, Users, Zap, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, CalendarDays, Flag } from "lucide-react";
+import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useListProjects, getListProjectsQueryKey, useListTasks, getListTasksQueryKey, useListMilestones, useGetRevenueIntelligence, getGetRevenueIntelligenceQueryKey } from "@workspace/api-client-react";
+import { FolderKanban, CheckSquare, Users, Zap, MessageSquare, Activity, AlertTriangle, DollarSign, Target, Clock, CalendarDays, Flag, TrendingUp, ArrowUpRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -97,6 +97,10 @@ export default function Dashboard() {
   });
 
   const { data: milestones } = useListMilestones();
+
+  const { data: revenueIntel } = useGetRevenueIntelligence({
+    query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 60000 }
+  });
 
   const activeProjects = projects?.filter(p => p.status === 'active') || [];
 
@@ -202,6 +206,39 @@ export default function Dashboard() {
           </div>
         </>
       ) : null}
+
+      {/* Revenue Engine Panel */}
+      {revenueIntel && revenueIntel.opportunities.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}
+          className="glass-card rounded-lg border border-amber-500/20 bg-amber-500/5 shrink-0">
+          <div className="flex items-center justify-between p-3 border-b border-amber-500/15">
+            <h2 className="text-xs font-bold tracking-widest text-amber-400 uppercase flex items-center gap-2">
+              <TrendingUp className="w-3 h-3" /> Revenue Engine
+            </h2>
+            <Link href="/clients">
+              <span className="text-[9px] text-amber-400/60 uppercase tracking-widest hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1">
+                View Intelligence <ArrowUpRight className="w-3 h-3" />
+              </span>
+            </Link>
+          </div>
+          <div className="divide-y divide-amber-500/10">
+            {revenueIntel.opportunities.slice(0, 3).map((opp, i) => (
+              <div key={i} className="flex items-center gap-3 p-3">
+                <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${opp.urgency === 'high' ? 'bg-red-400 shadow-[0_0_5px_rgba(239,68,68,0.6)]' : opp.urgency === 'medium' ? 'bg-amber-400' : 'bg-primary/50'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-foreground/90 truncate">{opp.label}</div>
+                  <div className={`text-[9px] uppercase tracking-widest mt-0.5 ${opp.urgency === 'high' ? 'text-red-400' : opp.urgency === 'medium' ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                    {opp.type.replace('_', ' ')} — {opp.urgency} priority
+                  </div>
+                </div>
+                {opp.value && opp.value !== "Unknown" && (
+                  <div className="text-amber-400 font-bold font-mono text-sm shrink-0">{opp.value}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
         <div className="lg:col-span-1 flex flex-col min-h-0">

@@ -24,4 +24,6 @@ export interface DashboardSummary {
   billableHours: string;
   contentScheduled: number;
   milestonesInProgress: number;
+  staleLeadsCount: number;
+  reactivationTargetsCount: number;
 }
