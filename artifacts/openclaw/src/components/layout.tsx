@@ -1,20 +1,40 @@
 import { Link, useLocation, useLocation as useWouterLocation } from "wouter";
-import { Terminal, Bot, FolderKanban, CheckSquare, Users, Zap, Menu, Network, Search, Command } from "lucide-react";
+import { Terminal, Bot, FolderKanban, CheckSquare, Users, Zap, Menu, Network, Search, Command, BookOpen, Flame, Target, Brain, ScrollText, BarChart3, Sunrise } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useGetDashboardSummary, getGetDashboardSummaryQueryKey } from "@workspace/api-client-react";
+import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGlobalSearch } from "@workspace/api-client-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Command as CommandCmd, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
+
 const navItems = [
   { href: "/", label: "Command", icon: Terminal, key: 'totalProjects' },
+  { href: "/briefing", label: "Briefing", icon: Sunrise, key: '' },
   { href: "/agent-map", label: "Agent Map", icon: Network, key: 'totalConversations' },
   { href: "/ai", label: "AI Brain", icon: Bot, key: 'totalConversations' },
+  { href: "/memories", label: "Memories", icon: Brain, key: '' },
   { href: "/projects", label: "Projects", icon: FolderKanban, key: 'activeProjects' },
   { href: "/tasks", label: "Tasks", icon: CheckSquare, key: 'pendingTasks' },
+  { href: "/goals", label: "Goals", icon: Target, key: '' },
   { href: "/clients", label: "Clients", icon: Users, key: 'activeClients' },
+  { href: "/notes", label: "Notes", icon: BookOpen, key: '' },
+  { href: "/habits", label: "Habits", icon: Flame, key: '' },
+  { href: "/metrics", label: "Metrics", icon: BarChart3, key: '' },
   { href: "/automations", label: "Automations", icon: Zap, key: 'activeAutomations' },
+  { href: "/command-log", label: "Command Log", icon: ScrollText, key: '' },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -24,10 +44,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [uptime, setUptime] = useState("00:00:00");
   const [currentTime, setCurrentTime] = useState("");
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebounce(searchQuery, 300);
 
   const { data: summary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
+
+  const { data: searchResults } = useGlobalSearch(
+    { q: debouncedQuery }, 
+    { query: { enabled: debouncedQuery.length > 1, queryKey: ['globalSearch', debouncedQuery] as any } }
+  );
 
   useEffect(() => {
     document.documentElement.classList.add("dark");
@@ -153,30 +180,81 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      <Dialog open={cmdOpen} onOpenChange={setCmdOpen}>
+      <Dialog open={cmdOpen} onOpenChange={(open) => {
+        setCmdOpen(open);
+        if (!open) setSearchQuery("");
+      }}>
         <DialogContent className="p-0 overflow-hidden bg-black/90 backdrop-blur-xl border-primary/30 shadow-[0_0_30px_rgba(0,191,255,0.15)] max-w-2xl font-mono">
-          <CommandCmd className="bg-transparent">
+          <CommandCmd className="bg-transparent" shouldFilter={false}>
             <div className="flex items-center border-b border-border/50 px-3">
               <Terminal className="mr-2 h-4 w-4 shrink-0 text-primary animate-pulse" />
-              <CommandInput placeholder="Enter command or destination..." className="h-12 border-0 bg-transparent text-primary placeholder:text-primary/30 font-mono focus:ring-0 text-sm" />
+              <CommandInput 
+                placeholder="Enter command or destination..." 
+                className="h-12 border-0 bg-transparent text-primary placeholder:text-primary/30 font-mono focus:ring-0 text-sm" 
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+              />
             </div>
-            <CommandList className="max-h-[300px]">
-              <CommandEmpty className="py-6 text-center text-sm text-primary/50 uppercase tracking-widest">No command found.</CommandEmpty>
-              <CommandGroup heading="Navigation" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
-                {navItems.map((item) => (
-                  <CommandItem
-                    key={item.href}
-                    onSelect={() => {
-                      setLocation(item.href);
-                      setCmdOpen(false);
-                    }}
-                    className="flex items-center gap-2 cursor-pointer text-foreground data-[selected=true]:bg-primary/20 data-[selected=true]:text-primary"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span className="uppercase text-xs tracking-wider">GOTO {item.label}</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+            <CommandList className="max-h-[400px]">
+              {searchResults && Object.values(searchResults).some((arr: any) => arr.length > 0) ? (
+                <>
+                  {searchResults.projects.length > 0 && (
+                    <CommandGroup heading="Projects" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                      {searchResults.projects.map((p: any) => (
+                        <CommandItem key={`p-${p.id}`} onSelect={() => { setLocation("/projects"); setCmdOpen(false); }} className="text-foreground">
+                          <FolderKanban className="mr-2 h-4 w-4" /> <span>{p.name}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  {searchResults.tasks.length > 0 && (
+                    <CommandGroup heading="Tasks" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                      {searchResults.tasks.map((t: any) => (
+                        <CommandItem key={`t-${t.id}`} onSelect={() => { setLocation("/tasks"); setCmdOpen(false); }} className="text-foreground">
+                          <CheckSquare className="mr-2 h-4 w-4" /> <span>{t.title}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  {searchResults.notes.length > 0 && (
+                    <CommandGroup heading="Notes" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                      {searchResults.notes.map((n: any) => (
+                        <CommandItem key={`n-${n.id}`} onSelect={() => { setLocation("/notes"); setCmdOpen(false); }} className="text-foreground">
+                          <BookOpen className="mr-2 h-4 w-4" /> <span>{n.title}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  {searchResults.clients.length > 0 && (
+                    <CommandGroup heading="Clients" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                      {searchResults.clients.map((c: any) => (
+                        <CommandItem key={`c-${c.id}`} onSelect={() => { setLocation("/clients"); setCmdOpen(false); }} className="text-foreground">
+                          <Users className="mr-2 h-4 w-4" /> <span>{c.name}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                </>
+              ) : (
+                <>
+                  <CommandEmpty className="py-6 text-center text-sm text-primary/50 uppercase tracking-widest">No matching records.</CommandEmpty>
+                  <CommandGroup heading="Navigation" className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+                    {navItems.filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase()) || searchQuery === "").map((item) => (
+                      <CommandItem
+                        key={item.href}
+                        onSelect={() => {
+                          setLocation(item.href);
+                          setCmdOpen(false);
+                        }}
+                        className="flex items-center gap-2 cursor-pointer text-foreground data-[selected=true]:bg-primary/20 data-[selected=true]:text-primary"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span className="uppercase text-xs tracking-wider">GOTO {item.label}</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
             </CommandList>
           </CommandCmd>
         </DialogContent>

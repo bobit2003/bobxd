@@ -385,6 +385,165 @@ export interface DashboardSummary {
   totalConversations: number;
 }
 
+export interface Note {
+  id: number;
+  title: string;
+  content: string;
+  tags?: string | null;
+  projectId?: string | null;
+  category: string;
+  pinned?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateNoteBody {
+  title: string;
+  content?: string;
+  tags?: string;
+  projectId?: string;
+  category?: string;
+  pinned?: string;
+}
+
+export interface UpdateNoteBody {
+  title?: string;
+  content?: string;
+  tags?: string;
+  projectId?: string;
+  category?: string;
+  pinned?: string;
+}
+
+export interface Habit {
+  id: number;
+  name: string;
+  description?: string | null;
+  frequency: string;
+  streak: number;
+  bestStreak: number;
+  totalCompletions: number;
+  color: string;
+  icon: string;
+  lastCompleted?: string | null;
+  createdAt: string;
+}
+
+export interface CreateHabitBody {
+  name: string;
+  description?: string;
+  frequency?: string;
+  color?: string;
+  icon?: string;
+}
+
+export interface UpdateHabitBody {
+  name?: string;
+  description?: string;
+  frequency?: string;
+  color?: string;
+  icon?: string;
+}
+
+export interface Goal {
+  id: number;
+  title: string;
+  description?: string | null;
+  category: string;
+  status: string;
+  progress: number;
+  milestones?: string | null;
+  targetDate?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateGoalBody {
+  title: string;
+  description?: string;
+  category?: string;
+  status?: string;
+  progress?: number;
+  milestones?: string;
+  targetDate?: string;
+}
+
+export interface UpdateGoalBody {
+  title?: string;
+  description?: string;
+  category?: string;
+  status?: string;
+  progress?: number;
+  milestones?: string;
+  targetDate?: string;
+}
+
+export interface Memory {
+  id: number;
+  content: string;
+  category: string;
+  source: string;
+  importance: string;
+  conversationId?: number | null;
+  createdAt: string;
+}
+
+export interface CreateMemoryBody {
+  content: string;
+  category?: string;
+  source?: string;
+  importance?: string;
+  conversationId?: number;
+}
+
+export interface AuditLogEntry {
+  id: number;
+  action: string;
+  entity: string;
+  entityId?: string | null;
+  details?: string | null;
+  source: string;
+  createdAt: string;
+}
+
+export interface MetricEntry {
+  id: number;
+  name: string;
+  value: string;
+  unit?: string | null;
+  category: string;
+  date: string;
+  createdAt: string;
+}
+
+export interface CreateMetricBody {
+  name: string;
+  value: string;
+  unit?: string;
+  category?: string;
+  date?: string;
+}
+
+export interface SearchResults {
+  projects: Project[];
+  tasks: Task[];
+  clients: Client[];
+  notes: Note[];
+  conversations: OpenaiConversation[];
+}
+
+export interface DailyBriefing {
+  greeting: string;
+  date: string;
+  tasksDueToday: number;
+  tasksOverdue: number;
+  activeProjects: number;
+  currentStreak: number;
+  topPriorities: string[];
+  aiInsight: string;
+  quote: string;
+}
+
 export type ListTasksParams = {
   projectId?: number;
   status?: ListTasksStatus;
@@ -399,3 +558,7 @@ export const ListTasksStatus = {
   in_progress: "in_progress",
   done: "done",
 } as const;
+
+export type GlobalSearchParams = {
+  q: string;
+};

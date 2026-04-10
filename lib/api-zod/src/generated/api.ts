@@ -404,3 +404,392 @@ export const GetDashboardSummaryResponse = zod.object({
   activeAutomations: zod.number(),
   totalConversations: zod.number(),
 });
+
+/**
+ * @summary List all notes
+ */
+export const ListNotesResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  tags: zod.string().nullish(),
+  projectId: zod.string().nullish(),
+  category: zod.string(),
+  pinned: zod.string().optional(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListNotesResponse = zod.array(ListNotesResponseItem);
+
+/**
+ * @summary Create a note
+ */
+export const CreateNoteBody = zod.object({
+  title: zod.string(),
+  content: zod.string().optional(),
+  tags: zod.string().optional(),
+  projectId: zod.string().optional(),
+  category: zod.string().optional(),
+  pinned: zod.string().optional(),
+});
+
+/**
+ * @summary Get a note by ID
+ */
+export const GetNoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetNoteResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  tags: zod.string().nullish(),
+  projectId: zod.string().nullish(),
+  category: zod.string(),
+  pinned: zod.string().optional(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a note
+ */
+export const UpdateNoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateNoteBody = zod.object({
+  title: zod.string().optional(),
+  content: zod.string().optional(),
+  tags: zod.string().optional(),
+  projectId: zod.string().optional(),
+  category: zod.string().optional(),
+  pinned: zod.string().optional(),
+});
+
+export const UpdateNoteResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  tags: zod.string().nullish(),
+  projectId: zod.string().nullish(),
+  category: zod.string(),
+  pinned: zod.string().optional(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a note
+ */
+export const DeleteNoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all habits
+ */
+export const ListHabitsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  frequency: zod.string(),
+  streak: zod.number(),
+  bestStreak: zod.number(),
+  totalCompletions: zod.number(),
+  color: zod.string(),
+  icon: zod.string(),
+  lastCompleted: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListHabitsResponse = zod.array(ListHabitsResponseItem);
+
+/**
+ * @summary Create a habit
+ */
+export const CreateHabitBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+  frequency: zod.string().optional(),
+  color: zod.string().optional(),
+  icon: zod.string().optional(),
+});
+
+/**
+ * @summary Update a habit
+ */
+export const UpdateHabitParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateHabitBody = zod.object({
+  name: zod.string().optional(),
+  description: zod.string().optional(),
+  frequency: zod.string().optional(),
+  color: zod.string().optional(),
+  icon: zod.string().optional(),
+});
+
+export const UpdateHabitResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  frequency: zod.string(),
+  streak: zod.number(),
+  bestStreak: zod.number(),
+  totalCompletions: zod.number(),
+  color: zod.string(),
+  icon: zod.string(),
+  lastCompleted: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a habit
+ */
+export const DeleteHabitParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Mark a habit as completed for today
+ */
+export const CompleteHabitParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CompleteHabitResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  frequency: zod.string(),
+  streak: zod.number(),
+  bestStreak: zod.number(),
+  totalCompletions: zod.number(),
+  color: zod.string(),
+  icon: zod.string(),
+  lastCompleted: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List all goals
+ */
+export const ListGoalsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  status: zod.string(),
+  progress: zod.number(),
+  milestones: zod.string().nullish(),
+  targetDate: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListGoalsResponse = zod.array(ListGoalsResponseItem);
+
+/**
+ * @summary Create a goal
+ */
+export const CreateGoalBody = zod.object({
+  title: zod.string(),
+  description: zod.string().optional(),
+  category: zod.string().optional(),
+  status: zod.string().optional(),
+  progress: zod.number().optional(),
+  milestones: zod.string().optional(),
+  targetDate: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Update a goal
+ */
+export const UpdateGoalParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateGoalBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  category: zod.string().optional(),
+  status: zod.string().optional(),
+  progress: zod.number().optional(),
+  milestones: zod.string().optional(),
+  targetDate: zod.coerce.date().optional(),
+});
+
+export const UpdateGoalResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  status: zod.string(),
+  progress: zod.number(),
+  milestones: zod.string().nullish(),
+  targetDate: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a goal
+ */
+export const DeleteGoalParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List AI memories
+ */
+export const ListMemoriesResponseItem = zod.object({
+  id: zod.number(),
+  content: zod.string(),
+  category: zod.string(),
+  source: zod.string(),
+  importance: zod.string(),
+  conversationId: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListMemoriesResponse = zod.array(ListMemoriesResponseItem);
+
+/**
+ * @summary Store an AI memory
+ */
+export const CreateMemoryBody = zod.object({
+  content: zod.string(),
+  category: zod.string().optional(),
+  source: zod.string().optional(),
+  importance: zod.string().optional(),
+  conversationId: zod.number().optional(),
+});
+
+/**
+ * @summary Delete a memory
+ */
+export const DeleteMemoryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List audit log entries
+ */
+export const ListAuditLogResponseItem = zod.object({
+  id: zod.number(),
+  action: zod.string(),
+  entity: zod.string(),
+  entityId: zod.string().nullish(),
+  details: zod.string().nullish(),
+  source: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListAuditLogResponse = zod.array(ListAuditLogResponseItem);
+
+/**
+ * @summary List metrics
+ */
+export const ListMetricsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  value: zod.string(),
+  unit: zod.string().nullish(),
+  category: zod.string(),
+  date: zod.coerce.date(),
+  createdAt: zod.coerce.date(),
+});
+export const ListMetricsResponse = zod.array(ListMetricsResponseItem);
+
+/**
+ * @summary Log a metric
+ */
+export const CreateMetricBody = zod.object({
+  name: zod.string(),
+  value: zod.string(),
+  unit: zod.string().optional(),
+  category: zod.string().optional(),
+  date: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Search across all entities
+ */
+export const GlobalSearchQueryParams = zod.object({
+  q: zod.coerce.string(),
+});
+
+export const GlobalSearchResponse = zod.object({
+  projects: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      description: zod.string().optional(),
+      status: zod.enum(["active", "paused", "completed", "archived"]),
+      type: zod.enum(["website", "bot", "tool", "automation", "other"]),
+      clientId: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  tasks: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      description: zod.string().optional(),
+      status: zod.enum(["todo", "in_progress", "done"]),
+      priority: zod.enum(["low", "medium", "high"]),
+      projectId: zod.number().nullish(),
+      clientId: zod.number().nullish(),
+      dueDate: zod.coerce.date().nullish(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  clients: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      email: zod.string().optional(),
+      company: zod.string().optional(),
+      notes: zod.string().optional(),
+      status: zod.enum(["active", "inactive", "lead"]),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  notes: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      content: zod.string(),
+      tags: zod.string().nullish(),
+      projectId: zod.string().nullish(),
+      category: zod.string(),
+      pinned: zod.string().optional(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  conversations: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get AI-generated daily briefing
+ */
+export const GetDailyBriefingResponse = zod.object({
+  greeting: zod.string(),
+  date: zod.string(),
+  tasksDueToday: zod.number(),
+  tasksOverdue: zod.number(),
+  activeProjects: zod.number(),
+  currentStreak: zod.number(),
+  topPriorities: zod.array(zod.string()),
+  aiInsight: zod.string(),
+  quote: zod.string(),
+});

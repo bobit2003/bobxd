@@ -12,6 +12,13 @@ import Tasks from "@/pages/tasks";
 import Clients from "@/pages/clients";
 import Automations from "@/pages/automations";
 import AgentMap from "@/pages/agent-map";
+import Notes from "@/pages/notes";
+import Habits from "@/pages/habits";
+import Goals from "@/pages/goals";
+import Memories from "@/pages/memories";
+import CommandLog from "@/pages/command-log";
+import Metrics from "@/pages/metrics";
+import Briefing from "@/pages/briefing";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +34,13 @@ function Router() {
           <Route path="/tasks" component={Tasks} />
           <Route path="/clients" component={Clients} />
           <Route path="/automations" component={Automations} />
+          <Route path="/notes" component={Notes} />
+          <Route path="/habits" component={Habits} />
+          <Route path="/goals" component={Goals} />
+          <Route path="/memories" component={Memories} />
+          <Route path="/command-log" component={CommandLog} />
+          <Route path="/metrics" component={Metrics} />
+          <Route path="/briefing" component={Briefing} />
           <Route component={NotFound} />
         </Switch>
       </AnimatePresence>
