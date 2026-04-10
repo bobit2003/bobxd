@@ -42,9 +42,9 @@ function StatBadge({ value, label, color }: { value: number | string; label: str
 
 type AgentStats = {
   aiBrain: { conversationCount: number; messageCount: number };
-  operations: { activeTasks: number; pendingTasks: number; totalTasks: number };
+  operations: { activeTasks: number; pendingTasks: number; totalTasks: number; projectCount: number };
   revenue: { pipelineValue: number; paidRevenue: number; hotLeads: number; totalLeads: number; activeClients: number; totalClients: number };
-  automation: { totalAutomations: number; activeAutomations: number };
+  automation: { totalAutomations: number; activeAutomations: number; automationsEverRun: number; totalRunCount: number; recentRunCount: number };
 };
 
 function NodeStatBadge({ nodeId, domain, stats }: { nodeId: string; domain: string | null; stats: AgentStats | undefined }) {
@@ -69,7 +69,8 @@ function NodeStatBadge({ nodeId, domain, stats }: { nodeId: string; domain: stri
   if (nodeId === "builder" && domain === "operations") {
     return (
       <div className="flex gap-1 mt-1">
-        <StatBadge value={stats.operations.pendingTasks} label="queue" color="border-primary/30 text-primary" />
+        <StatBadge value={stats.operations.projectCount} label="projs" color="border-primary/30 text-primary" />
+        <StatBadge value={stats.operations.pendingTasks} label="queue" color="border-primary/20 text-primary/60" />
       </div>
     );
   }
@@ -84,8 +85,8 @@ function NodeStatBadge({ nodeId, domain, stats }: { nodeId: string; domain: stri
   if (nodeId === "auto" && domain === "automation") {
     return (
       <div className="flex gap-1 mt-1">
-        <StatBadge value={stats.automation.activeAutomations} label="active" color="border-amber-500/30 text-amber-400" />
-        <StatBadge value={stats.automation.totalAutomations} label="total" color="border-amber-500/20 text-amber-400/60" />
+        <StatBadge value={stats.automation.totalRunCount} label="runs" color="border-amber-500/30 text-amber-400" />
+        <StatBadge value={stats.automation.recentRunCount} label="7d" color="border-amber-500/20 text-amber-400/60" />
       </div>
     );
   }
@@ -194,14 +195,18 @@ export default function AgentMap() {
                 </div>
                 <div className="bg-primary/10 border border-primary/20 rounded p-3">
                   <div className="text-[9px] text-primary uppercase tracking-widest mb-2 font-bold">Operations</div>
-                  <div className="grid grid-cols-3 gap-1">
+                  <div className="grid grid-cols-4 gap-1">
+                    <div>
+                      <div className="text-base font-bold font-mono text-primary">{stats.operations.projectCount}</div>
+                      <div className="text-[8px] text-muted-foreground uppercase tracking-widest">Projs</div>
+                    </div>
                     <div>
                       <div className="text-base font-bold font-mono text-primary">{stats.operations.activeTasks}</div>
                       <div className="text-[8px] text-muted-foreground uppercase tracking-widest">Active</div>
                     </div>
                     <div>
                       <div className="text-base font-bold font-mono text-primary">{stats.operations.pendingTasks}</div>
-                      <div className="text-[8px] text-muted-foreground uppercase tracking-widest">Pending</div>
+                      <div className="text-[8px] text-muted-foreground uppercase tracking-widest">Pend</div>
                     </div>
                     <div>
                       <div className="text-base font-bold font-mono text-primary/60">{stats.operations.totalTasks}</div>
@@ -232,14 +237,22 @@ export default function AgentMap() {
                 </div>
                 <div className="bg-cyan-500/10 border border-cyan-500/20 rounded p-3">
                   <div className="text-[9px] text-cyan-400 uppercase tracking-widest mb-2 font-bold">Automation</div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-1">
                     <div>
-                      <div className="text-lg font-bold font-mono text-cyan-400">{stats.automation.activeAutomations}</div>
+                      <div className="text-base font-bold font-mono text-cyan-400">{stats.automation.activeAutomations}</div>
                       <div className="text-[8px] text-muted-foreground uppercase tracking-widest">Active</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold font-mono text-cyan-400/60">{stats.automation.totalAutomations}</div>
+                      <div className="text-base font-bold font-mono text-cyan-400/60">{stats.automation.totalAutomations}</div>
                       <div className="text-[8px] text-muted-foreground uppercase tracking-widest">Total</div>
+                    </div>
+                    <div>
+                      <div className="text-base font-bold font-mono text-amber-400">{stats.automation.totalRunCount}</div>
+                      <div className="text-[8px] text-muted-foreground uppercase tracking-widest">Runs</div>
+                    </div>
+                    <div>
+                      <div className="text-base font-bold font-mono text-amber-400/60">{stats.automation.recentRunCount}</div>
+                      <div className="text-[8px] text-muted-foreground uppercase tracking-widest">7d</div>
                     </div>
                   </div>
                 </div>

@@ -1040,6 +1040,7 @@ export type AgentStatsOperations = {
   activeTasks: number;
   pendingTasks: number;
   totalTasks: number;
+  projectCount: number;
 };
 
 export type AgentStatsRevenue = {
@@ -1054,6 +1055,9 @@ export type AgentStatsRevenue = {
 export type AgentStatsAutomation = {
   totalAutomations: number;
   activeAutomations: number;
+  automationsEverRun: number;
+  totalRunCount: number;
+  recentRunCount: number;
 };
 
 export interface AgentStats {

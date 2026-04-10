@@ -13,6 +13,7 @@ import {
 } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { generateImageBuffer } from "@workspace/integrations-openai-ai-server/image";
+import { writeAudit } from "../audit-writer.js";
 
 const router = Router();
 
@@ -154,6 +155,10 @@ router.post("/openai/conversations", async (req, res) => {
     const body = CreateOpenaiConversationBody.parse(req.body);
     const [row] = await db.insert(conversations).values({ title: body.title }).returning();
     res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+    writeAudit("conversation.create", "ai", {
+      entityId: row.id,
+      details: `AI conversation started: "${row.title}"`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create conversation");
     res.status(400).json({ error: "Bad request" });
@@ -291,6 +296,11 @@ ${dailyPlanData}`,
 
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
+
+    writeAudit("message.sent", "ai", {
+      entityId: id,
+      details: `AI reply in conversation ${id} [${agentMode} mode] — ${fullResponse.length} chars`,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to send message");
     res.write(`data: ${JSON.stringify({ error: "Internal server error" })}\n\n`);

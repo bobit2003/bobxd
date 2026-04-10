@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { tasks, leads, invoices, milestones, clients, timeEntries, habits, automations, conversations, messages } from "@workspace/db";
-import { eq, count } from "drizzle-orm";
+import { tasks, leads, invoices, milestones, clients, timeEntries, habits, automations, conversations, messages, projects, auditLog } from "@workspace/db";
+import { eq, count, isNotNull, and, gte } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
@@ -366,13 +366,21 @@ router.get("/intelligence/alerts", async (req, res) => {
 // Living Agent Map stats endpoint
 router.get("/intelligence/agent-stats", async (req, res) => {
   try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
     const [convCount] = await db.select({ count: count() }).from(conversations);
     const [msgCount] = await db.select({ count: count() }).from(messages);
     const [activeTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "in_progress"));
     const [totalTaskCount] = await db.select({ count: count() }).from(tasks);
     const [pendingTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "todo"));
+    const [projectCount] = await db.select({ count: count() }).from(projects);
     const [automationCount] = await db.select({ count: count() }).from(automations);
     const [activeAutomationCount] = await db.select({ count: count() }).from(automations).where(eq(automations.status, "active"));
+    const [automationsRunCount] = await db.select({ count: count() }).from(automations).where(isNotNull(automations.lastRunAt));
+    const [totalRunCount] = await db.select({ count: count() }).from(auditLog).where(eq(auditLog.action, "automation.run"));
+    const [recentRunCount] = await db.select({ count: count() }).from(auditLog).where(
+      and(eq(auditLog.action, "automation.run"), gte(auditLog.createdAt, sevenDaysAgo))
+    );
     const [clientCount] = await db.select({ count: count() }).from(clients);
     const [activeClientCount] = await db.select({ count: count() }).from(clients).where(eq(clients.status, "active"));
 
@@ -396,6 +404,7 @@ router.get("/intelligence/agent-stats", async (req, res) => {
         activeTasks: Number(activeTaskCount.count),
         pendingTasks: Number(pendingTaskCount.count),
         totalTasks: Number(totalTaskCount.count),
+        projectCount: Number(projectCount.count),
       },
       revenue: {
         pipelineValue: parseFloat(pipelineValue.toFixed(2)),
@@ -408,6 +417,9 @@ router.get("/intelligence/agent-stats", async (req, res) => {
       automation: {
         totalAutomations: Number(automationCount.count),
         activeAutomations: Number(activeAutomationCount.count),
+        automationsEverRun: Number(automationsRunCount.count),
+        totalRunCount: Number(totalRunCount.count),
+        recentRunCount: Number(recentRunCount.count),
       },
     });
   } catch (err) {

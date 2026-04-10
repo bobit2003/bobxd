@@ -9,4 +9,7 @@
 export type AgentStatsAutomation = {
   totalAutomations: number;
   activeAutomations: number;
+  automationsEverRun: number;
+  totalRunCount: number;
+  recentRunCount: number;
 };

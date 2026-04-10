@@ -10,4 +10,5 @@ export type AgentStatsOperations = {
   activeTasks: number;
   pendingTasks: number;
   totalTasks: number;
+  projectCount: number;
 };

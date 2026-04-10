@@ -38380,7 +38380,8 @@ var GetAgentStatsResponse = objectType({
   operations: objectType({
     activeTasks: numberType(),
     pendingTasks: numberType(),
-    totalTasks: numberType()
+    totalTasks: numberType(),
+    projectCount: numberType()
   }),
   revenue: objectType({
     pipelineValue: numberType(),
@@ -38392,7 +38393,10 @@ var GetAgentStatsResponse = objectType({
   }),
   automation: objectType({
     totalAutomations: numberType(),
-    activeAutomations: numberType()
+    activeAutomations: numberType(),
+    automationsEverRun: numberType(),
+    totalRunCount: numberType(),
+    recentRunCount: numberType()
   })
 });
 var GetSystemContextResponse = objectType({
@@ -64341,6 +64345,20 @@ async function generateImageBuffer(prompt, size = "1024x1024") {
   return Buffer2.from(base643, "base64");
 }
 
+// src/audit-writer.ts
+async function writeAudit(action, entity, opts) {
+  try {
+    await db.insert(auditLog).values({
+      action,
+      entity,
+      entityId: opts?.entityId != null ? String(opts.entityId) : null,
+      details: opts?.details ?? null,
+      source: opts?.source ?? "system"
+    });
+  } catch {
+  }
+}
+
 // src/routes/openai.ts
 var router2 = (0, import_express2.Router)();
 var MASTER_SYSTEM_PROMPT = `You are OpenClaw \u2014 an advanced AI operating system, NOT a chatbot.
@@ -64456,6 +64474,10 @@ router2.post("/openai/conversations", async (req, res) => {
     const body = CreateOpenaiConversationBody.parse(req.body);
     const [row] = await db.insert(conversations).values({ title: body.title }).returning();
     res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+    writeAudit("conversation.create", "ai", {
+      entityId: row.id,
+      details: `AI conversation started: "${row.title}"`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create conversation");
     res.status(400).json({ error: "Bad request" });
@@ -64562,6 +64584,10 @@ ${dailyPlanData}`
 
 `);
     res.end();
+    writeAudit("message.sent", "ai", {
+      entityId: id,
+      details: `AI reply in conversation ${id} [${agentMode} mode] \u2014 ${fullResponse.length} chars`
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to send message");
     res.write(`data: ${JSON.stringify({ error: "Internal server error" })}
@@ -64785,22 +64811,6 @@ var clients_default = router4;
 
 // src/routes/tasks.ts
 var import_express5 = __toESM(require_express2(), 1);
-
-// src/audit-writer.ts
-async function writeAudit(action, entity, opts) {
-  try {
-    await db.insert(auditLog).values({
-      action,
-      entity,
-      entityId: opts?.entityId != null ? String(opts.entityId) : null,
-      details: opts?.details ?? null,
-      source: opts?.source ?? "system"
-    });
-  } catch {
-  }
-}
-
-// src/routes/tasks.ts
 var router5 = (0, import_express5.Router)();
 function serialize3(t) {
   return {
@@ -66317,13 +66327,20 @@ router23.get("/intelligence/alerts", async (req, res) => {
 });
 router23.get("/intelligence/agent-stats", async (req, res) => {
   try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1e3);
     const [convCount] = await db.select({ count: count() }).from(conversations);
     const [msgCount] = await db.select({ count: count() }).from(messages);
     const [activeTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "in_progress"));
     const [totalTaskCount] = await db.select({ count: count() }).from(tasks);
     const [pendingTaskCount] = await db.select({ count: count() }).from(tasks).where(eq(tasks.status, "todo"));
+    const [projectCount] = await db.select({ count: count() }).from(projects);
     const [automationCount] = await db.select({ count: count() }).from(automations);
     const [activeAutomationCount] = await db.select({ count: count() }).from(automations).where(eq(automations.status, "active"));
+    const [automationsRunCount] = await db.select({ count: count() }).from(automations).where(isNotNull(automations.lastRunAt));
+    const [totalRunCount] = await db.select({ count: count() }).from(auditLog).where(eq(auditLog.action, "automation.run"));
+    const [recentRunCount] = await db.select({ count: count() }).from(auditLog).where(
+      and(eq(auditLog.action, "automation.run"), gte(auditLog.createdAt, sevenDaysAgo))
+    );
     const [clientCount] = await db.select({ count: count() }).from(clients);
     const [activeClientCount] = await db.select({ count: count() }).from(clients).where(eq(clients.status, "active"));
     const allLeads = await db.select().from(leads);
@@ -66339,7 +66356,8 @@ router23.get("/intelligence/agent-stats", async (req, res) => {
       operations: {
         activeTasks: Number(activeTaskCount.count),
         pendingTasks: Number(pendingTaskCount.count),
-        totalTasks: Number(totalTaskCount.count)
+        totalTasks: Number(totalTaskCount.count),
+        projectCount: Number(projectCount.count)
       },
       revenue: {
         pipelineValue: parseFloat(pipelineValue.toFixed(2)),
@@ -66351,7 +66369,10 @@ router23.get("/intelligence/agent-stats", async (req, res) => {
       },
       automation: {
         totalAutomations: Number(automationCount.count),
-        activeAutomations: Number(activeAutomationCount.count)
+        activeAutomations: Number(activeAutomationCount.count),
+        automationsEverRun: Number(automationsRunCount.count),
+        totalRunCount: Number(totalRunCount.count),
+        recentRunCount: Number(recentRunCount.count)
       }
     });
   } catch (err) {

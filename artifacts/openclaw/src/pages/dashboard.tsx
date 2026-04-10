@@ -118,15 +118,25 @@ function AlertStrip({ alerts, onDismiss }: { alerts: AlertItem[]; onDismiss: (ty
       </div>
       <div className="divide-y divide-white/5">
         {alerts.map((alert) => (
-          <div key={alert.type} className="flex items-center gap-3 px-3 py-2 group hover:bg-white/5 transition-colors">
+          <div
+            key={alert.type}
+            className="flex items-center gap-3 px-3 py-2 group hover:bg-white/5 transition-colors cursor-pointer"
+            onClick={() => onDismiss(alert.type)}
+            role="button"
+            aria-label={`Dismiss: ${alert.message}`}
+          >
             <div className={`w-1 h-1 rounded-full shrink-0 ${alert.severity === "high" ? "bg-red-400" : "bg-amber-400"}`} />
-            <Link href={alert.link} className="flex-1 min-w-0">
+            <Link
+              href={alert.link}
+              className="flex-1 min-w-0"
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            >
               <span className={`text-xs truncate ${alert.severity === "high" ? "text-red-300" : "text-amber-300"}`}>
                 {alert.message}
               </span>
             </Link>
             <button
-              onClick={() => onDismiss(alert.type)}
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDismiss(alert.type); }}
               className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/50 hover:text-red-400 p-0.5 rounded"
               aria-label="Dismiss alert"
             >
@@ -147,9 +157,23 @@ export default function Dashboard() {
   const { data: revenueIntel } = useGetRevenueIntelligence({ query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 60000 } });
   const { data: rawAlerts } = useGetIntelligenceAlerts({ query: { queryKey: getGetIntelligenceAlertsQueryKey(), staleTime: 30000 } });
 
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(() => {
+    try {
+      const stored = sessionStorage.getItem("dismissed_alerts");
+      return stored ? new Set<string>(JSON.parse(stored) as string[]) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
+
   const activeAlerts = (rawAlerts ?? []).filter(a => !dismissedAlerts.has(a.type));
-  const dismissAlert = (type: string) => setDismissedAlerts(prev => new Set([...prev, type]));
+  const dismissAlert = (type: string) => {
+    setDismissedAlerts(prev => {
+      const next = new Set([...prev, type]);
+      try { sessionStorage.setItem("dismissed_alerts", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
 
   const auditEntries = useAuditFeed();
   const feedRef = useRef<HTMLDivElement>(null);

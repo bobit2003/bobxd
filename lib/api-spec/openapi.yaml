@@ -2971,7 +2971,8 @@ components:
             activeTasks: { type: integer }
             pendingTasks: { type: integer }
             totalTasks: { type: integer }
-          required: [activeTasks, pendingTasks, totalTasks]
+            projectCount: { type: integer }
+          required: [activeTasks, pendingTasks, totalTasks, projectCount]
         revenue:
           type: object
           properties:
@@ -2987,5 +2988,8 @@ components:
           properties:
             totalAutomations: { type: integer }
             activeAutomations: { type: integer }
-          required: [totalAutomations, activeAutomations]
+            automationsEverRun: { type: integer }
+            totalRunCount: { type: integer }
+            recentRunCount: { type: integer }
+          required: [totalAutomations, activeAutomations, automationsEverRun, totalRunCount, recentRunCount]
       required: [aiBrain, operations, revenue, automation]

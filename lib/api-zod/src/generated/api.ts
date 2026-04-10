@@ -1359,6 +1359,7 @@ export const GetAgentStatsResponse = zod.object({
     activeTasks: zod.number(),
     pendingTasks: zod.number(),
     totalTasks: zod.number(),
+    projectCount: zod.number(),
   }),
   revenue: zod.object({
     pipelineValue: zod.number(),
@@ -1371,6 +1372,9 @@ export const GetAgentStatsResponse = zod.object({
   automation: zod.object({
     totalAutomations: zod.number(),
     activeAutomations: zod.number(),
+    automationsEverRun: zod.number(),
+    totalRunCount: zod.number(),
+    recentRunCount: zod.number(),
   }),
 });
 
