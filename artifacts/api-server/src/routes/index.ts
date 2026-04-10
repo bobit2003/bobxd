@@ -24,6 +24,8 @@ import financialRouter from "./financial";
 import intelligenceRouter from "./intelligence";
 import eventsRouter from "./events";
 import systemContextRouter from "./system-context";
+import automationEngineRouter from "./automation-engine";
+import priorityEngineRouter from "./priority-engine";
 
 const router: IRouter = Router();
 
@@ -52,5 +54,7 @@ router.use(contentRouter);
 router.use(financialRouter);
 router.use(eventsRouter);
 router.use(systemContextRouter);
+router.use(automationEngineRouter);
+router.use(priorityEngineRouter);
 
 export default router;

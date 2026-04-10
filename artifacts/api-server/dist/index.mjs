@@ -17703,7 +17703,7 @@ var require_stringify = __commonJS({
       formatter: formats.formatters[defaultFormat],
       // deprecated
       indices: false,
-      serializeDate: function serializeDate(date6) {
+      serializeDate: function serializeDate2(date6) {
         return toISO.call(date6);
       },
       skipNulls: false,
@@ -17713,7 +17713,7 @@ var require_stringify = __commonJS({
       return typeof v === "string" || typeof v === "number" || typeof v === "boolean" || typeof v === "symbol" || typeof v === "bigint";
     };
     var sentinel2 = {};
-    var stringify2 = function stringify3(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate, format, formatter, encodeValuesOnly, charset, sideChannel) {
+    var stringify2 = function stringify3(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate2, format, formatter, encodeValuesOnly, charset, sideChannel) {
       var obj = object2;
       var tmpSc = sideChannel;
       var step = 0;
@@ -17735,11 +17735,11 @@ var require_stringify = __commonJS({
       if (typeof filter === "function") {
         obj = filter(prefix, obj);
       } else if (obj instanceof Date) {
-        obj = serializeDate(obj);
+        obj = serializeDate2(obj);
       } else if (generateArrayPrefix === "comma" && isArray2(obj)) {
         obj = utils.maybeMap(obj, function(value2) {
           if (value2 instanceof Date) {
-            return serializeDate(value2);
+            return serializeDate2(value2);
           }
           return value2;
         });
@@ -17802,7 +17802,7 @@ var require_stringify = __commonJS({
           filter,
           sort,
           allowDots,
-          serializeDate,
+          serializeDate2,
           format,
           formatter,
           encodeValuesOnly,
@@ -20485,27 +20485,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router27;
+    module.exports = Router29;
     module.exports.Route = Route;
-    function Router27(options) {
-      if (!(this instanceof Router27)) {
-        return new Router27(options);
+    function Router29(options) {
+      if (!(this instanceof Router29)) {
+        return new Router29(options);
       }
       const opts = options || {};
-      function router27(req, res, next) {
-        router27.handle(req, res, next);
+      function router29(req, res, next) {
+        router29.handle(req, res, next);
       }
-      Object.setPrototypeOf(router27, this);
-      router27.caseSensitive = opts.caseSensitive;
-      router27.mergeParams = opts.mergeParams;
-      router27.params = {};
-      router27.strict = opts.strict;
-      router27.stack = [];
-      return router27;
+      Object.setPrototypeOf(router29, this);
+      router29.caseSensitive = opts.caseSensitive;
+      router29.mergeParams = opts.mergeParams;
+      router29.params = {};
+      router29.strict = opts.strict;
+      router29.stack = [];
+      return router29;
     }
-    Router27.prototype = function() {
+    Router29.prototype = function() {
     };
-    Router27.prototype.param = function param(name, fn) {
+    Router29.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20525,7 +20525,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router27.prototype.handle = function handle(req, res, callback) {
+    Router29.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20652,7 +20652,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router27.prototype.use = function use(handler) {
+    Router29.prototype.use = function use(handler) {
       let offset = 0;
       let path2 = "/";
       if (typeof handler !== "function") {
@@ -20685,7 +20685,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router27.prototype.route = function route(path2) {
+    Router29.prototype.route = function route(path2) {
       const route2 = new Route(path2);
       const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
@@ -20700,7 +20700,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router27.prototype[method] = function(path2) {
+      Router29.prototype[method] = function(path2) {
         const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -20883,13 +20883,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router27 = require_router();
+    var Router29 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router27 = null;
+      var router29 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -20898,13 +20898,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router27 === null) {
-            router27 = new Router27({
+          if (router29 === null) {
+            router29 = new Router29({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router27;
+          return router29;
         }
       });
     };
@@ -20975,15 +20975,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router27 = this.router;
+      var router29 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router27.use(path2, fn2);
+          return router29.use(path2, fn2);
         }
         debug(".use app under %s", path2);
         fn2.mountpath = path2;
         fn2.parent = this;
-        router27.use(path2, function mounted_app(req, res, next) {
+        router29.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -23510,7 +23510,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router27 = require_router();
+    var Router29 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23532,8 +23532,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router27.Route;
-    exports.Router = Router27;
+    exports.Route = Router29.Route;
+    exports.Router = Router29;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -33496,12 +33496,12 @@ var require_lib5 = __commonJS({
 });
 
 // src/app.ts
-var import_express27 = __toESM(require_express2(), 1);
+var import_express29 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 
 // src/routes/index.ts
-var import_express26 = __toESM(require_express2(), 1);
+var import_express28 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -57821,7 +57821,7 @@ function is_non_nullish_primitive(v) {
   return typeof v === "string" || typeof v === "number" || typeof v === "boolean" || typeof v === "symbol" || typeof v === "bigint";
 }
 var sentinel = {};
-function inner_stringify(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate, format, formatter, encodeValuesOnly, charset, sideChannel) {
+function inner_stringify(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate2, format, formatter, encodeValuesOnly, charset, sideChannel) {
   let obj = object2;
   let tmp_sc = sideChannel;
   let step = 0;
@@ -57843,11 +57843,11 @@ function inner_stringify(object2, prefix, generateArrayPrefix, commaRoundTrip, a
   if (typeof filter === "function") {
     obj = filter(prefix, obj);
   } else if (obj instanceof Date) {
-    obj = serializeDate?.(obj);
+    obj = serializeDate2?.(obj);
   } else if (generateArrayPrefix === "comma" && isArray(obj)) {
     obj = maybe_map(obj, function(value) {
       if (value instanceof Date) {
-        return serializeDate?.(value);
+        return serializeDate2?.(value);
       }
       return value;
     });
@@ -57920,7 +57920,7 @@ function inner_stringify(object2, prefix, generateArrayPrefix, commaRoundTrip, a
       filter,
       sort,
       allowDots,
-      serializeDate,
+      serializeDate2,
       format,
       formatter,
       encodeValuesOnly,
@@ -64461,7 +64461,6 @@ var DAILY_PLAN_TRIGGERS = [
   "today's plan",
   "morning briefing",
   "what's my plan",
-  "what are my priorities",
   "what should i focus on",
   "today's priorities",
   "what's most important today",
@@ -64474,68 +64473,112 @@ function isDailyPlanIntent(content) {
   const lower = content.toLowerCase();
   return DAILY_PLAN_TRIGGERS.some((trigger) => lower.includes(trigger));
 }
+async function buildFullSystemContext() {
+  const now = /* @__PURE__ */ new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1e3);
+  const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 864e5);
+  const [allTasks, allLeads, allInvoices, allClients, allProjects, recentEvents, recentMemories] = await Promise.all([
+    db.select().from(tasks),
+    db.select().from(leads),
+    db.select().from(invoices),
+    db.select().from(clients),
+    db.select().from(projects),
+    db.select().from(events).orderBy(desc(events.createdAt)).limit(10),
+    db.select().from(memories).orderBy(desc(memories.createdAt)).limit(20)
+  ]);
+  const paid = allInvoices.filter((i) => i.status === "paid");
+  const unpaid = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled");
+  const overdueInv = unpaid.filter((i) => i.dueDate && new Date(i.dueDate) < todayStart);
+  const totalRevenue = paid.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+  const totalUnpaid = unpaid.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+  const pendingTasks = allTasks.filter((t) => t.status !== "done");
+  const overdueTasks = pendingTasks.filter((t) => t.dueDate && new Date(t.dueDate) < todayStart);
+  const highPri = pendingTasks.filter((t) => t.priority === "high");
+  const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+  const staleLeads = allLeads.filter((l) => {
+    if (l.stage === "won" || l.stage === "lost") return false;
+    const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+    return last < sevenDaysAgo;
+  });
+  const activeProjects = allProjects.filter((p) => p.status === "active");
+  const eventBlock = recentEvents.length > 0 ? `
+RECENT SYSTEM EVENTS:
+${recentEvents.map((e) => `[${e.type}] ${e.title}`).join("\n")}` : "";
+  const memoryBlock = recentMemories.length > 0 ? `
+MEMORY:
+${recentMemories.map((m) => `[${m.category.toUpperCase()}] ${m.content}`).join("\n")}` : "";
+  return `
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+LIVE SYSTEM CONTEXT \u2014 ${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+\u{1F4B0} REVENUE
+  Total collected: $${totalRevenue.toFixed(0)}
+  Outstanding: $${totalUnpaid.toFixed(0)}
+  Overdue invoices: ${overdueInv.length} ($${overdueInv.reduce((s, i) => s + parseFloat(i.amount || "0"), 0).toFixed(0)})
+
+\u{1F465} CLIENTS
+  Total: ${allClients.length} | Active: ${allClients.filter((c) => c.status === "active").length}
+
+\u{1F4CA} LEADS
+  Hot (ready to close): ${hotLeads.length} ${hotLeads.slice(0, 2).map((l) => `(${l.name}${l.budget ? ` $${l.budget}` : ""})`).join("")}
+  Stale (7+ days idle): ${staleLeads.length}
+  Active pipeline: ${allLeads.filter((l) => l.stage !== "won" && l.stage !== "lost").length}
+
+\u2705 TASKS
+  Pending: ${pendingTasks.length} | High priority: ${highPri.length}
+  Overdue: ${overdueTasks.length} ${overdueTasks.slice(0, 2).map((t) => `("${t.title}")`).join("")}
+  Due today: ${pendingTasks.filter((t) => t.dueDate && new Date(t.dueDate) >= todayStart && new Date(t.dueDate) < new Date(todayStart.getTime() + 864e5)).length}
+
+\u{1F680} PROJECTS
+  Active: ${activeProjects.length} of ${allProjects.length}${eventBlock}${memoryBlock}
+
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550`.trim();
+}
 async function buildDailyPlanContext() {
   const now = /* @__PURE__ */ new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 864e5);
-  const allTasks = await db.select().from(tasks);
-  const overdueTasks = allTasks.filter((t) => t.dueDate && t.status !== "done" && t.dueDate < todayStart);
-  const highPriTasks = allTasks.filter((t) => t.status !== "done" && t.priority === "high");
-  const todayTasks = allTasks.filter(
-    (t) => t.dueDate && t.status !== "done" && t.dueDate >= todayStart && t.dueDate < new Date(todayStart.getTime() + 864e5)
-  );
-  const allLeads = await db.select().from(leads);
+  const [allTasks, allLeads, allInvoices, allClients, allHabits, allMilestones] = await Promise.all([
+    db.select().from(tasks),
+    db.select().from(leads),
+    db.select().from(invoices),
+    db.select().from(clients),
+    db.select().from(habits),
+    db.select().from(milestones)
+  ]);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const overdueTasks = allTasks.filter((t) => t.dueDate && t.status !== "done" && new Date(t.dueDate) < today);
+  const highPri = allTasks.filter((t) => t.status !== "done" && t.priority === "high");
+  const todayTasks = allTasks.filter((t) => t.dueDate && t.status !== "done" && new Date(t.dueDate) >= today && new Date(t.dueDate) < new Date(today.getTime() + 864e5));
   const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
   const staleLeads = allLeads.filter((l) => {
     if (l.stage === "won" || l.stage === "lost") return false;
-    const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
-    return (now.getTime() - lastUpdate.getTime()) / (1e3 * 60 * 60 * 24) > 7;
+    const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+    return (now.getTime() - last.getTime()) / (1e3 * 60 * 60 * 24) > 7;
   });
-  const allInvoices = await db.select().from(invoices);
   const unpaidInvs = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled");
-  const overdueInvs = unpaidInvs.filter((i) => i.dueDate && new Date(i.dueDate) < todayStart);
-  const unpaidAmount = unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
-  const allMilestones = await db.select().from(milestones);
+  const overdueInvs = unpaidInvs.filter((i) => i.dueDate && new Date(i.dueDate) < today);
   const upcomingMs = allMilestones.filter((m) => m.status !== "completed" && m.dueDate).sort((a, b) => (a.dueDate?.getTime() || 0) - (b.dueDate?.getTime() || 0)).slice(0, 5);
-  const allClients = await db.select().from(clients);
-  const allTime = await db.select().from(timeEntries);
-  const weeklyBillable = allTime.filter((t) => t.billable === "true" && t.date >= weekStart).reduce((s, t) => s + parseFloat(t.hours || "0"), 0);
-  const allHabits = await db.select().from(habits);
-  const habitsDueToday = allHabits.filter((h) => {
-    if (!h.lastCompleted) return true;
-    return new Date(h.lastCompleted) < todayStart;
-  });
   return `
 LIVE SYSTEM STATE (${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}):
 - Overdue tasks: ${overdueTasks.length} (${overdueTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
-- High priority pending: ${highPriTasks.length} (${highPriTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
+- High priority pending: ${highPri.length} (${highPri.slice(0, 3).map((t) => t.title).join(", ") || "none"})
 - Due today: ${todayTasks.length}
 - Hot leads: ${hotLeads.length} (${hotLeads.slice(0, 3).map((l) => `${l.name}${l.budget ? " $" + l.budget : ""}`).join(", ") || "none"})
 - Stale leads (7+ days): ${staleLeads.length}
-- Unpaid invoices: ${unpaidInvs.length} totaling $${unpaidAmount.toFixed(0)} (${overdueInvs.length} overdue)
+- Unpaid invoices: ${unpaidInvs.length} totaling $${unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0).toFixed(0)} (${overdueInvs.length} overdue)
 - Total clients: ${allClients.length}
-- Billable hours this week: ${weeklyBillable.toFixed(1)}h
 - Upcoming milestones: ${upcomingMs.map((m) => `${m.title} (${m.dueDate?.toLocaleDateString()})`).join(", ") || "none"}
-- Habits not logged today: ${habitsDueToday.length} of ${allHabits.length}
+- Habits not logged today: ${allHabits.filter((h) => !h.lastCompleted || new Date(h.lastCompleted) < today).length} of ${allHabits.length}
 `.trim();
 }
 var AGENT_SUB_PROMPTS = {
-  ceo: `[CEO AGENT ACTIVE]
-You are operating as the CEO Agent \u2014 Master Strategist mode.
-Focus ONLY on: strategic direction, what matters most right now, priority ranking of tasks and goals, high-level business decisions, and trajectory alignment.
-Always answer from the perspective of maximizing long-term business value.`,
-  revenue: `[REVENUE AGENT ACTIVE \u2014 MONEY ENGINE]
-You are operating as the Revenue Agent \u2014 Money Engine mode.
-Focus ONLY on: revenue opportunities, client value ranking (High/Medium/Low ROI), upsell detection, price optimization, follow-up sequences, client reactivation, and profit maximization.
-Every answer must include a dollar or revenue impact. If it doesn't make money, say so.`,
-  ops: `[OPERATIONS AGENT ACTIVE]
-You are operating as the Operations Agent \u2014 Task System mode.
-Focus ONLY on: task management, project execution status, deadline tracking, kanban efficiency, bottleneck removal, and workflow optimization.
-Be specific, actionable, and ensure nothing is overlooked.`,
-  analytics: `[ANALYTICS AGENT ACTIVE]
-You are operating as the Analytics Agent \u2014 Data Intelligence mode.
-Focus ONLY on: performance data, productivity patterns, revenue trends, efficiency analysis, and data-driven insights.
-Always quantify, compare, and surface patterns from available data.`,
+  ceo: `[CEO AGENT ACTIVE] You are operating as the CEO Agent \u2014 Master Strategist mode. Focus ONLY on: strategic direction, what matters most right now, priority ranking of tasks and goals, high-level business decisions, and trajectory alignment. Always answer from the perspective of maximizing long-term business value.`,
+  revenue: `[REVENUE AGENT ACTIVE \u2014 MONEY ENGINE] You are operating as the Revenue Agent \u2014 Money Engine mode. Focus ONLY on: revenue opportunities, client value ranking (High/Medium/Low ROI), upsell detection, price optimization, follow-up sequences, client reactivation, and profit maximization. Every answer must include a dollar or revenue impact. If it doesn't make money, say so.`,
+  ops: `[OPERATIONS AGENT ACTIVE] You are operating as the Operations Agent \u2014 Task System mode. Focus ONLY on: task management, project execution status, deadline tracking, kanban efficiency, bottleneck removal, and workflow optimization. Be specific, actionable, and ensure nothing is overlooked.`,
+  analytics: `[ANALYTICS AGENT ACTIVE] You are operating as the Analytics Agent \u2014 Data Intelligence mode. Focus ONLY on: performance data, productivity patterns, revenue trends, efficiency analysis, and data-driven insights. Always quantify, compare, and surface patterns from available data.`,
   general: ""
 };
 router2.get("/openai/conversations", async (req, res) => {
@@ -64552,10 +64595,7 @@ router2.post("/openai/conversations", async (req, res) => {
     const body = CreateOpenaiConversationBody.parse(req.body);
     const [row] = await db.insert(conversations).values({ title: body.title }).returning();
     res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
-    writeAudit("conversation.create", "ai", {
-      entityId: row.id,
-      details: `AI conversation started: "${row.title}"`
-    });
+    writeAudit("conversation.create", "ai", { entityId: row.id, details: `AI conversation started: "${row.title}"` });
   } catch (err) {
     req.log.error({ err }, "Failed to create conversation");
     res.status(400).json({ error: "Bad request" });
@@ -64567,11 +64607,7 @@ router2.get("/openai/conversations/:id", async (req, res) => {
     const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
     if (!conv) return res.status(404).json({ error: "Not found" });
     const msgs = await db.select().from(messages).where(eq(messages.conversationId, id)).orderBy(messages.createdAt);
-    res.json({
-      ...conv,
-      createdAt: conv.createdAt.toISOString(),
-      messages: msgs.map((m) => ({ ...m, createdAt: m.createdAt.toISOString() }))
-    });
+    res.json({ ...conv, createdAt: conv.createdAt.toISOString(), messages: msgs.map((m) => ({ ...m, createdAt: m.createdAt.toISOString() })) });
   } catch (err) {
     req.log.error({ err }, "Failed to get conversation");
     res.status(500).json({ error: "Internal server error" });
@@ -64606,31 +64642,36 @@ router2.post("/openai/conversations/:id/messages", async (req, res) => {
     const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
     if (!conv) return res.status(404).json({ error: "Not found" });
     await db.insert(messages).values({ conversationId: id, role: "user", content: body.content });
-    const storedMemories = await db.select().from(memories).orderBy(desc(memories.createdAt)).limit(50);
+    const systemContext = await buildFullSystemContext();
     const systemMessages = [
       { role: "system", content: MASTER_SYSTEM_PROMPT }
     ];
-    if (storedMemories.length > 0) {
-      const memoryBlock = storedMemories.map((m) => `[${m.category.toUpperCase()} | ${m.importance.toUpperCase()}] ${m.content}`).join("\n");
-      systemMessages.push({
-        role: "system",
-        content: `MEMORY AGENT CONTEXT \u2014 Persistent knowledge from previous sessions:
-${memoryBlock}`
-      });
-    }
-    const agentSubPrompt = AGENT_SUB_PROMPTS[agentMode];
-    if (agentSubPrompt) {
-      systemMessages.push({ role: "system", content: agentSubPrompt });
-    }
     if (isDailyPlanIntent(body.content)) {
       const dailyPlanData = await buildDailyPlanContext();
       systemMessages.push({
         role: "system",
-        content: `DAILY PLAN TRIGGER DETECTED \u2014 Inject live system data and generate a structured strategic plan.
-Format your response as:
-TOP 3 REVENUE TASKS | TOP 3 OPERATIONAL TASKS | CLIENT FOLLOW-UPS | RISKS | FAST MONEY OPPORTUNITIES
+        content: `DAILY PLAN TRIGGER DETECTED \u2014 Generate a structured strategic plan using live system data.
+Format: TOP 3 REVENUE | TOP 3 TASKS | FOLLOW-UPS | RISKS | OPPORTUNITIES
 
 ${dailyPlanData}`
+      });
+    }
+    const agentSubPrompt = AGENT_SUB_PROMPTS[agentMode];
+    if (agentSubPrompt) systemMessages.push({ role: "system", content: agentSubPrompt });
+    systemMessages.push({
+      role: "system",
+      content: `SYSTEM CONTEXT (always accurate \u2014 updated every request):
+${systemContext}
+
+Always factor this live system state into your recommendations. Reference specific clients, amounts, leads, and tasks by name.`
+    });
+    const storedMemories = await db.select().from(memories).orderBy(desc(memories.createdAt)).limit(30);
+    if (storedMemories.length > 0) {
+      const memoryBlock = storedMemories.map((m) => `[${m.category.toUpperCase()}] ${m.content}`).join("\n");
+      systemMessages.push({
+        role: "system",
+        content: `MEMORY AGENT \u2014 Persistent knowledge from previous sessions:
+${memoryBlock}`
       });
     }
     const history = await db.select().from(messages).where(eq(messages.conversationId, id)).orderBy(messages.createdAt);
@@ -64664,7 +64705,7 @@ ${dailyPlanData}`
     res.end();
     writeAudit("message.sent", "ai", {
       entityId: id,
-      details: `AI reply in conversation ${id} [${agentMode} mode] \u2014 ${fullResponse.length} chars`
+      details: `AI reply [${agentMode}] \u2014 ${fullResponse.length} chars`
     });
   } catch (err) {
     req.log.error({ err }, "Failed to send message");
@@ -64689,68 +64730,6 @@ var openai_default = router2;
 
 // src/routes/projects.ts
 var import_express3 = __toESM(require_express2(), 1);
-var router3 = (0, import_express3.Router)();
-function serialize(p) {
-  return { ...p, createdAt: p.createdAt.toISOString(), updatedAt: p.updatedAt.toISOString() };
-}
-router3.get("/projects", async (req, res) => {
-  try {
-    const rows = await db.select().from(projects).orderBy(projects.createdAt);
-    res.json(rows.map(serialize));
-  } catch (err) {
-    req.log.error({ err }, "Failed to list projects");
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-router3.post("/projects", async (req, res) => {
-  try {
-    const body = CreateProjectBody.parse(req.body);
-    const now = /* @__PURE__ */ new Date();
-    const [row] = await db.insert(projects).values({ ...body, createdAt: now, updatedAt: now }).returning();
-    res.status(201).json(serialize(row));
-  } catch (err) {
-    req.log.error({ err }, "Failed to create project");
-    res.status(400).json({ error: "Bad request" });
-  }
-});
-router3.get("/projects/:id", async (req, res) => {
-  try {
-    const { id } = GetProjectParams.parse({ id: Number(req.params.id) });
-    const [row] = await db.select().from(projects).where(eq(projects.id, id));
-    if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize(row));
-  } catch (err) {
-    req.log.error({ err }, "Failed to get project");
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-router3.put("/projects/:id", async (req, res) => {
-  try {
-    const { id } = UpdateProjectParams.parse({ id: Number(req.params.id) });
-    const body = UpdateProjectBody.parse(req.body);
-    const [row] = await db.update(projects).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(projects.id, id)).returning();
-    if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize(row));
-  } catch (err) {
-    req.log.error({ err }, "Failed to update project");
-    res.status(400).json({ error: "Bad request" });
-  }
-});
-router3.delete("/projects/:id", async (req, res) => {
-  try {
-    const { id } = DeleteProjectParams.parse({ id: Number(req.params.id) });
-    const deleted = await db.delete(projects).where(eq(projects.id, id)).returning();
-    if (!deleted.length) return res.status(404).json({ error: "Not found" });
-    res.status(204).end();
-  } catch (err) {
-    req.log.error({ err }, "Failed to delete project");
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-var projects_default = router3;
-
-// src/routes/clients.ts
-var import_express4 = __toESM(require_express2(), 1);
 
 // src/events.ts
 var subscribers = /* @__PURE__ */ new Set();
@@ -64794,7 +64773,97 @@ async function emitEvent(type, category, title, opts) {
   return payload;
 }
 
+// src/routes/projects.ts
+var router3 = (0, import_express3.Router)();
+function serialize(p) {
+  return { ...p, createdAt: p.createdAt.toISOString(), updatedAt: p.updatedAt.toISOString() };
+}
+router3.get("/projects", async (req, res) => {
+  try {
+    const rows = await db.select().from(projects).orderBy(projects.createdAt);
+    res.json(rows.map(serialize));
+  } catch (err) {
+    req.log.error({ err }, "Failed to list projects");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+router3.post("/projects", async (req, res) => {
+  try {
+    const body = CreateProjectBody.parse(req.body);
+    const now = /* @__PURE__ */ new Date();
+    const [row] = await db.insert(projects).values({ ...body, createdAt: now, updatedAt: now }).returning();
+    res.status(201).json(serialize(row));
+    emitEvent("project_created", "PROJECT", `Project created: ${row.name}`, {
+      entityId: row.id,
+      entityType: "project",
+      meta: { status: row.status, clientId: row.clientId }
+    }).catch(() => {
+    });
+    writeAudit("project.create", "project", {
+      entityId: row.id,
+      details: `Created project "${row.name}" [${row.status}]`
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to create project");
+    res.status(400).json({ error: "Bad request" });
+  }
+});
+router3.get("/projects/:id", async (req, res) => {
+  try {
+    const { id } = GetProjectParams.parse({ id: Number(req.params.id) });
+    const [row] = await db.select().from(projects).where(eq(projects.id, id));
+    if (!row) return res.status(404).json({ error: "Not found" });
+    res.json(serialize(row));
+  } catch (err) {
+    req.log.error({ err }, "Failed to get project");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+router3.put("/projects/:id", async (req, res) => {
+  try {
+    const { id } = UpdateProjectParams.parse({ id: Number(req.params.id) });
+    const body = UpdateProjectBody.parse(req.body);
+    const [row] = await db.update(projects).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(projects.id, id)).returning();
+    if (!row) return res.status(404).json({ error: "Not found" });
+    res.json(serialize(row));
+    const isActive = row.status === "active";
+    emitEvent(
+      isActive ? "project_activated" : "project_updated",
+      "PROJECT",
+      isActive ? `Project activated: ${row.name}` : `Project updated: ${row.name}`,
+      { entityId: row.id, entityType: "project", meta: { status: row.status } }
+    ).catch(() => {
+    });
+    writeAudit("project.update", "project", {
+      entityId: row.id,
+      details: `Updated project "${row.name}" \u2014 status: ${row.status}`
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to update project");
+    res.status(400).json({ error: "Bad request" });
+  }
+});
+router3.delete("/projects/:id", async (req, res) => {
+  try {
+    const { id } = DeleteProjectParams.parse({ id: Number(req.params.id) });
+    const deleted = await db.delete(projects).where(eq(projects.id, id)).returning();
+    if (!deleted.length) return res.status(404).json({ error: "Not found" });
+    res.status(204).end();
+    emitEvent("project_deleted", "PROJECT", `Project removed`, {
+      entityId: id,
+      entityType: "project"
+    }).catch(() => {
+    });
+    writeAudit("project.delete", "project", { entityId: id, details: "Project deleted" });
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete project");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+var projects_default = router3;
+
 // src/routes/clients.ts
+var import_express4 = __toESM(require_express2(), 1);
 var router4 = (0, import_express4.Router)();
 function computeRevenue(clientId, allInvoices) {
   const paid = allInvoices.filter((i) => i.clientId === clientId && i.status === "paid");
@@ -66771,34 +66840,399 @@ router25.get("/system-context", async (req, res) => {
 });
 var system_context_default = router25;
 
-// src/routes/index.ts
+// src/routes/automation-engine.ts
+var import_express26 = __toESM(require_express2(), 1);
 var router26 = (0, import_express26.Router)();
-router26.use(health_default);
-router26.use(openai_default);
-router26.use(intelligence_default);
-router26.use(projects_default);
-router26.use(clients_default);
-router26.use(tasks_default);
-router26.use(automations_default);
-router26.use(dashboard_default);
-router26.use(notes_default);
-router26.use(habits_default);
-router26.use(goals_default);
-router26.use(memories_default);
-router26.use(audit_default);
-router26.use(metrics_default);
-router26.use(search_default);
-router26.use(briefing_default);
-router26.use(leads_default);
-router26.use(invoices_default);
-router26.use(expenses_default);
-router26.use(time_entries_default);
-router26.use(milestones_default);
-router26.use(content_default);
-router26.use(financial_default);
-router26.use(events_default);
-router26.use(system_context_default);
-var routes_default = router26;
+async function checkStaleLeads() {
+  const [allLeads, allTasks] = await Promise.all([
+    db.select().from(leads),
+    db.select().from(tasks)
+  ]);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1e3);
+  const stale = allLeads.filter((l) => {
+    if (l.stage === "won" || l.stage === "lost") return false;
+    const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+    return last < sevenDaysAgo;
+  });
+  for (const lead of stale) {
+    const hasTask = allTasks.some(
+      (t) => t.leadId === lead.id && t.status !== "done" && t.title.toLowerCase().includes("follow")
+    );
+    if (!hasTask) {
+      const [task] = await db.insert(tasks).values({
+        title: `Follow up with stale lead: ${lead.name}`,
+        description: `Lead "${lead.name}" (${lead.email || "no email"}) has been idle for 7+ days. Last stage: ${lead.stage}. Score: ${lead.score}. Reach out with value proposition.`,
+        status: "pending",
+        priority: lead.score === "hot" ? "high" : "medium",
+        dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1e3),
+        createdAt: /* @__PURE__ */ new Date(),
+        updatedAt: /* @__PURE__ */ new Date()
+      }).returning();
+      await emitEvent(
+        "lead_stale_detected",
+        "LEAD",
+        `Stale lead: ${lead.name} \u2014 follow-up task created`,
+        { entityId: lead.id, entityType: "lead", meta: { leadName: lead.name, score: lead.score } }
+      );
+      writeAudit("automation.stale_lead", "lead", {
+        entityId: lead.id,
+        details: `Stale lead "${lead.name}" \u2014 auto follow-up task #${task.id} created`
+      });
+    }
+  }
+  return stale.length;
+}
+async function checkOverdueInvoices() {
+  const [allInvoices, allTasks, allClients] = await Promise.all([
+    db.select().from(invoices),
+    db.select().from(tasks),
+    db.select().from(clients)
+  ]);
+  const today = /* @__PURE__ */ new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdue = allInvoices.filter(
+    (i) => i.status !== "paid" && i.status !== "cancelled" && i.dueDate && new Date(i.dueDate) < today
+  );
+  for (const invoice of overdue) {
+    const hasReminder = allTasks.some(
+      (t) => t.invoiceId === invoice.id && t.status !== "done" && t.title.toLowerCase().includes("payment")
+    );
+    if (!hasReminder) {
+      const client = invoice.clientId ? allClients.find((c) => c.id === invoice.clientId) : null;
+      const [task] = await db.insert(tasks).values({
+        title: `Overdue invoice #${invoice.invoiceNumber || invoice.id} \u2014 follow up on $${invoice.amount}`,
+        description: `Invoice for $${invoice.amount} was due ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "N/A"}. Client: ${client?.name || "Unknown"}. Send payment reminder immediately.`,
+        status: "pending",
+        priority: "high",
+        dueDate: /* @__PURE__ */ new Date(),
+        createdAt: /* @__PURE__ */ new Date(),
+        updatedAt: /* @__PURE__ */ new Date()
+      }).returning();
+      await emitEvent(
+        "invoice_overdue",
+        "FIN",
+        `Overdue invoice: #${invoice.invoiceNumber || invoice.id} \u2014 $${invoice.amount}`,
+        { entityId: invoice.id, entityType: "invoice", meta: { amount: invoice.amount, clientName: client?.name } }
+      );
+      writeAudit("automation.overdue_invoice", "invoice", {
+        entityId: invoice.id,
+        details: `Invoice #${invoice.invoiceNumber || invoice.id} overdue \u2014 reminder task #${task.id} created`
+      });
+    }
+  }
+  return overdue.length;
+}
+async function checkHighValueClients() {
+  const [allInvoices, allClients] = await Promise.all([
+    db.select().from(invoices),
+    db.select().from(clients)
+  ]);
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1e3);
+  for (const client of allClients.filter((c) => c.status === "active")) {
+    const paidInvoices = allInvoices.filter(
+      (i) => i.clientId === client.id && i.status === "paid"
+    );
+    const totalPaid = paidInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    if (totalPaid >= 5e3) {
+      const lastPaid = paidInvoices.filter((i) => i.paidDate).sort((a, b) => new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime())[0];
+      if (lastPaid && new Date(lastPaid.paidDate) < thirtyDaysAgo) {
+        await emitEvent(
+          "high_value_reactivation",
+          "CLIENT",
+          `High-value client needs reactivation: ${client.name} ($${totalPaid.toFixed(0)} paid)`,
+          { entityId: client.id, entityType: "client", meta: { totalPaid, lastPaidDate: lastPaid.paidDate } }
+        );
+        writeAudit("automation.high_value_reactivation", "client", {
+          entityId: client.id,
+          details: `High-value client "${client.name}" ($ ${totalPaid}) \u2014 last paid ${lastPaid.paidDate}`
+        });
+      }
+    }
+  }
+}
+async function checkHotLeads() {
+  const allLeads = await db.select().from(leads);
+  const hotLeads = allLeads.filter(
+    (l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost"
+  );
+  for (const lead of hotLeads) {
+    await emitEvent(
+      "hot_lead_alert",
+      "LEAD",
+      `Hot lead: ${lead.name}${lead.budget ? ` ($${lead.budget} budget)` : ""}`,
+      { entityId: lead.id, entityType: "lead", meta: { score: lead.score, budget: lead.budget, stage: lead.stage } }
+    );
+  }
+  return hotLeads.length;
+}
+router26.post("/automation-engine/run", async (req, res) => {
+  try {
+    const results = await Promise.all([
+      checkStaleLeads(),
+      checkOverdueInvoices(),
+      checkHighValueClients(),
+      checkHotLeads()
+    ]);
+    writeAudit("automation_engine.run", "system", {
+      details: `Revenue automation ran \u2014 stale: ${results[0]}, overdue inv: ${results[1]}`
+    });
+    res.json({
+      staleLeadsProcessed: results[0],
+      overdueInvoicesProcessed: results[1],
+      clientReactivationChecks: results[2],
+      hotLeadAlerts: results[3],
+      ranAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+  } catch (err) {
+    req.log.error({ err }, "Automation engine failed");
+    res.status(500).json({ error: "Automation engine failed" });
+  }
+});
+router26.get("/automation-engine/status", async (req, res) => {
+  try {
+    const recent = await db.select().from(events).orderBy(events.createdAt).limit(20);
+    const automationEvents = recent.filter(
+      (e) => ["lead_stale_detected", "invoice_overdue", "high_value_reactivation", "hot_lead_alert"].includes(e.type)
+    );
+    res.json({
+      rules: [
+        { name: "stale_leads", description: "Follow-up task for leads idle > 7 days", enabled: true },
+        { name: "overdue_invoices", description: "Reminder task for overdue invoices", enabled: true },
+        { name: "high_value_reactivation", description: "Alert when high-value clients go cold (>30 days)", enabled: true },
+        { name: "hot_lead_alert", description: "Alert for hot leads needing immediate follow-up", enabled: true }
+      ],
+      lastEvents: automationEvents.map((e) => ({
+        id: e.id,
+        type: e.type,
+        title: e.title,
+        createdAt: e.createdAt.toISOString()
+      }))
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get automation status");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+var automation_engine_default = router26;
+
+// src/routes/priority-engine.ts
+var import_express27 = __toESM(require_express2(), 1);
+var router27 = (0, import_express27.Router)();
+function serializeDate(obj) {
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (val instanceof Date) obj[key] = val.toISOString();
+  }
+  return obj;
+}
+router27.get("/priority-engine", async (req, res) => {
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const [allTasks, allLeads, allInvoices, allClients, activeDirectives, activeEvents] = await Promise.all([
+      db.select().from(tasks),
+      db.select().from(leads),
+      db.select().from(invoices),
+      db.select().from(clients),
+      db.select().from(directives).where(eq(directives.status, "active")).orderBy(desc(directives.createdAt)).limit(5),
+      db.select().from(events).orderBy(desc(events.createdAt)).limit(10)
+    ]);
+    const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+    const overdueInvoices = allInvoices.filter(
+      (i) => i.status !== "paid" && i.status !== "cancelled" && i.dueDate && new Date(i.dueDate) < todayStart
+    );
+    const unpaid = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled");
+    const totalUnpaid = unpaid.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const revenueActions = [
+      ...hotLeads.slice(0, 2).map((l) => ({
+        id: l.id,
+        type: "revenue",
+        action: `Follow up NOW with \u{1F525} hot lead: ${l.name}${l.budget ? ` \u2014 potential $${l.budget}` : ""}`,
+        agent: "Revenue Agent",
+        urgency: "high",
+        entityType: "lead",
+        entityId: l.id
+      })),
+      ...overdueInvoices.slice(0, 2).map((i) => ({
+        id: i.id,
+        type: "revenue",
+        action: `Invoice #${i.invoiceNumber || i.id} is ${Math.floor((todayStart.getTime() - new Date(i.dueDate).getTime()) / 864e5)} days overdue \u2014 $${i.amount} uncollected`,
+        agent: "Revenue Agent",
+        urgency: "high",
+        entityType: "invoice",
+        entityId: i.id
+      })),
+      {
+        id: "unpaid-revenue",
+        type: "revenue",
+        action: `$${totalUnpaid.toFixed(0)} in unpaid invoices outstanding \u2014 pursue collections`,
+        agent: "Revenue Agent",
+        urgency: overdueInvoices.length > 0 ? "high" : "medium",
+        entityType: null,
+        entityId: null
+      }
+    ];
+    const overdueTasks = allTasks.filter(
+      (t) => t.status !== "done" && t.dueDate && new Date(t.dueDate) < todayStart
+    );
+    const highPriPending = allTasks.filter((t) => t.status !== "done" && t.priority === "high" && (!t.dueDate || new Date(t.dueDate) >= todayStart));
+    const urgentTasks = [
+      ...overdueTasks.slice(0, 3).map((t) => ({
+        id: t.id,
+        type: "task",
+        action: `\u26A0\uFE0F OVERDUE: ${t.title}`,
+        agent: "Ops Agent",
+        urgency: "critical",
+        entityType: "task",
+        entityId: t.id
+      })),
+      ...highPriPending.slice(0, 3 - overdueTasks.slice(0, 3).length).map((t) => ({
+        id: t.id,
+        type: "task",
+        action: `High-priority: ${t.title}`,
+        agent: "Ops Agent",
+        urgency: "high",
+        entityType: "task",
+        entityId: t.id
+      }))
+    ];
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1e3);
+    const staleLeads = allLeads.filter((l) => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return last < sevenDaysAgo;
+    });
+    const hotLeadsStale = hotLeads.filter((l) => {
+      const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return last < sevenDaysAgo;
+    });
+    const risks = [
+      ...overdueInvoices.length > 0 ? [{
+        id: "risk-overdue-inv",
+        type: "risk",
+        action: `${overdueInvoices.length} overdue invoice${overdueInvoices.length > 1 ? "s" : ""} \u2014 cash flow at risk`,
+        agent: "Revenue Agent",
+        severity: "high"
+      }] : [],
+      ...hotLeadsStale.length > 0 ? [{
+        id: "risk-hot-cold",
+        type: "risk",
+        action: `${hotLeadsStale.length} hot lead${hotLeadsStale.length > 1 ? "s" : ""} going cold \u2014 losing momentum`,
+        agent: "Revenue Agent",
+        severity: "high"
+      }] : [],
+      ...staleLeads.length > 3 ? [{
+        id: "risk-pipeline",
+        type: "risk",
+        action: `${staleLeads.length} stale leads risk dropping from pipeline \u2014 act or close`,
+        agent: "Revenue Agent",
+        severity: "medium"
+      }] : []
+    ];
+    const allProjects = await db.select().from(projects);
+    const activeProjects = allProjects.filter((p) => p.status === "active");
+    const opportunities = [
+      ...hotLeads.slice(0, 2).map((l) => ({
+        id: l.id,
+        type: "opportunity",
+        action: `\u{1F4B0} Close ${l.name}${l.budget ? ` ($${l.budget} deal)` : " \u2014 high-intent lead"}`,
+        agent: "Revenue Agent",
+        potential: l.budget || null,
+        entityType: "lead",
+        entityId: l.id
+      })),
+      {
+        id: "opportunity-expansion",
+        type: "opportunity",
+        action: `${activeProjects.length} active projects \u2014 identify upsell opportunities in ongoing work`,
+        agent: "CEO Agent",
+        potential: null,
+        entityType: null,
+        entityId: null
+      },
+      ...allClients.filter((c) => c.status === "active").slice(0, 1).map((c) => ({
+        id: c.id,
+        type: "opportunity",
+        action: `Long-term client base growing \u2014 consider retainer or subscription offer`,
+        agent: "Revenue Agent",
+        potential: null,
+        entityType: "client",
+        entityId: c.id
+      }))
+    ];
+    const response = {
+      timestamp: now.toISOString(),
+      greeting: getGreeting(),
+      headline: generateHeadline(revenueActions, urgentTasks, risks),
+      revenueActions: revenueActions.slice(0, 3),
+      urgentTasks: urgentTasks.slice(0, 3),
+      risks: risks.slice(0, 3),
+      opportunities: opportunities.slice(0, 3),
+      activeDirectives: activeDirectives.map((d) => serializeDate({ ...d })),
+      recentEvents: activeEvents.map((e) => ({ ...e, createdAt: e.createdAt.toISOString() })),
+      // Quick stats
+      stats: {
+        tasksPending: allTasks.filter((t) => t.status !== "done").length,
+        tasksOverdue: overdueTasks.length,
+        revenueUnpaid: totalUnpaid,
+        revenueOverdue: overdueInvoices.reduce((s, i) => s + parseFloat(i.amount || "0"), 0),
+        hotLeads: hotLeads.length,
+        staleLeads: staleLeads.length,
+        activeClients: allClients.filter((c) => c.status === "active").length,
+        activeProjects: activeProjects.length
+      }
+    };
+    res.json(response);
+  } catch (err) {
+    req.log.error({ err }, "Priority engine failed");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+function getGreeting() {
+  const h = (/* @__PURE__ */ new Date()).getHours();
+  if (h < 12) return "Good morning, Commander";
+  if (h < 17) return "Good afternoon, Commander";
+  return "Good evening, Commander";
+}
+function generateHeadline(revenue, tasks2, risks) {
+  const top = revenue.find((r) => r.urgency === "high") || tasks2.find((t) => t.urgency === "critical");
+  if (top) return top.action;
+  const risk = risks[0];
+  if (risk) return `\u26A0\uFE0F Watch: ${risk.action}`;
+  return "All systems operational \u2014 execute your plan.";
+}
+var priority_engine_default = router27;
+
+// src/routes/index.ts
+var router28 = (0, import_express28.Router)();
+router28.use(health_default);
+router28.use(openai_default);
+router28.use(intelligence_default);
+router28.use(projects_default);
+router28.use(clients_default);
+router28.use(tasks_default);
+router28.use(automations_default);
+router28.use(dashboard_default);
+router28.use(notes_default);
+router28.use(habits_default);
+router28.use(goals_default);
+router28.use(memories_default);
+router28.use(audit_default);
+router28.use(metrics_default);
+router28.use(search_default);
+router28.use(briefing_default);
+router28.use(leads_default);
+router28.use(invoices_default);
+router28.use(expenses_default);
+router28.use(time_entries_default);
+router28.use(milestones_default);
+router28.use(content_default);
+router28.use(financial_default);
+router28.use(events_default);
+router28.use(system_context_default);
+router28.use(automation_engine_default);
+router28.use(priority_engine_default);
+var routes_default = router28;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -66819,7 +67253,7 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express27.default)();
+var app = (0, import_express29.default)();
 app.use(
   (0, import_pino_http.default)({
     logger,
@@ -66840,8 +67274,8 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
-app.use(import_express27.default.json());
-app.use(import_express27.default.urlencoded({ extended: true }));
+app.use(import_express29.default.json());
+app.use(import_express29.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 var app_default = app;
 

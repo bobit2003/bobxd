@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { conversations, messages, memories, tasks, leads, invoices, milestones, timeEntries, habits, clients } from "@workspace/db";
+import { conversations, messages, memories, tasks, leads, invoices, milestones, timeEntries, habits, clients, projects, events } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import {
   CreateOpenaiConversationBody,
@@ -35,24 +35,87 @@ SYSTEM FLOW: User Input → CEO Agent (priority) → Memory Agent (context) → 
 FINAL RULE: Every output must improve money, time efficiency, decision quality, or automate execution. If it doesn't, it's not useful.`;
 
 const DAILY_PLAN_TRIGGERS = [
-  "what should i do today",
-  "daily plan",
-  "today's plan",
-  "morning briefing",
-  "what's my plan",
-  "what are my priorities",
-  "what should i focus on",
-  "today's priorities",
-  "what's most important today",
-  "give me a plan",
-  "plan for today",
-  "what do i need to do",
-  "my agenda",
+  "what should i do today", "daily plan", "today's plan", "morning briefing",
+  "what's my plan", "what should i focus on", "today's priorities",
+  "what's most important today", "give me a plan", "plan for today",
+  "what do i need to do", "my agenda",
 ];
 
 function isDailyPlanIntent(content: string): boolean {
   const lower = content.toLowerCase();
-  return DAILY_PLAN_TRIGGERS.some((trigger) => lower.includes(trigger));
+  return DAILY_PLAN_TRIGGERS.some(trigger => lower.includes(trigger));
+}
+
+// ─── Full System Context Builder (injected on EVERY request) ───
+async function buildFullSystemContext(): Promise<string> {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 86400000);
+
+  const [allTasks, allLeads, allInvoices, allClients, allProjects, recentEvents, recentMemories] = await Promise.all([
+    db.select().from(tasks),
+    db.select().from(leads),
+    db.select().from(invoices),
+    db.select().from(clients),
+    db.select().from(projects),
+    db.select().from(events).orderBy(desc(events.createdAt)).limit(10),
+    db.select().from(memories).orderBy(desc(memories.createdAt)).limit(20),
+  ]);
+
+  const paid = allInvoices.filter(i => i.status === "paid");
+  const unpaid = allInvoices.filter(i => i.status !== "paid" && i.status !== "cancelled");
+  const overdueInv = unpaid.filter(i => i.dueDate && new Date(i.dueDate) < todayStart);
+  const totalRevenue = paid.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+  const totalUnpaid = unpaid.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+
+  const pendingTasks = allTasks.filter(t => t.status !== "done");
+  const overdueTasks = pendingTasks.filter(t => t.dueDate && new Date(t.dueDate) < todayStart);
+  const highPri = pendingTasks.filter(t => t.priority === "high");
+  const hotLeads = allLeads.filter(l => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+  const staleLeads = allLeads.filter(l => {
+    if (l.stage === "won" || l.stage === "lost") return false;
+    const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+    return last < sevenDaysAgo;
+  });
+
+  const activeProjects = allProjects.filter(p => p.status === "active");
+
+  const eventBlock = recentEvents.length > 0
+    ? `\nRECENT SYSTEM EVENTS:\n${recentEvents.map(e => `[${e.type}] ${e.title}`).join("\n")}`
+    : "";
+
+  const memoryBlock = recentMemories.length > 0
+    ? `\nMEMORY:\n${recentMemories.map(m => `[${m.category.toUpperCase()}] ${m.content}`).join("\n")}`
+    : "";
+
+  return `
+═══════════════════════════════════════
+LIVE SYSTEM CONTEXT — ${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+═══════════════════════════════════════
+
+💰 REVENUE
+  Total collected: $${totalRevenue.toFixed(0)}
+  Outstanding: $${totalUnpaid.toFixed(0)}
+  Overdue invoices: ${overdueInv.length} ($${overdueInv.reduce((s,i)=>s+parseFloat(i.amount||"0"),0).toFixed(0)})
+
+👥 CLIENTS
+  Total: ${allClients.length} | Active: ${allClients.filter(c=>c.status==="active").length}
+
+📊 LEADS
+  Hot (ready to close): ${hotLeads.length} ${hotLeads.slice(0,2).map(l=>`(${l.name}${l.budget?` $${l.budget}`:""})`).join("")}
+  Stale (7+ days idle): ${staleLeads.length}
+  Active pipeline: ${allLeads.filter(l=>l.stage!=="won"&&l.stage!=="lost").length}
+
+✅ TASKS
+  Pending: ${pendingTasks.length} | High priority: ${highPri.length}
+  Overdue: ${overdueTasks.length} ${overdueTasks.slice(0,2).map(t=>`("${t.title}")`).join("")}
+  Due today: ${pendingTasks.filter(t=>t.dueDate&&new Date(t.dueDate)>=todayStart&&new Date(t.dueDate)<new Date(todayStart.getTime()+86400000)).length}
+
+🚀 PROJECTS
+  Active: ${activeProjects.length} of ${allProjects.length}${eventBlock}${memoryBlock}
+
+═══════════════════════════════════════`.trim();
 }
 
 async function buildDailyPlanContext(): Promise<string> {
@@ -60,81 +123,48 @@ async function buildDailyPlanContext(): Promise<string> {
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 86400000);
 
-  const allTasks = await db.select().from(tasks);
-  const overdueTasks = allTasks.filter((t) => t.dueDate && t.status !== "done" && t.dueDate < todayStart);
-  const highPriTasks = allTasks.filter((t) => t.status !== "done" && t.priority === "high");
-  const todayTasks = allTasks.filter(
-    (t) => t.dueDate && t.status !== "done" && t.dueDate >= todayStart && t.dueDate < new Date(todayStart.getTime() + 86400000)
-  );
+  const [allTasks, allLeads, allInvoices, allClients, allHabits, allMilestones] = await Promise.all([
+    db.select().from(tasks),
+    db.select().from(leads),
+    db.select().from(invoices),
+    db.select().from(clients),
+    db.select().from(habits),
+    db.select().from(milestones),
+  ]);
 
-  const allLeads = await db.select().from(leads);
-  const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
-  const staleLeads = allLeads.filter((l) => {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const overdueTasks = allTasks.filter(t => t.dueDate && t.status !== "done" && new Date(t.dueDate) < today);
+  const highPri = allTasks.filter(t => t.status !== "done" && t.priority === "high");
+  const todayTasks = allTasks.filter(t => t.dueDate && t.status !== "done" && new Date(t.dueDate) >= today && new Date(t.dueDate) < new Date(today.getTime() + 86400000));
+  const hotLeads = allLeads.filter(l => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+  const staleLeads = allLeads.filter(l => {
     if (l.stage === "won" || l.stage === "lost") return false;
-    const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
-    return (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24) > 7;
+    const last = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+    return (now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24) > 7;
   });
-
-  const allInvoices = await db.select().from(invoices);
-  const unpaidInvs = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled");
-  const overdueInvs = unpaidInvs.filter((i) => i.dueDate && new Date(i.dueDate) < todayStart);
-  const unpaidAmount = unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
-
-  const allMilestones = await db.select().from(milestones);
-  const upcomingMs = allMilestones
-    .filter((m) => m.status !== "completed" && m.dueDate)
-    .sort((a, b) => (a.dueDate?.getTime() || 0) - (b.dueDate?.getTime() || 0))
-    .slice(0, 5);
-
-  const allClients = await db.select().from(clients);
-
-  const allTime = await db.select().from(timeEntries);
-  const weeklyBillable = allTime
-    .filter((t) => t.billable === "true" && t.date >= weekStart)
-    .reduce((s, t) => s + parseFloat(t.hours || "0"), 0);
-
-  const allHabits = await db.select().from(habits);
-  const habitsDueToday = allHabits.filter((h) => {
-    if (!h.lastCompleted) return true;
-    return new Date(h.lastCompleted) < todayStart;
-  });
+  const unpaidInvs = allInvoices.filter(i => i.status !== "paid" && i.status !== "cancelled");
+  const overdueInvs = unpaidInvs.filter(i => i.dueDate && new Date(i.dueDate) < today);
+  const upcomingMs = allMilestones.filter(m => m.status !== "completed" && m.dueDate).sort((a, b) => (a.dueDate?.getTime() || 0) - (b.dueDate?.getTime() || 0)).slice(0, 5);
 
   return `
 LIVE SYSTEM STATE (${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}):
-- Overdue tasks: ${overdueTasks.length} (${overdueTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
-- High priority pending: ${highPriTasks.length} (${highPriTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
+- Overdue tasks: ${overdueTasks.length} (${overdueTasks.slice(0, 3).map(t => t.title).join(", ") || "none"})
+- High priority pending: ${highPri.length} (${highPri.slice(0, 3).map(t => t.title).join(", ") || "none"})
 - Due today: ${todayTasks.length}
-- Hot leads: ${hotLeads.length} (${hotLeads.slice(0, 3).map((l) => `${l.name}${l.budget ? " $" + l.budget : ""}`).join(", ") || "none"})
+- Hot leads: ${hotLeads.length} (${hotLeads.slice(0, 3).map(l => `${l.name}${l.budget ? " $" + l.budget : ""}`).join(", ") || "none"})
 - Stale leads (7+ days): ${staleLeads.length}
-- Unpaid invoices: ${unpaidInvs.length} totaling $${unpaidAmount.toFixed(0)} (${overdueInvs.length} overdue)
+- Unpaid invoices: ${unpaidInvs.length} totaling $${unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0).toFixed(0)} (${overdueInvs.length} overdue)
 - Total clients: ${allClients.length}
-- Billable hours this week: ${weeklyBillable.toFixed(1)}h
-- Upcoming milestones: ${upcomingMs.map((m) => `${m.title} (${m.dueDate?.toLocaleDateString()})`).join(", ") || "none"}
-- Habits not logged today: ${habitsDueToday.length} of ${allHabits.length}
+- Upcoming milestones: ${upcomingMs.map(m => `${m.title} (${m.dueDate?.toLocaleDateString()})`).join(", ") || "none"}
+- Habits not logged today: ${allHabits.filter(h => !h.lastCompleted || new Date(h.lastCompleted) < today).length} of ${allHabits.length}
 `.trim();
 }
 
 const AGENT_SUB_PROMPTS: Record<string, string> = {
-  ceo: `[CEO AGENT ACTIVE]
-You are operating as the CEO Agent — Master Strategist mode.
-Focus ONLY on: strategic direction, what matters most right now, priority ranking of tasks and goals, high-level business decisions, and trajectory alignment.
-Always answer from the perspective of maximizing long-term business value.`,
-
-  revenue: `[REVENUE AGENT ACTIVE — MONEY ENGINE]
-You are operating as the Revenue Agent — Money Engine mode.
-Focus ONLY on: revenue opportunities, client value ranking (High/Medium/Low ROI), upsell detection, price optimization, follow-up sequences, client reactivation, and profit maximization.
-Every answer must include a dollar or revenue impact. If it doesn't make money, say so.`,
-
-  ops: `[OPERATIONS AGENT ACTIVE]
-You are operating as the Operations Agent — Task System mode.
-Focus ONLY on: task management, project execution status, deadline tracking, kanban efficiency, bottleneck removal, and workflow optimization.
-Be specific, actionable, and ensure nothing is overlooked.`,
-
-  analytics: `[ANALYTICS AGENT ACTIVE]
-You are operating as the Analytics Agent — Data Intelligence mode.
-Focus ONLY on: performance data, productivity patterns, revenue trends, efficiency analysis, and data-driven insights.
-Always quantify, compare, and surface patterns from available data.`,
-
+  ceo: `[CEO AGENT ACTIVE] You are operating as the CEO Agent — Master Strategist mode. Focus ONLY on: strategic direction, what matters most right now, priority ranking of tasks and goals, high-level business decisions, and trajectory alignment. Always answer from the perspective of maximizing long-term business value.`,
+  revenue: `[REVENUE AGENT ACTIVE — MONEY ENGINE] You are operating as the Revenue Agent — Money Engine mode. Focus ONLY on: revenue opportunities, client value ranking (High/Medium/Low ROI), upsell detection, price optimization, follow-up sequences, client reactivation, and profit maximization. Every answer must include a dollar or revenue impact. If it doesn't make money, say so.`,
+  ops: `[OPERATIONS AGENT ACTIVE] You are operating as the Operations Agent — Task System mode. Focus ONLY on: task management, project execution status, deadline tracking, kanban efficiency, bottleneck removal, and workflow optimization. Be specific, actionable, and ensure nothing is overlooked.`,
+  analytics: `[ANALYTICS AGENT ACTIVE] You are operating as the Analytics Agent — Data Intelligence mode. Focus ONLY on: performance data, productivity patterns, revenue trends, efficiency analysis, and data-driven insights. Always quantify, compare, and surface patterns from available data.`,
   general: "",
 };
 
@@ -142,7 +172,7 @@ Always quantify, compare, and surface patterns from available data.`,
 router.get("/openai/conversations", async (req, res) => {
   try {
     const rows = await db.select().from(conversations).orderBy(conversations.createdAt);
-    res.json(rows.map((c) => ({ ...c, createdAt: c.createdAt.toISOString() })));
+    res.json(rows.map(c => ({ ...c, createdAt: c.createdAt.toISOString() })));
   } catch (err) {
     req.log.error({ err }, "Failed to list conversations");
     res.status(500).json({ error: "Internal server error" });
@@ -155,10 +185,7 @@ router.post("/openai/conversations", async (req, res) => {
     const body = CreateOpenaiConversationBody.parse(req.body);
     const [row] = await db.insert(conversations).values({ title: body.title }).returning();
     res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
-    writeAudit("conversation.create", "ai", {
-      entityId: row.id,
-      details: `AI conversation started: "${row.title}"`,
-    });
+    writeAudit("conversation.create", "ai", { entityId: row.id, details: `AI conversation started: "${row.title}"` });
   } catch (err) {
     req.log.error({ err }, "Failed to create conversation");
     res.status(400).json({ error: "Bad request" });
@@ -172,11 +199,7 @@ router.get("/openai/conversations/:id", async (req, res) => {
     const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
     if (!conv) return res.status(404).json({ error: "Not found" });
     const msgs = await db.select().from(messages).where(eq(messages.conversationId, id)).orderBy(messages.createdAt);
-    res.json({
-      ...conv,
-      createdAt: conv.createdAt.toISOString(),
-      messages: msgs.map((m) => ({ ...m, createdAt: m.createdAt.toISOString() })),
-    });
+    res.json({ ...conv, createdAt: conv.createdAt.toISOString(), messages: msgs.map(m => ({ ...m, createdAt: m.createdAt.toISOString() })) });
   } catch (err) {
     req.log.error({ err }, "Failed to get conversation");
     res.status(500).json({ error: "Internal server error" });
@@ -201,14 +224,14 @@ router.get("/openai/conversations/:id/messages", async (req, res) => {
   try {
     const { id } = ListOpenaiMessagesParams.parse({ id: Number(req.params.id) });
     const msgs = await db.select().from(messages).where(eq(messages.conversationId, id)).orderBy(messages.createdAt);
-    res.json(msgs.map((m) => ({ ...m, createdAt: m.createdAt.toISOString() })));
+    res.json(msgs.map(m => ({ ...m, createdAt: m.createdAt.toISOString() })));
   } catch (err) {
     req.log.error({ err }, "Failed to list messages");
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Send message (streaming) — with master system prompt + memory injection + agent routing
+// Send message — full context injection on EVERY request
 router.post("/openai/conversations/:id/messages", async (req, res) => {
   try {
     const { id } = SendOpenaiMessageParams.parse({ id: Number(req.params.id) });
@@ -218,57 +241,54 @@ router.post("/openai/conversations/:id/messages", async (req, res) => {
     const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
     if (!conv) return res.status(404).json({ error: "Not found" });
 
-    // Save user message
     await db.insert(messages).values({ conversationId: id, role: "user", content: body.content });
 
-    // Fetch stored memories for context injection
-    const storedMemories = await db.select().from(memories).orderBy(desc(memories.createdAt)).limit(50);
+    // ── System context injected on EVERY request ──
+    const systemContext = await buildFullSystemContext();
 
-    // Build system messages
     const systemMessages: { role: "system"; content: string }[] = [
       { role: "system", content: MASTER_SYSTEM_PROMPT },
     ];
 
-    // Inject memories if they exist
-    if (storedMemories.length > 0) {
-      const memoryBlock = storedMemories
-        .map((m) => `[${m.category.toUpperCase()} | ${m.importance.toUpperCase()}] ${m.content}`)
-        .join("\n");
-      systemMessages.push({
-        role: "system",
-        content: `MEMORY AGENT CONTEXT — Persistent knowledge from previous sessions:\n${memoryBlock}`,
-      });
-    }
-
-    // Inject agent-specific sub-prompt if not general
-    const agentSubPrompt = AGENT_SUB_PROMPTS[agentMode];
-    if (agentSubPrompt) {
-      systemMessages.push({ role: "system", content: agentSubPrompt });
-    }
-
-    // Detect daily plan conversational trigger and inject live system state
+    // Daily plan trigger — inject live data + structured format request
     if (isDailyPlanIntent(body.content)) {
       const dailyPlanData = await buildDailyPlanContext();
       systemMessages.push({
         role: "system",
-        content: `DAILY PLAN TRIGGER DETECTED — Inject live system data and generate a structured strategic plan.
-Format your response as:
-TOP 3 REVENUE TASKS | TOP 3 OPERATIONAL TASKS | CLIENT FOLLOW-UPS | RISKS | FAST MONEY OPPORTUNITIES
+        content: `DAILY PLAN TRIGGER DETECTED — Generate a structured strategic plan using live system data.
+Format: TOP 3 REVENUE | TOP 3 TASKS | FOLLOW-UPS | RISKS | OPPORTUNITIES
 
 ${dailyPlanData}`,
       });
     }
 
-    // Get conversation history
-    const history = await db
-      .select()
-      .from(messages)
-      .where(eq(messages.conversationId, id))
-      .orderBy(messages.createdAt);
+    // Agent sub-prompt
+    const agentSubPrompt = AGENT_SUB_PROMPTS[agentMode];
+    if (agentSubPrompt) systemMessages.push({ role: "system", content: agentSubPrompt });
 
+    // ── FULL SYSTEM CONTEXT injected as system block on every request ──
+    systemMessages.push({
+      role: "system",
+      content: `SYSTEM CONTEXT (always accurate — updated every request):
+${systemContext}
+
+Always factor this live system state into your recommendations. Reference specific clients, amounts, leads, and tasks by name.`,
+    });
+
+    // Memory
+    const storedMemories = await db.select().from(memories).orderBy(desc(memories.createdAt)).limit(30);
+    if (storedMemories.length > 0) {
+      const memoryBlock = storedMemories.map(m => `[${m.category.toUpperCase()}] ${m.content}`).join("\n");
+      systemMessages.push({
+        role: "system",
+        content: `MEMORY AGENT — Persistent knowledge from previous sessions:\n${memoryBlock}`,
+      });
+    }
+
+    const history = await db.select().from(messages).where(eq(messages.conversationId, id)).orderBy(messages.createdAt);
     const chatMessages = [
       ...systemMessages,
-      ...history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ...history.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
     ];
 
     res.setHeader("Content-Type", "text/event-stream");
@@ -293,13 +313,12 @@ ${dailyPlanData}`,
     }
 
     await db.insert(messages).values({ conversationId: id, role: "assistant", content: fullResponse });
-
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
 
     writeAudit("message.sent", "ai", {
       entityId: id,
-      details: `AI reply in conversation ${id} [${agentMode} mode] — ${fullResponse.length} chars`,
+      details: `AI reply [${agentMode}] — ${fullResponse.length} chars`,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to send message");
