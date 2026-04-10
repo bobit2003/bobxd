@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { conversations, messages, memories } from "@workspace/db";
+import { conversations, messages, memories, tasks, leads, invoices, milestones, timeEntries, habits, clients } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import {
   CreateOpenaiConversationBody,
@@ -32,6 +32,86 @@ MULTI-AGENT ARCHITECTURE (all agents collaborate on every response):
 SYSTEM FLOW: User Input → CEO Agent (priority) → Memory Agent (context) → Specialized Agents → Final Response + Action Plan
 
 FINAL RULE: Every output must improve money, time efficiency, decision quality, or automate execution. If it doesn't, it's not useful.`;
+
+const DAILY_PLAN_TRIGGERS = [
+  "what should i do today",
+  "daily plan",
+  "today's plan",
+  "morning briefing",
+  "what's my plan",
+  "what are my priorities",
+  "what should i focus on",
+  "today's priorities",
+  "what's most important today",
+  "give me a plan",
+  "plan for today",
+  "what do i need to do",
+  "my agenda",
+];
+
+function isDailyPlanIntent(content: string): boolean {
+  const lower = content.toLowerCase();
+  return DAILY_PLAN_TRIGGERS.some((trigger) => lower.includes(trigger));
+}
+
+async function buildDailyPlanContext(): Promise<string> {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 86400000);
+
+  const allTasks = await db.select().from(tasks);
+  const overdueTasks = allTasks.filter((t) => t.dueDate && t.status !== "done" && t.dueDate < todayStart);
+  const highPriTasks = allTasks.filter((t) => t.status !== "done" && t.priority === "high");
+  const todayTasks = allTasks.filter(
+    (t) => t.dueDate && t.status !== "done" && t.dueDate >= todayStart && t.dueDate < new Date(todayStart.getTime() + 86400000)
+  );
+
+  const allLeads = await db.select().from(leads);
+  const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost");
+  const staleLeads = allLeads.filter((l) => {
+    if (l.stage === "won" || l.stage === "lost") return false;
+    const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+    return (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24) > 7;
+  });
+
+  const allInvoices = await db.select().from(invoices);
+  const unpaidInvs = allInvoices.filter((i) => i.status !== "paid" && i.status !== "cancelled");
+  const overdueInvs = unpaidInvs.filter((i) => i.dueDate && new Date(i.dueDate) < todayStart);
+  const unpaidAmount = unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+
+  const allMilestones = await db.select().from(milestones);
+  const upcomingMs = allMilestones
+    .filter((m) => m.status !== "completed" && m.dueDate)
+    .sort((a, b) => (a.dueDate?.getTime() || 0) - (b.dueDate?.getTime() || 0))
+    .slice(0, 5);
+
+  const allClients = await db.select().from(clients);
+
+  const allTime = await db.select().from(timeEntries);
+  const weeklyBillable = allTime
+    .filter((t) => t.billable === "true" && t.date >= weekStart)
+    .reduce((s, t) => s + parseFloat(t.hours || "0"), 0);
+
+  const allHabits = await db.select().from(habits);
+  const habitsDueToday = allHabits.filter((h) => {
+    if (!h.lastCompleted) return true;
+    return new Date(h.lastCompleted) < todayStart;
+  });
+
+  return `
+LIVE SYSTEM STATE (${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}):
+- Overdue tasks: ${overdueTasks.length} (${overdueTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
+- High priority pending: ${highPriTasks.length} (${highPriTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
+- Due today: ${todayTasks.length}
+- Hot leads: ${hotLeads.length} (${hotLeads.slice(0, 3).map((l) => `${l.name}${l.budget ? " $" + l.budget : ""}`).join(", ") || "none"})
+- Stale leads (7+ days): ${staleLeads.length}
+- Unpaid invoices: ${unpaidInvs.length} totaling $${unpaidAmount.toFixed(0)} (${overdueInvs.length} overdue)
+- Total clients: ${allClients.length}
+- Billable hours this week: ${weeklyBillable.toFixed(1)}h
+- Upcoming milestones: ${upcomingMs.map((m) => `${m.title} (${m.dueDate?.toLocaleDateString()})`).join(", ") || "none"}
+- Habits not logged today: ${habitsDueToday.length} of ${allHabits.length}
+`.trim();
+}
 
 const AGENT_SUB_PROMPTS: Record<string, string> = {
   ceo: `[CEO AGENT ACTIVE]
@@ -159,6 +239,19 @@ router.post("/openai/conversations/:id/messages", async (req, res) => {
     const agentSubPrompt = AGENT_SUB_PROMPTS[agentMode];
     if (agentSubPrompt) {
       systemMessages.push({ role: "system", content: agentSubPrompt });
+    }
+
+    // Detect daily plan conversational trigger and inject live system state
+    if (isDailyPlanIntent(body.content)) {
+      const dailyPlanData = await buildDailyPlanContext();
+      systemMessages.push({
+        role: "system",
+        content: `DAILY PLAN TRIGGER DETECTED — Inject live system data and generate a structured strategic plan.
+Format your response as:
+TOP 3 REVENUE TASKS | TOP 3 OPERATIONAL TASKS | CLIENT FOLLOW-UPS | RISKS | FAST MONEY OPPORTUNITIES
+
+${dailyPlanData}`,
+      });
     }
 
     // Get conversation history

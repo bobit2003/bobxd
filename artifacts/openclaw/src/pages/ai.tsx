@@ -4,17 +4,18 @@ import {
   useCreateOpenaiConversation,
   useGetOpenaiConversation, getGetOpenaiConversationQueryKey,
   useDeleteOpenaiConversation,
+  type OpenaiConversationWithMessages,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, MessageSquare, Trash2, Send, Terminal as TerminalIcon, Bot, Network, Zap, DollarSign, BarChart2, Settings, Brain } from "lucide-react";
+import { type LucideIcon, Loader2, Plus, MessageSquare, Trash2, Send, Terminal as TerminalIcon, Network, Zap, DollarSign, BarChart2, Settings, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type AgentMode = "general" | "ceo" | "revenue" | "ops" | "analytics";
 type ControlMode = "full_auto" | "assist" | "manual" | "money";
 
-const AGENT_CONFIGS: Record<AgentMode, { label: string; color: string; icon: any; badge: string }> = {
+const AGENT_CONFIGS: Record<AgentMode, { label: string; color: string; icon: LucideIcon; badge: string }> = {
   general: { label: "Multi-Agent", color: "text-primary border-primary/40 bg-primary/10", icon: Brain, badge: "OPENCLAW OS" },
   ceo: { label: "CEO Agent", color: "text-violet-400 border-violet-500/40 bg-violet-500/10", icon: Brain, badge: "MASTER STRATEGIST" },
   revenue: { label: "Revenue Agent", color: "text-amber-400 border-amber-500/40 bg-amber-500/10", icon: DollarSign, badge: "MONEY ENGINE" },
@@ -109,7 +110,7 @@ export default function AiBrain() {
 
     const tempUserMsg = { id: Date.now(), conversationId: activeId, role: "user", content: messageContent, createdAt: new Date().toISOString() };
     
-    queryClient.setQueryData(getGetOpenaiConversationQueryKey(activeId), (old: any) => {
+    queryClient.setQueryData(getGetOpenaiConversationQueryKey(activeId), (old: OpenaiConversationWithMessages | undefined) => {
       if (!old) return old;
       return { ...old, messages: [...old.messages, tempUserMsg] };
     });
