@@ -7,11 +7,11 @@
  */
 
 export type RevenueIntelligenceStaleLeadsItem = {
-  id?: number;
-  name?: string;
-  company?: string;
-  score?: string;
-  stage?: string;
-  budget?: string;
-  daysSinceUpdate?: number;
+  id: number;
+  name: string;
+  company?: string | null;
+  score: string;
+  stage: string;
+  budget?: string | null;
+  daysSinceUpdate: number;
 };

@@ -7,9 +7,9 @@
  */
 
 export type RevenueIntelligenceOverdueCollectionsItem = {
-  id?: number;
-  invoiceNumber?: string;
-  clientName?: string;
-  amount?: string;
-  daysOverdue?: number;
+  id: number;
+  invoiceNumber: string;
+  clientName: string;
+  amount: string;
+  daysOverdue: number;
 };

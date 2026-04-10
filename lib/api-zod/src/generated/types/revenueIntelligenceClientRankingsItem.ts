@@ -5,13 +5,14 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RevenueIntelligenceClientRankingsItemValueTier } from "./revenueIntelligenceClientRankingsItemValueTier";
 
 export type RevenueIntelligenceClientRankingsItem = {
-  id?: number;
-  name?: string;
-  company?: string;
-  lifetimeValue?: number;
-  valueTier?: string;
-  lastInvoiceDate?: string;
-  paidInvoiceCount?: number;
+  id: number;
+  name: string;
+  company?: string | null;
+  lifetimeValue: number;
+  valueTier: RevenueIntelligenceClientRankingsItemValueTier;
+  lastInvoiceDate?: string | null;
+  paidInvoiceCount: number;
 };

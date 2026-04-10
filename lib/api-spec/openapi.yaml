@@ -2848,11 +2848,12 @@ components:
             properties:
               id: { type: integer }
               name: { type: string }
-              company: { type: string }
+              company: { type: string, nullable: true }
               lifetimeValue: { type: number }
-              valueTier: { type: string }
-              lastInvoiceDate: { type: string }
+              valueTier: { type: string, enum: [high, medium, low] }
+              lastInvoiceDate: { type: string, nullable: true }
               paidInvoiceCount: { type: integer }
+            required: [id, name, lifetimeValue, valueTier, paidInvoiceCount]
         staleLeads:
           type: array
           items:
@@ -2860,11 +2861,12 @@ components:
             properties:
               id: { type: integer }
               name: { type: string }
-              company: { type: string }
+              company: { type: string, nullable: true }
               score: { type: string }
               stage: { type: string }
-              budget: { type: string }
+              budget: { type: string, nullable: true }
               daysSinceUpdate: { type: integer }
+            required: [id, name, score, stage, daysSinceUpdate]
         overdueCollections:
           type: array
           items:
@@ -2875,6 +2877,7 @@ components:
               clientName: { type: string }
               amount: { type: string }
               daysOverdue: { type: integer }
+            required: [id, invoiceNumber, clientName, amount, daysOverdue]
         reactivationTargets:
           type: array
           items:
@@ -2884,6 +2887,7 @@ components:
               name: { type: string }
               lifetimeValue: { type: number }
               daysSinceLastInvoice: { type: integer }
+            required: [id, name, lifetimeValue, daysSinceLastInvoice]
         opportunities:
           type: array
           items:
@@ -2891,6 +2895,7 @@ components:
             properties:
               type: { type: string }
               label: { type: string }
-              value: { type: string }
-              urgency: { type: string }
+              value: { type: string, nullable: true }
+              urgency: { type: string, enum: [high, medium, low] }
+            required: [type, label, urgency]
       required: [clientRankings, staleLeads, overdueCollections, reactivationTargets, opportunities]

@@ -7,8 +7,8 @@
  */
 
 export type RevenueIntelligenceReactivationTargetsItem = {
-  id?: number;
-  name?: string;
-  lifetimeValue?: number;
-  daysSinceLastInvoice?: number;
+  id: number;
+  name: string;
+  lifetimeValue: number;
+  daysSinceLastInvoice: number;
 };

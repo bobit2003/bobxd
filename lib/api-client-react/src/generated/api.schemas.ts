@@ -944,46 +944,64 @@ export interface FinancialSummary {
   recentTransactions?: FinancialSummaryRecentTransactionsItem[];
 }
 
+export type RevenueIntelligenceClientRankingsItemValueTier =
+  (typeof RevenueIntelligenceClientRankingsItemValueTier)[keyof typeof RevenueIntelligenceClientRankingsItemValueTier];
+
+export const RevenueIntelligenceClientRankingsItemValueTier = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+} as const;
+
 export type RevenueIntelligenceClientRankingsItem = {
-  id?: number;
-  name?: string;
-  company?: string;
-  lifetimeValue?: number;
-  valueTier?: string;
-  lastInvoiceDate?: string;
-  paidInvoiceCount?: number;
+  id: number;
+  name: string;
+  company?: string | null;
+  lifetimeValue: number;
+  valueTier: RevenueIntelligenceClientRankingsItemValueTier;
+  lastInvoiceDate?: string | null;
+  paidInvoiceCount: number;
 };
 
 export type RevenueIntelligenceStaleLeadsItem = {
-  id?: number;
-  name?: string;
-  company?: string;
-  score?: string;
-  stage?: string;
-  budget?: string;
-  daysSinceUpdate?: number;
+  id: number;
+  name: string;
+  company?: string | null;
+  score: string;
+  stage: string;
+  budget?: string | null;
+  daysSinceUpdate: number;
 };
 
 export type RevenueIntelligenceOverdueCollectionsItem = {
-  id?: number;
-  invoiceNumber?: string;
-  clientName?: string;
-  amount?: string;
-  daysOverdue?: number;
+  id: number;
+  invoiceNumber: string;
+  clientName: string;
+  amount: string;
+  daysOverdue: number;
 };
 
 export type RevenueIntelligenceReactivationTargetsItem = {
-  id?: number;
-  name?: string;
-  lifetimeValue?: number;
-  daysSinceLastInvoice?: number;
+  id: number;
+  name: string;
+  lifetimeValue: number;
+  daysSinceLastInvoice: number;
 };
 
+export type RevenueIntelligenceOpportunitiesItemUrgency =
+  (typeof RevenueIntelligenceOpportunitiesItemUrgency)[keyof typeof RevenueIntelligenceOpportunitiesItemUrgency];
+
+export const RevenueIntelligenceOpportunitiesItemUrgency = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+} as const;
+
 export type RevenueIntelligenceOpportunitiesItem = {
-  type?: string;
-  label?: string;
-  value?: string;
-  urgency?: string;
+  type: string;
+  label: string;
+  value?: string | null;
+  urgency: RevenueIntelligenceOpportunitiesItemUrgency;
 };
 
 export interface RevenueIntelligence {

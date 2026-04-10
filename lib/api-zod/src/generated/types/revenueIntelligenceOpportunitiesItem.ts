@@ -5,10 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RevenueIntelligenceOpportunitiesItemUrgency } from "./revenueIntelligenceOpportunitiesItemUrgency";
 
 export type RevenueIntelligenceOpportunitiesItem = {
-  type?: string;
-  label?: string;
-  value?: string;
-  urgency?: string;
+  type: string;
+  label: string;
+  value?: string | null;
+  urgency: RevenueIntelligenceOpportunitiesItemUrgency;
 };
