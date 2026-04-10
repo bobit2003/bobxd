@@ -1,0 +1,123 @@
+⚙️ 1. COMMAND LAYER (AI CONTROL CENTER)
+This is your ONLY AI interaction zone.
+Includes:
+Command Chat
+GPT streaming chat
+tool execution (tasks, clients, invoices)
+modes:
+Standard
+Analyst
+Autonomous
+Briefing (Daily AI CEO Report)
+priorities
+revenue summary
+risks
+overdue tasks
+top clients
+opportunities
+Command Log
+full system audit trail
+every AI + user action
+🧠 2. INTELLIGENCE LAYER (BRAIN SYSTEM)
+This is your memory + reasoning core.
+Includes:
+AI Brain
+multi-agent reasoning system
+analysis engine
+decision generator
+Memories
+structured AI memory storage
+clients, projects, decisions
+Agent Map
+CEO Agent
+Revenue Agent
+Ops Agent
+Analytics Agent
+Communication Agent
+live status + activity flow
+Notes
+free-form knowledge base
+⚙️ 3. OPERATIONS LAYER (WORK ENGINE)
+Where real work happens.
+Includes:
+Projects
+Tasks (Kanban)
+Milestones
+Goals
+Habits
+Time Tracking
+Content System
+Idea → Draft → Scheduled → Published
+calendar view
+drag & drop sync
+💰 4. BUSINESS LAYER (REVENUE ENGINE)
+This is your money system.
+Includes:
+Clients
+value score (high/medium/low)
+revenue history
+activity tracking
+Leads
+urgency sorting
+stale detection
+conversion tracking
+Invoices
+unpaid tracking
+revenue totals
+due alerts
+Automations
+follow-ups
+reminders
+client reactivation flows
+📊 5. COMMAND CENTER (DASHBOARD)
+This is NOT separate pages — it is a LIVE SYSTEM VIEW.
+Shows:
+live system stats:
+projects
+tasks
+clients
+leads
+AI sessions
+revenue summary:
+total revenue
+unpaid invoices
+billable hours
+real-time activity feed (events)
+priority queue:
+top tasks
+urgent clients
+revenue opportunities
+active AI directives
+📈 6. ANALYTICS / TELEMETRY LAYER
+This is where intelligence becomes visible:
+Revenue trend (12 weeks)
+Task completion rate (12 weeks)
+Habit performance
+Time usage analysis
+Custom metrics logging
+🔁 7. CRITICAL SYSTEM RULE (MISSING IN YOUR VERSION)
+Everything MUST connect through this:
+🧬 SYSTEM CONTEXT LAYER
+A single data engine that provides:
+clients
+tasks
+leads
+revenue
+events
+memories
+AI outputs
+👉 Every page reads from it
+👉 Every action updates it
+👉 AI uses it for all decisions
+⚡ FINAL FLOW (VERY IMPORTANT)
+User Action / System Event
+        ↓
+System Context Layer updates
+        ↓
+AI Brain + Agents analyze
+        ↓
+Revenue / Ops / Analytics respond
+        ↓
+Dashboard updates in real time
+        ↓
+Command Briefing regenerates insights
