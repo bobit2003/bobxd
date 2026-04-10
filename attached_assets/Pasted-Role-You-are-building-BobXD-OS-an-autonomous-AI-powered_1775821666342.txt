@@ -1,0 +1,61 @@
+Role: You are building BobXD OS — an autonomous AI-powered command centre for a solo tech entrepreneur. Add every feature below. The OS must feel like a military fighter jet cockpit meets Jarvis.
+
+───
+
+💰 FINANCIAL COMMAND
+
+• Revenue Dashboard — live income tracker pulling from Stripe, Mercury bank, PayPal via API; monthly P&L auto-generated; profit vs expenses per project
+• Invoice Generator — one-click invoice from any client/project in the database; exports to PDF; tracks paid/unpaid
+• Trading Bot Panel — live open positions, P&L, portfolio health from your trading bot API; daily/weekly summary; risk alerts sent to Telegram
+• Expense Tracker — log any expense with category; see monthly burn rate; alert when approaching budget limits
+
+───
+
+📞 MJ SCOPE BUSINESS MODULE
+
+• Lead Pipeline — auto-capture leads from MJ Scope contact form; AI-score leads (hot/warm/cold based on budget + service requested); stage tracking; follow-up reminders; when lead signs → auto-creates project with timeline and tasks
+• Client Portal — each client has a page with: contact info, projects, invoices, notes, communication log
+• Service CMS — edit MJ Scope services, portfolio, pricing directly from the dashboard; updates reflect live on the website
+• Content Calendar — plan tech content across TikTok/LinkedIn/X; connect to scheduling APIs; track engagement metrics; BOBA drafts content ideas weekly
+
+───
+
+🧠 AUTONOMOUS AI AGENT (BOBA INTEGRATION)
+
+• BOBA Command Panel — send commands to BOBA directly from the OS; see her responses; her work automatically creates tasks and project notes
+• AI Briefing Engine — every morning at 8 AM Dubai: BOBA reads calendar + tasks + leads + trading + metrics; generates a personalized briefing; sends to Telegram
+• AI Memory Bank — BOBA writes learnings, decisions, client context here; you can ask "what was our strategy for X?" and get a sourced answer
+• Agent Activity Feed — real-time log of everything BOBA has done in the last 24 hours
+
+───
+
+🏗️ PROJECT & TASK INTELLIGENCE
+
+• Project Intelligence — each project has: status, client link, budget, timeline, files, milestones, AI-generated next steps
+• Milestone Tracking — sub-tasks under projects; auto-flag if milestone is overdue
+• Time Tracker — log hours against projects; see billable vs non-billable time
+• Daily Standup — every morning: what was done yesterday, what's planned today, blockers — shown in briefing
+
+───
+
+📊 BUSINESS HEALTH MONITOR
+
+• ZaynScope Status — live uptime check every 5 mins; alert if down; show Google Analytics top metrics (traffic, top pages, conversions)
+• MJ Scope Analytics — contacts this week, leads by stage, conversion rate, average deal size
+• Google Ads Dashboard — daily spend, cost per lead, ROI per campaign (from Google Ads API)
+• Server Health — zaynscope.de response time, SSL expiry, error logs
+
+───
+
+🔔 AUTOMATIONS & WORKFLOWS
+
+• Automation Rules Engine — if [trigger] then [action]; triggers: form submitted, date/time, metric threshold, manual; actions: notify, create task, update status, send email, run webhook
+• Scheduled Reports — daily/weekly/monthly reports auto-sent to Telegram: metrics summary, pipeline update, revenue snapshot
+• Auto-Follow-Up — if lead has no response in 3 days → BOBA drafts a follow-up message; you approve or edit → sent
+• Task Autopilot — recurring tasks auto-created on schedule; habits logged automatically
+
+───
+
+📐 KNOWLEDGE & NOTES
+
+• Tech Encyclopedia — notes tagged by topic (AI tools, marketing, trading, etc.); BOBA links relevant docs to active projects

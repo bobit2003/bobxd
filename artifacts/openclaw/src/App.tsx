@@ -19,6 +19,12 @@ import Memories from "@/pages/memories";
 import CommandLog from "@/pages/command-log";
 import Metrics from "@/pages/metrics";
 import Briefing from "@/pages/briefing";
+import Leads from "@/pages/leads";
+import Invoices from "@/pages/invoices";
+import Expenses from "@/pages/expenses";
+import TimeTracking from "@/pages/time-tracking";
+import Milestones from "@/pages/milestones";
+import ContentCalendar from "@/pages/content-calendar";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +47,12 @@ function Router() {
           <Route path="/command-log" component={CommandLog} />
           <Route path="/metrics" component={Metrics} />
           <Route path="/briefing" component={Briefing} />
+          <Route path="/leads" component={Leads} />
+          <Route path="/invoices" component={Invoices} />
+          <Route path="/expenses" component={Expenses} />
+          <Route path="/time" component={TimeTracking} />
+          <Route path="/milestones" component={Milestones} />
+          <Route path="/content" component={ContentCalendar} />
           <Route component={NotFound} />
         </Switch>
       </AnimatePresence>

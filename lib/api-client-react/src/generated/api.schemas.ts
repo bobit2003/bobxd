@@ -544,6 +544,285 @@ export interface DailyBriefing {
   quote: string;
 }
 
+export type LeadScore = (typeof LeadScore)[keyof typeof LeadScore];
+
+export const LeadScore = {
+  hot: "hot",
+  warm: "warm",
+  cold: "cold",
+} as const;
+
+export type LeadStage = (typeof LeadStage)[keyof typeof LeadStage];
+
+export const LeadStage = {
+  new: "new",
+  contacted: "contacted",
+  qualified: "qualified",
+  proposal: "proposal",
+  negotiation: "negotiation",
+  won: "won",
+  lost: "lost",
+} as const;
+
+export interface Lead {
+  id: number;
+  name: string;
+  email?: string | null;
+  company?: string | null;
+  phone?: string | null;
+  budget?: string | null;
+  service?: string | null;
+  source: string;
+  score: LeadScore;
+  stage: LeadStage;
+  notes?: string | null;
+  lastContactedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateLeadBody {
+  name: string;
+  email?: string;
+  company?: string;
+  phone?: string;
+  budget?: string;
+  service?: string;
+  source?: string;
+  score?: string;
+  stage?: string;
+  notes?: string;
+}
+
+export interface UpdateLeadBody {
+  name?: string;
+  email?: string;
+  company?: string;
+  phone?: string;
+  budget?: string;
+  service?: string;
+  source?: string;
+  score?: string;
+  stage?: string;
+  notes?: string;
+  lastContactedAt?: string;
+}
+
+export interface LeadConvertResult {
+  clientId: number;
+  projectId: number;
+}
+
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus];
+
+export const InvoiceStatus = {
+  draft: "draft",
+  sent: "sent",
+  paid: "paid",
+  overdue: "overdue",
+  cancelled: "cancelled",
+} as const;
+
+export interface Invoice {
+  id: number;
+  invoiceNumber: string;
+  clientId?: number | null;
+  projectId?: number | null;
+  amount: string;
+  currency: string;
+  status: InvoiceStatus;
+  dueDate?: string | null;
+  paidDate?: string | null;
+  items?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateInvoiceBody {
+  invoiceNumber: string;
+  clientId?: number;
+  projectId?: number;
+  amount: string;
+  currency?: string;
+  status?: string;
+  dueDate?: string;
+  items?: string;
+  notes?: string;
+}
+
+export interface UpdateInvoiceBody {
+  invoiceNumber?: string;
+  clientId?: number;
+  projectId?: number;
+  amount?: string;
+  currency?: string;
+  status?: string;
+  dueDate?: string;
+  paidDate?: string;
+  items?: string;
+  notes?: string;
+}
+
+export interface Expense {
+  id: number;
+  description: string;
+  amount: string;
+  currency: string;
+  category: string;
+  projectId?: number | null;
+  date: string;
+  createdAt: string;
+}
+
+export interface CreateExpenseBody {
+  description: string;
+  amount: string;
+  currency?: string;
+  category?: string;
+  projectId?: number;
+  date?: string;
+}
+
+export interface TimeEntry {
+  id: number;
+  projectId?: number | null;
+  taskId?: number | null;
+  hours: string;
+  description?: string | null;
+  billable: string;
+  date: string;
+  createdAt: string;
+}
+
+export interface CreateTimeEntryBody {
+  projectId?: number;
+  taskId?: number;
+  hours: string;
+  description?: string;
+  billable?: string;
+  date?: string;
+}
+
+export type MilestoneStatus =
+  (typeof MilestoneStatus)[keyof typeof MilestoneStatus];
+
+export const MilestoneStatus = {
+  pending: "pending",
+  in_progress: "in_progress",
+  completed: "completed",
+  overdue: "overdue",
+} as const;
+
+export interface Milestone {
+  id: number;
+  projectId: number;
+  title: string;
+  status: MilestoneStatus;
+  dueDate?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+}
+
+export interface CreateMilestoneBody {
+  projectId: number;
+  title: string;
+  status?: string;
+  dueDate?: string;
+}
+
+export interface UpdateMilestoneBody {
+  title?: string;
+  status?: string;
+  dueDate?: string;
+}
+
+export type ContentItemPlatform =
+  (typeof ContentItemPlatform)[keyof typeof ContentItemPlatform];
+
+export const ContentItemPlatform = {
+  linkedin: "linkedin",
+  tiktok: "tiktok",
+  x: "x",
+  instagram: "instagram",
+  youtube: "youtube",
+  blog: "blog",
+} as const;
+
+export type ContentItemContentType =
+  (typeof ContentItemContentType)[keyof typeof ContentItemContentType];
+
+export const ContentItemContentType = {
+  post: "post",
+  video: "video",
+  article: "article",
+  reel: "reel",
+  story: "story",
+} as const;
+
+export type ContentItemStatus =
+  (typeof ContentItemStatus)[keyof typeof ContentItemStatus];
+
+export const ContentItemStatus = {
+  idea: "idea",
+  draft: "draft",
+  scheduled: "scheduled",
+  published: "published",
+  archived: "archived",
+} as const;
+
+export interface ContentItem {
+  id: number;
+  title: string;
+  platform: ContentItemPlatform;
+  contentType: ContentItemContentType;
+  status: ContentItemStatus;
+  content?: string | null;
+  scheduledDate?: string | null;
+  publishedDate?: string | null;
+  engagement?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateContentBody {
+  title: string;
+  platform?: string;
+  contentType?: string;
+  status?: string;
+  content?: string;
+  scheduledDate?: string;
+}
+
+export interface UpdateContentBody {
+  title?: string;
+  platform?: string;
+  contentType?: string;
+  status?: string;
+  content?: string;
+  scheduledDate?: string;
+  publishedDate?: string;
+  engagement?: string;
+}
+
+export type FinancialSummaryRecentTransactionsItem = {
+  type?: string;
+  description?: string;
+  amount?: string;
+  date?: string;
+};
+
+export interface FinancialSummary {
+  totalRevenue: string;
+  totalExpenses: string;
+  netProfit: string;
+  unpaidInvoices: number;
+  unpaidAmount: string;
+  paidInvoices: number;
+  totalBillableHours: string;
+  recentTransactions?: FinancialSummaryRecentTransactionsItem[];
+}
+
 export type ListTasksParams = {
   projectId?: number;
   status?: ListTasksStatus;

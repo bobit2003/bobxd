@@ -899,6 +899,412 @@ paths:
               schema:
                 $ref: "#/components/schemas/DailyBriefing"
 
+  /leads:
+    get:
+      operationId: listLeads
+      tags: [leads]
+      summary: List all leads
+      responses:
+        "200":
+          description: List of leads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lead"
+    post:
+      operationId: createLead
+      tags: [leads]
+      summary: Create a lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLeadBody"
+      responses:
+        "201":
+          description: Created lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+
+  /leads/{id}:
+    put:
+      operationId: updateLead
+      tags: [leads]
+      summary: Update a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLeadBody"
+      responses:
+        "200":
+          description: Updated lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+    delete:
+      operationId: deleteLead
+      tags: [leads]
+      summary: Delete a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /leads/{id}/convert:
+    post:
+      operationId: convertLead
+      tags: [leads]
+      summary: Convert lead to client and project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Converted lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadConvertResult"
+
+  /invoices:
+    get:
+      operationId: listInvoices
+      tags: [invoices]
+      summary: List all invoices
+      responses:
+        "200":
+          description: List of invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+    post:
+      operationId: createInvoice
+      tags: [invoices]
+      summary: Create an invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInvoiceBody"
+      responses:
+        "201":
+          description: Created invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+
+  /invoices/{id}:
+    put:
+      operationId: updateInvoice
+      tags: [invoices]
+      summary: Update an invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateInvoiceBody"
+      responses:
+        "200":
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+    delete:
+      operationId: deleteInvoice
+      tags: [invoices]
+      summary: Delete an invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /expenses:
+    get:
+      operationId: listExpenses
+      tags: [expenses]
+      summary: List all expenses
+      responses:
+        "200":
+          description: List of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Create an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExpenseBody"
+      responses:
+        "201":
+          description: Created expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+
+  /expenses/{id}:
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      summary: Delete an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /time-entries:
+    get:
+      operationId: listTimeEntries
+      tags: [time]
+      summary: List time entries
+      responses:
+        "200":
+          description: List of time entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimeEntry"
+    post:
+      operationId: createTimeEntry
+      tags: [time]
+      summary: Log time entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTimeEntryBody"
+      responses:
+        "201":
+          description: Created time entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntry"
+
+  /time-entries/{id}:
+    delete:
+      operationId: deleteTimeEntry
+      tags: [time]
+      summary: Delete a time entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /milestones:
+    get:
+      operationId: listMilestones
+      tags: [milestones]
+      summary: List milestones
+      responses:
+        "200":
+          description: List of milestones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Milestone"
+    post:
+      operationId: createMilestone
+      tags: [milestones]
+      summary: Create a milestone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMilestoneBody"
+      responses:
+        "201":
+          description: Created milestone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+
+  /milestones/{id}:
+    put:
+      operationId: updateMilestone
+      tags: [milestones]
+      summary: Update a milestone
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMilestoneBody"
+      responses:
+        "200":
+          description: Updated milestone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+    delete:
+      operationId: deleteMilestone
+      tags: [milestones]
+      summary: Delete a milestone
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /content:
+    get:
+      operationId: listContent
+      tags: [content]
+      summary: List content items
+      responses:
+        "200":
+          description: List of content items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentItem"
+    post:
+      operationId: createContent
+      tags: [content]
+      summary: Create content item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContentBody"
+      responses:
+        "201":
+          description: Created content item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+
+  /content/{id}:
+    put:
+      operationId: updateContent
+      tags: [content]
+      summary: Update content item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContentBody"
+      responses:
+        "200":
+          description: Updated content item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+    delete:
+      operationId: deleteContent
+      tags: [content]
+      summary: Delete content item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /financial/summary:
+    get:
+      operationId: getFinancialSummary
+      tags: [financial]
+      summary: Get financial overview
+      responses:
+        "200":
+          description: Financial summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -1727,3 +2133,436 @@ components:
         - topPriorities
         - aiInsight
         - quote
+
+    Lead:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          nullable: true
+        company:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        budget:
+          type: string
+          nullable: true
+        service:
+          type: string
+          nullable: true
+        source:
+          type: string
+        score:
+          type: string
+          enum: [hot, warm, cold]
+        stage:
+          type: string
+          enum: [new, contacted, qualified, proposal, negotiation, won, lost]
+        notes:
+          type: string
+          nullable: true
+        lastContactedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, source, score, stage, createdAt, updatedAt]
+    CreateLeadBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+        phone:
+          type: string
+        budget:
+          type: string
+        service:
+          type: string
+        source:
+          type: string
+        score:
+          type: string
+        stage:
+          type: string
+        notes:
+          type: string
+      required: [name]
+    UpdateLeadBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+        phone:
+          type: string
+        budget:
+          type: string
+        service:
+          type: string
+        source:
+          type: string
+        score:
+          type: string
+        stage:
+          type: string
+        notes:
+          type: string
+        lastContactedAt:
+          type: string
+          format: date-time
+    LeadConvertResult:
+      type: object
+      properties:
+        clientId:
+          type: integer
+        projectId:
+          type: integer
+      required: [clientId, projectId]
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+        invoiceNumber:
+          type: string
+        clientId:
+          type: integer
+          nullable: true
+        projectId:
+          type: integer
+          nullable: true
+        amount:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [draft, sent, paid, overdue, cancelled]
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+        paidDate:
+          type: string
+          format: date-time
+          nullable: true
+        items:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, invoiceNumber, amount, currency, status, createdAt, updatedAt]
+    CreateInvoiceBody:
+      type: object
+      properties:
+        invoiceNumber:
+          type: string
+        clientId:
+          type: integer
+        projectId:
+          type: integer
+        amount:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        items:
+          type: string
+        notes:
+          type: string
+      required: [invoiceNumber, amount]
+    UpdateInvoiceBody:
+      type: object
+      properties:
+        invoiceNumber:
+          type: string
+        clientId:
+          type: integer
+        projectId:
+          type: integer
+        amount:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        paidDate:
+          type: string
+          format: date-time
+        items:
+          type: string
+        notes:
+          type: string
+
+    Expense:
+      type: object
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        amount:
+          type: string
+        currency:
+          type: string
+        category:
+          type: string
+        projectId:
+          type: integer
+          nullable: true
+        date:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, description, amount, currency, category, date, createdAt]
+    CreateExpenseBody:
+      type: object
+      properties:
+        description:
+          type: string
+        amount:
+          type: string
+        currency:
+          type: string
+        category:
+          type: string
+        projectId:
+          type: integer
+        date:
+          type: string
+          format: date-time
+      required: [description, amount]
+
+    TimeEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+          nullable: true
+        taskId:
+          type: integer
+          nullable: true
+        hours:
+          type: string
+        description:
+          type: string
+          nullable: true
+        billable:
+          type: string
+        date:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, hours, billable, date, createdAt]
+    CreateTimeEntryBody:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        taskId:
+          type: integer
+        hours:
+          type: string
+        description:
+          type: string
+        billable:
+          type: string
+        date:
+          type: string
+          format: date-time
+      required: [hours]
+
+    Milestone:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+          enum: [pending, in_progress, completed, overdue]
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, projectId, title, status, createdAt]
+    CreateMilestoneBody:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+      required: [projectId, title]
+    UpdateMilestoneBody:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+
+    ContentItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        platform:
+          type: string
+          enum: [linkedin, tiktok, x, instagram, youtube, blog]
+        contentType:
+          type: string
+          enum: [post, video, article, reel, story]
+        status:
+          type: string
+          enum: [idea, draft, scheduled, published, archived]
+        content:
+          type: string
+          nullable: true
+        scheduledDate:
+          type: string
+          format: date-time
+          nullable: true
+        publishedDate:
+          type: string
+          format: date-time
+          nullable: true
+        engagement:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, title, platform, contentType, status, createdAt, updatedAt]
+    CreateContentBody:
+      type: object
+      properties:
+        title:
+          type: string
+        platform:
+          type: string
+        contentType:
+          type: string
+        status:
+          type: string
+        content:
+          type: string
+        scheduledDate:
+          type: string
+          format: date-time
+      required: [title]
+    UpdateContentBody:
+      type: object
+      properties:
+        title:
+          type: string
+        platform:
+          type: string
+        contentType:
+          type: string
+        status:
+          type: string
+        content:
+          type: string
+        scheduledDate:
+          type: string
+          format: date-time
+        publishedDate:
+          type: string
+          format: date-time
+        engagement:
+          type: string
+
+    FinancialSummary:
+      type: object
+      properties:
+        totalRevenue:
+          type: string
+        totalExpenses:
+          type: string
+        netProfit:
+          type: string
+        unpaidInvoices:
+          type: integer
+        unpaidAmount:
+          type: string
+        paidInvoices:
+          type: integer
+        totalBillableHours:
+          type: string
+        recentTransactions:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              description:
+                type: string
+              amount:
+                type: string
+              date:
+                type: string
+      required: [totalRevenue, totalExpenses, netProfit, unpaidInvoices, unpaidAmount, paidInvoices, totalBillableHours]

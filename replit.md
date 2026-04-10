@@ -28,7 +28,7 @@ BobXD OS is an ultimate AI-powered command center — a personal operating syste
 - Status bar at top (uptime, API ping, system clock), collapsible sidebar on left
 - framer-motion for page transitions and animations
 
-## Pages (14 total)
+## Pages (20 total)
 
 - `/` — **Command Center** — live dashboard with stats, activity feed, active directives, priority queue
 - `/briefing` — **Morning Briefing** — AI-generated daily brief with greeting, tasks due, priorities, insight, quote
@@ -42,6 +42,12 @@ BobXD OS is an ultimate AI-powered command center — a personal operating syste
 - `/notes` — **Knowledge Base** — searchable notes with tags, categories
 - `/habits` — **Habit Tracker** — daily habits with streaks, completion logging, best streak tracking
 - `/metrics` — **Telemetry Data** — log and track any metric (revenue, hours, etc.)
+- `/leads` — **Lead Pipeline** — prospect tracking with score (hot/warm/cold), stage pipeline, convert to client+project
+- `/invoices` — **Invoices** — billing with financial summary cards (revenue, expenses, net profit, unpaid), mark paid
+- `/expenses` — **Expenses** — cost tracking with categories (software, hosting, ai_tools, domain, hardware, marketing)
+- `/time` — **Time Tracker** — hours logging with billable/non-billable split, totals
+- `/milestones` — **Milestones** — project checkpoints with status toggle (pending/in_progress/completed/overdue)
+- `/content` — **Content Calendar** — Kanban-style board (idea/draft/scheduled/published) for multi-platform content
 - `/automations` — **Automation Hub** — scripts with triggers and manual run
 - `/command-log` — **System Audit Log** — immutable action history with filtering
 
@@ -75,6 +81,12 @@ BobXD OS is an ultimate AI-powered command center — a personal operating syste
 - `memories` — persistent AI context storage
 - `audit_log` — system action history
 - `metrics` — quantitative metric tracking
+- `leads` — prospect pipeline with score, stage, budget, service, source
+- `invoices` — billing records with status, line items, due/paid dates
+- `expenses` — cost tracking with category, date, project link
+- `time_entries` — time logging with hours, billable flag, project/task link
+- `milestones` — project checkpoints with status, due date, completion
+- `content_items` — content calendar with platform, type, status, engagement
 
 ## Scratchpad
 

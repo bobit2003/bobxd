@@ -1,5 +1,5 @@
 import { Link, useLocation, useLocation as useWouterLocation } from "wouter";
-import { Terminal, Bot, FolderKanban, CheckSquare, Users, Zap, Menu, Network, Search, Command, BookOpen, Flame, Target, Brain, ScrollText, BarChart3, Sunrise } from "lucide-react";
+import { Terminal, Bot, FolderKanban, CheckSquare, Users, Zap, Menu, Network, Search, Command, BookOpen, Flame, Target, Brain, ScrollText, BarChart3, Sunrise, UserPlus, FileText, Receipt, Clock, Flag, CalendarDays } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -33,6 +33,12 @@ const navItems = [
   { href: "/notes", label: "Notes", icon: BookOpen, key: '' },
   { href: "/habits", label: "Habits", icon: Flame, key: '' },
   { href: "/metrics", label: "Metrics", icon: BarChart3, key: '' },
+  { href: "/leads", label: "Leads", icon: UserPlus, key: '' },
+  { href: "/invoices", label: "Invoices", icon: FileText, key: '' },
+  { href: "/expenses", label: "Expenses", icon: Receipt, key: '' },
+  { href: "/time", label: "Time", icon: Clock, key: '' },
+  { href: "/milestones", label: "Milestones", icon: Flag, key: '' },
+  { href: "/content", label: "Content", icon: CalendarDays, key: '' },
   { href: "/automations", label: "Automations", icon: Zap, key: 'activeAutomations' },
   { href: "/command-log", label: "Command Log", icon: ScrollText, key: '' },
 ];

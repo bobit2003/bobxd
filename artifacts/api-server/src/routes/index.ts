@@ -14,6 +14,13 @@ import auditRouter from "./audit";
 import metricsRouter from "./metrics";
 import searchRouter from "./search";
 import briefingRouter from "./briefing";
+import leadsRouter from "./leads";
+import invoicesRouter from "./invoices";
+import expensesRouter from "./expenses";
+import timeEntriesRouter from "./time-entries";
+import milestonesRouter from "./milestones";
+import contentRouter from "./content";
+import financialRouter from "./financial";
 
 const router: IRouter = Router();
 
@@ -32,5 +39,12 @@ router.use(auditRouter);
 router.use(metricsRouter);
 router.use(searchRouter);
 router.use(briefingRouter);
+router.use(leadsRouter);
+router.use(invoicesRouter);
+router.use(expensesRouter);
+router.use(timeEntriesRouter);
+router.use(milestonesRouter);
+router.use(contentRouter);
+router.use(financialRouter);
 
 export default router;

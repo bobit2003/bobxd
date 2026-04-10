@@ -793,3 +793,419 @@ export const GetDailyBriefingResponse = zod.object({
   aiInsight: zod.string(),
   quote: zod.string(),
 });
+
+/**
+ * @summary List all leads
+ */
+export const ListLeadsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string().nullish(),
+  company: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  budget: zod.string().nullish(),
+  service: zod.string().nullish(),
+  source: zod.string(),
+  score: zod.enum(["hot", "warm", "cold"]),
+  stage: zod.enum([
+    "new",
+    "contacted",
+    "qualified",
+    "proposal",
+    "negotiation",
+    "won",
+    "lost",
+  ]),
+  notes: zod.string().nullish(),
+  lastContactedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListLeadsResponse = zod.array(ListLeadsResponseItem);
+
+/**
+ * @summary Create a lead
+ */
+export const CreateLeadBody = zod.object({
+  name: zod.string(),
+  email: zod.string().optional(),
+  company: zod.string().optional(),
+  phone: zod.string().optional(),
+  budget: zod.string().optional(),
+  service: zod.string().optional(),
+  source: zod.string().optional(),
+  score: zod.string().optional(),
+  stage: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Update a lead
+ */
+export const UpdateLeadParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateLeadBody = zod.object({
+  name: zod.string().optional(),
+  email: zod.string().optional(),
+  company: zod.string().optional(),
+  phone: zod.string().optional(),
+  budget: zod.string().optional(),
+  service: zod.string().optional(),
+  source: zod.string().optional(),
+  score: zod.string().optional(),
+  stage: zod.string().optional(),
+  notes: zod.string().optional(),
+  lastContactedAt: zod.coerce.date().optional(),
+});
+
+export const UpdateLeadResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string().nullish(),
+  company: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  budget: zod.string().nullish(),
+  service: zod.string().nullish(),
+  source: zod.string(),
+  score: zod.enum(["hot", "warm", "cold"]),
+  stage: zod.enum([
+    "new",
+    "contacted",
+    "qualified",
+    "proposal",
+    "negotiation",
+    "won",
+    "lost",
+  ]),
+  notes: zod.string().nullish(),
+  lastContactedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a lead
+ */
+export const DeleteLeadParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Convert lead to client and project
+ */
+export const ConvertLeadParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ConvertLeadResponse = zod.object({
+  clientId: zod.number(),
+  projectId: zod.number(),
+});
+
+/**
+ * @summary List all invoices
+ */
+export const ListInvoicesResponseItem = zod.object({
+  id: zod.number(),
+  invoiceNumber: zod.string(),
+  clientId: zod.number().nullish(),
+  projectId: zod.number().nullish(),
+  amount: zod.string(),
+  currency: zod.string(),
+  status: zod.enum(["draft", "sent", "paid", "overdue", "cancelled"]),
+  dueDate: zod.coerce.date().nullish(),
+  paidDate: zod.coerce.date().nullish(),
+  items: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListInvoicesResponse = zod.array(ListInvoicesResponseItem);
+
+/**
+ * @summary Create an invoice
+ */
+export const CreateInvoiceBody = zod.object({
+  invoiceNumber: zod.string(),
+  clientId: zod.number().optional(),
+  projectId: zod.number().optional(),
+  amount: zod.string(),
+  currency: zod.string().optional(),
+  status: zod.string().optional(),
+  dueDate: zod.coerce.date().optional(),
+  items: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Update an invoice
+ */
+export const UpdateInvoiceParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateInvoiceBody = zod.object({
+  invoiceNumber: zod.string().optional(),
+  clientId: zod.number().optional(),
+  projectId: zod.number().optional(),
+  amount: zod.string().optional(),
+  currency: zod.string().optional(),
+  status: zod.string().optional(),
+  dueDate: zod.coerce.date().optional(),
+  paidDate: zod.coerce.date().optional(),
+  items: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateInvoiceResponse = zod.object({
+  id: zod.number(),
+  invoiceNumber: zod.string(),
+  clientId: zod.number().nullish(),
+  projectId: zod.number().nullish(),
+  amount: zod.string(),
+  currency: zod.string(),
+  status: zod.enum(["draft", "sent", "paid", "overdue", "cancelled"]),
+  dueDate: zod.coerce.date().nullish(),
+  paidDate: zod.coerce.date().nullish(),
+  items: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete an invoice
+ */
+export const DeleteInvoiceParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all expenses
+ */
+export const ListExpensesResponseItem = zod.object({
+  id: zod.number(),
+  description: zod.string(),
+  amount: zod.string(),
+  currency: zod.string(),
+  category: zod.string(),
+  projectId: zod.number().nullish(),
+  date: zod.coerce.date(),
+  createdAt: zod.coerce.date(),
+});
+export const ListExpensesResponse = zod.array(ListExpensesResponseItem);
+
+/**
+ * @summary Create an expense
+ */
+export const CreateExpenseBody = zod.object({
+  description: zod.string(),
+  amount: zod.string(),
+  currency: zod.string().optional(),
+  category: zod.string().optional(),
+  projectId: zod.number().optional(),
+  date: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Delete an expense
+ */
+export const DeleteExpenseParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List time entries
+ */
+export const ListTimeEntriesResponseItem = zod.object({
+  id: zod.number(),
+  projectId: zod.number().nullish(),
+  taskId: zod.number().nullish(),
+  hours: zod.string(),
+  description: zod.string().nullish(),
+  billable: zod.string(),
+  date: zod.coerce.date(),
+  createdAt: zod.coerce.date(),
+});
+export const ListTimeEntriesResponse = zod.array(ListTimeEntriesResponseItem);
+
+/**
+ * @summary Log time entry
+ */
+export const CreateTimeEntryBody = zod.object({
+  projectId: zod.number().optional(),
+  taskId: zod.number().optional(),
+  hours: zod.string(),
+  description: zod.string().optional(),
+  billable: zod.string().optional(),
+  date: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Delete a time entry
+ */
+export const DeleteTimeEntryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List milestones
+ */
+export const ListMilestonesResponseItem = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  title: zod.string(),
+  status: zod.enum(["pending", "in_progress", "completed", "overdue"]),
+  dueDate: zod.coerce.date().nullish(),
+  completedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListMilestonesResponse = zod.array(ListMilestonesResponseItem);
+
+/**
+ * @summary Create a milestone
+ */
+export const CreateMilestoneBody = zod.object({
+  projectId: zod.number(),
+  title: zod.string(),
+  status: zod.string().optional(),
+  dueDate: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Update a milestone
+ */
+export const UpdateMilestoneParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateMilestoneBody = zod.object({
+  title: zod.string().optional(),
+  status: zod.string().optional(),
+  dueDate: zod.coerce.date().optional(),
+});
+
+export const UpdateMilestoneResponse = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  title: zod.string(),
+  status: zod.enum(["pending", "in_progress", "completed", "overdue"]),
+  dueDate: zod.coerce.date().nullish(),
+  completedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a milestone
+ */
+export const DeleteMilestoneParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List content items
+ */
+export const ListContentResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  platform: zod.enum([
+    "linkedin",
+    "tiktok",
+    "x",
+    "instagram",
+    "youtube",
+    "blog",
+  ]),
+  contentType: zod.enum(["post", "video", "article", "reel", "story"]),
+  status: zod.enum(["idea", "draft", "scheduled", "published", "archived"]),
+  content: zod.string().nullish(),
+  scheduledDate: zod.coerce.date().nullish(),
+  publishedDate: zod.coerce.date().nullish(),
+  engagement: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListContentResponse = zod.array(ListContentResponseItem);
+
+/**
+ * @summary Create content item
+ */
+export const CreateContentBody = zod.object({
+  title: zod.string(),
+  platform: zod.string().optional(),
+  contentType: zod.string().optional(),
+  status: zod.string().optional(),
+  content: zod.string().optional(),
+  scheduledDate: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Update content item
+ */
+export const UpdateContentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateContentBody = zod.object({
+  title: zod.string().optional(),
+  platform: zod.string().optional(),
+  contentType: zod.string().optional(),
+  status: zod.string().optional(),
+  content: zod.string().optional(),
+  scheduledDate: zod.coerce.date().optional(),
+  publishedDate: zod.coerce.date().optional(),
+  engagement: zod.string().optional(),
+});
+
+export const UpdateContentResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  platform: zod.enum([
+    "linkedin",
+    "tiktok",
+    "x",
+    "instagram",
+    "youtube",
+    "blog",
+  ]),
+  contentType: zod.enum(["post", "video", "article", "reel", "story"]),
+  status: zod.enum(["idea", "draft", "scheduled", "published", "archived"]),
+  content: zod.string().nullish(),
+  scheduledDate: zod.coerce.date().nullish(),
+  publishedDate: zod.coerce.date().nullish(),
+  engagement: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete content item
+ */
+export const DeleteContentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get financial overview
+ */
+export const GetFinancialSummaryResponse = zod.object({
+  totalRevenue: zod.string(),
+  totalExpenses: zod.string(),
+  netProfit: zod.string(),
+  unpaidInvoices: zod.number(),
+  unpaidAmount: zod.string(),
+  paidInvoices: zod.number(),
+  totalBillableHours: zod.string(),
+  recentTransactions: zod
+    .array(
+      zod.object({
+        type: zod.string().optional(),
+        description: zod.string().optional(),
+        amount: zod.string().optional(),
+        date: zod.string().optional(),
+      }),
+    )
+    .optional(),
+});
