@@ -1,0 +1,47 @@
+VERDICT: APPROVED_WITH_COMMENTS
+
+The diff largely implements the requested UI upgrades correctly (DnD on Tasks and Content Calendar, calendar/kanban toggle with month navigation, and 3 Recharts trend visualizations) with no blocking functional defects VERDICT: APPROVED_WITH_COMMENTS
+found.
+
+Critical findings / analysis:
+- Tasks page: `@hello-pan
+gea/dnd` is integrated properly with `DragDropContext` + `Droppable`/`DraThe diff largely implements the requested UI upgrades correctly (DnD on Tasks and Content Calendar, calendar/kanban toggle with month navigation, and 3 Recharts trend visualizations) with no blocking functional defects found.
+ggable`; drop-zone highlighting and optimistic status update vi
+a `queryClient.setQueryData` are present.
+- Content CalendaCritical findings / analysis:
+r: Kanban drag-and-drop across `idea/draft/scheduled/publish- Tasks page: `@hello-pangea/dnd` is integrated properly with `DragDropContext` + `Droppable`/`Draggable`; drop-zone highlighting and optimistic status update via `queryClient.setQueryData` are present.
+ed` is implemented with optimistic updates; calendar grid view is added with day cells, month prev/next controls, and scheduled item chips rendered on matching dates.
+- Metrics page: Three charts are added using Recharts and themed for dark UI. Data pipelines are present for:
+  - paid-invoice weekly revenue (12 weeks),
+  - weekly completed tasks,
+  - weekly habit completion rate from `habit.log` audit events.
+- Dependency wiring: `@hello-pangea/dnd` added in `artifacts/openclaw/package.json` and lockfile updates are consistent.
+
+Comments (non-blocking):
+- The “Edit Content” sheet opened from calendar chips appears read-only (title/platform/content text only). If product intent requires actual editing controls in that sheet, this is incomplete but does not block the main deliverables listed.
+- `draggingId` state on Tasks is set/reset but currently unused.
+
+Security:
+- none observed (no new authz/injection/secret-handling regressions in this frontend-only diff).
+
+Next actions (high-impact):
+1. If required by UX spec, convert the new content “Edit” sheet to true editable fields + save mutation.
+2. Remove or use `draggingId` to avoid dead state.
+3. (Optional) Validate chart semantics with PM/data owner (e.g., whether task trend should include historical completion events vs current `done` tasks only).- Content Calendar: Kanban drag-and-drop across `idea/draft/scheduled/published` is implemented with optimistic updates; calendar grid view is added with day cells, month prev/next controls, and scheduled item chips rendered on matching dates.
+- Metrics page: Three charts are added using Recharts and themed for dark UI. Data pipelines are present for:
+  - paid-invoice weekly revenue (12 weeks),
+  - weekly completed tasks,
+  - weekly habit completion rate from `habit.log` audit events.
+- Dependency wiring: `@hello-pangea/dnd` added in `artifacts/openclaw/package.json` and lockfile updates are consistent.
+
+Comments (non-blocking):
+- The “Edit Content” sheet opened from calendar chips appears read-only (title/platform/content text only). If product intent requires actual editing controls in that sheet, this is incomplete but does not block the main deliverables listed.
+- `draggingId` state on Tasks is set/reset but currently unused.
+
+Security:
+- none observed (no new authz/injection/secret-handling regressions in this frontend-only diff).
+
+Next actions (high-impact):
+1. If required by UX spec, convert the new content “Edit” sheet to true editable fields + save mutation.
+2. Remove or use `draggingId` to avoid dead state.
+3. (Optional) Validate chart semantics with PM/data owner (e.g., whether task trend should include historical completion events vs current `done` tasks only).

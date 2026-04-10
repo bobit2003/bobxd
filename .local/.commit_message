@@ -1,0 +1,25 @@
+Task #6: AI Goals Coach + AI Automations Script Generator
+
+Backend:
+- goals.ts: POST /goals/:id/strategy — GPT-5.2 generates 5 action steps, daily
+  habit, strategic insight; saves JSON to goals.strategy column; returns strategyParsed
+- automations.ts: POST /automations/generate — GPT-5.2 writes a JS automation
+  script from a natural language description; returns {script, name}
+- goals schema: added strategy TEXT column; DB pushed successfully
+- Both routes use @workspace/integrations-openai-ai-server client (gpt-5.2,
+  max_completion_tokens, no temperature)
+- OpenAPI: added /automations/generate and /goals/{id}/strategy paths;
+  added AutomationGenerateResult and GoalStrategyResult schemas;
+  added strategy field to Goal schema
+- Codegen: re-ran successfully, new hooks generated
+
+Frontend:
+- goals.tsx: Brain button per goal triggers strategy generation; expandable
+  AnimatePresence panel with Lightbulb insight, numbered action steps, Flame daily
+  habit chip; "View AI Strategy" teaser bar; Regenerate + Collapse controls;
+  type-annotated with Goal from generated types
+- automations.tsx: violet-themed "AI Script Generator" panel added to create
+  sheet; Input + Sparkles button calls generateScript mutation; populates script
+  textarea + name field on success; error state; type-annotated with Automation +
+  AutomationGenerateResult from generated types
+- Zero TypeScript errors in both pages

@@ -1,0 +1,41 @@
+VERDICT: APPROVED_WITH_COMMENTS
+
+The task is substantially implemented end-to-end: backend intelligence aggregation exists, client value scoring is computed and exposed, stale leads are surfaced with urgency UX, dashboard shows top revenue opportunitieVERDICT: APPROVED_WITH_COMMENTS
+s, and sidebar badges show actionable counts.
+
+Critical findings / anal
+ysis:
+- ✅ `/api/intelligence/revenue` is implemented in `rThe task is substantially implemented end-to-end: backend intelligence aggregation exists, client value scoring is computed and exposed, stale leads are surfaced with urgency UX, dashboard shows top revenue opportunities, and sidebar badges show actionable counts.
+outes/intelligence.ts` and returns the required structure:
+ `clientRankings`, `staleLeads`, `overdueCollections`,Critical findings / analysis:
+ `reactivationTargets`, `opportunities`.
+- ✅ Client value scoring is implemented server-side in `routes/clients.ts` (paid-invoice based thresholds) and consumed in the Clients UI with color-coded badges and revenue sorting.
+- ✅ Leads page adds stale detection (`>=7 days`), warning indicators, and a “By Urgency” sort that prioritizes stale/hot leads.
+- ✅ Dashboard adds a Revenue Engine panel showing top 3 opportunities from the intelligence endpoint.
+- ✅ Sidebar opportunity badges are wired via dashboard summary counts (`staleLeadsCount`, `reactivationTargetsCount`) and displayed on Leads/Clients nav.
+- ⚠️ Minor spec/contract mismatch risk: OpenAPI `RevenueIntelligence` nested item schemas don’t consistently mark nullable fields (`company`, `lastInvoiceDate`, `budget`) even though API responses can return `null`.
+- ⚠️ Requirement nuance gap: “value classification from revenue vs estimated time” is not implemented; scoring is revenue-threshold only. This aligns with the explicit task list but not fully with the narrative wording.
+- ⚠️ “Client detail view” badge is not evidenced in routes/pages reviewed (may be absent in current app architecture).
+
+Security:
+- None observed (no serious authz/injection/secret-handling regressions introduced by these changes).
+
+Next actions (high impact):
+1. Align OpenAPI nullability for revenue intelligence nested fields to match actual API responses (avoid client type drift/runtime assumptions).
+2. Clarify product requirement source-of-truth: if “revenue vs estimated time” is truly required, incorporate time-entry efficiency into tier scoring logic.
+3. If a client detail screen exists or is planned, render the same `valueTier` badge there for full requirement parity.- ✅ `/api/intelligence/revenue` is implemented in `routes/intelligence.ts` and returns the required structure: `clientRankings`, `staleLeads`, `overdueCollections`, `reactivationTargets`, `opportunities`.
+- ✅ Client value scoring is implemented server-side in `routes/clients.ts` (paid-invoice based thresholds) and consumed in the Clients UI with color-coded badges and revenue sorting.
+- ✅ Leads page adds stale detection (`>=7 days`), warning indicators, and a “By Urgency” sort that prioritizes stale/hot leads.
+- ✅ Dashboard adds a Revenue Engine panel showing top 3 opportunities from the intelligence endpoint.
+- ✅ Sidebar opportunity badges are wired via dashboard summary counts (`staleLeadsCount`, `reactivationTargetsCount`) and displayed on Leads/Clients nav.
+- ⚠️ Minor spec/contract mismatch risk: OpenAPI `RevenueIntelligence` nested item schemas don’t consistently mark nullable fields (`company`, `lastInvoiceDate`, `budget`) even though API responses can return `null`.
+- ⚠️ Requirement nuance gap: “value classification from revenue vs estimated time” is not implemented; scoring is revenue-threshold only. This aligns with the explicit task list but not fully with the narrative wording.
+- ⚠️ “Client detail view” badge is not evidenced in routes/pages reviewed (may be absent in current app architecture).
+
+Security:
+- None observed (no serious authz/injection/secret-handling regressions introduced by these changes).
+
+Next actions (high impact):
+1. Align OpenAPI nullability for revenue intelligence nested fields to match actual API responses (avoid client type drift/runtime assumptions).
+2. Clarify product requirement source-of-truth: if “revenue vs estimated time” is truly required, incorporate time-entry efficiency into tier scoring logic.
+3. If a client detail screen exists or is planned, render the same `valueTier` badge there for full requirement parity.

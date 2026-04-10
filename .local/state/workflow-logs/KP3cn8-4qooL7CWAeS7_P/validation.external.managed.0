@@ -1,0 +1,35 @@
+VERDICT: REJECTED
+The task is close, but it misses a core backend requirement: client value scoring was not added to the `/clients` list API response as specified.
+
+Critical findings:
+- ✅ `/api/intelligence/revenue` is implemented and returns the requVERDICT: REJECTED
+ired top-level structure: `clientRankings`, `staleLeads`, `overdueCollections`The task is close, but it misses a core backend requirement: client value scoring was not added to the `/clients` list API response as specified.
+, `reactivationTargets`, and `opportunities`.
+- ✅ Lea
+ds page includes stale detection (7+ days), warning Critical findings:
+indicator, and urgency sorting that prioritizes stale/hot lea- ✅ `/api/intelligence/revenue` is implemented and returns the required top-level structure: `clientRankings`, `staleLeads`, `overdueCollections`, `reactivationTargets`, and `opportunities`.
+ds.
+- ✅ Dashboard includes a Revenue Engine p- ✅ Leads page includes stale detection (7+ days), warning indicator, and urgency sorting that prioritizes stale/hot leads.
+anel showing top opportunities from intelligence data.
+- ✅ Sidebar badges for Leads/Clients actionable counts are implemented (via `dashboard/summary` fields `staleLeadsCount` and `reactivationTargetsCount`).
+- ❌ **Blocking gap**: `GET /clients` still returns the base `Client` shape only (no computed `valueTier` / revenue-derived fields). Requirement 2 explicitly calls for value tier as a computed field in clients list API response; current implementation computes value tier only in `/intelligence/revenue` and merges on the frontend.
+- ⚠️ Secondary requirement drift: “client detail view” badge is not present, though this may be constrained by app structure (no dedicated client detail route appears to exist).
+
+Security:
+- none observed (no serious authz/injection/secrets regressions introduced by these changes).
+
+Next actions:
+1. Update `GET /clients` backend response to include computed revenue intelligence fields at minimum `valueTier` (and preferably `lifetimeValue`) per client, derived from paid invoices.
+2. Reflect the updated `Client` schema in `lib/api-spec/openapi.yaml`, regenerate API client/zod types, and refactor UI to consume `valueTier` directly from `useListClients` (instead of stitching from a second endpoint for core field availability).
+3. If product requires it, add value badge rendering to an actual client detail surface; otherwise clarify/remove that acceptance criterion.- ✅ Dashboard includes a Revenue Engine panel showing top opportunities from intelligence data.
+- ✅ Sidebar badges for Leads/Clients actionable counts are implemented (via `dashboard/summary` fields `staleLeadsCount` and `reactivationTargetsCount`).
+- ❌ **Blocking gap**: `GET /clients` still returns the base `Client` shape only (no computed `valueTier` / revenue-derived fields). Requirement 2 explicitly calls for value tier as a computed field in clients list API response; current implementation computes value tier only in `/intelligence/revenue` and merges on the frontend.
+- ⚠️ Secondary requirement drift: “client detail view” badge is not present, though this may be constrained by app structure (no dedicated client detail route appears to exist).
+
+Security:
+- none observed (no serious authz/injection/secrets regressions introduced by these changes).
+
+Next actions:
+1. Update `GET /clients` backend response to include computed revenue intelligence fields at minimum `valueTier` (and preferably `lifetimeValue`) per client, derived from paid invoices.
+2. Reflect the updated `Client` schema in `lib/api-spec/openapi.yaml`, regenerate API client/zod types, and refactor UI to consume `valueTier` directly from `useListClients` (instead of stitching from a second endpoint for core field availability).
+3. If product requires it, add value badge rendering to an actual client detail surface; otherwise clarify/remove that acceptance criterion.

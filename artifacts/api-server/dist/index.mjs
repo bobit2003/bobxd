@@ -22211,7 +22211,7 @@ var require_cookie = __commonJS({
   "../../node_modules/.pnpm/cookie@0.7.2/node_modules/cookie/index.js"(exports) {
     "use strict";
     exports.parse = parse3;
-    exports.serialize = serialize16;
+    exports.serialize = serialize17;
     var __toString = Object.prototype.toString;
     var __hasOwnProperty = Object.prototype.hasOwnProperty;
     var cookieNameRegExp = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
@@ -22270,7 +22270,7 @@ var require_cookie = __commonJS({
       }
       return min;
     }
-    function serialize16(name, val, opt) {
+    function serialize17(name, val, opt) {
       var enc = opt && opt.encode || encodeURIComponent;
       if (typeof enc !== "function") {
         throw new TypeError("option encode is invalid");
@@ -24623,7 +24623,7 @@ var require_redact = __commonJS({
       const {
         paths = [],
         censor = "[REDACTED]",
-        serialize: serialize16 = JSON.stringify,
+        serialize: serialize17 = JSON.stringify,
         strict = true,
         remove = false
       } = options;
@@ -24632,10 +24632,10 @@ var require_redact = __commonJS({
       return function redact(obj) {
         if (strict && (obj === null || typeof obj !== "object")) {
           if (obj === null || obj === void 0) {
-            return serialize16 ? serialize16(obj) : obj;
+            return serialize17 ? serialize17(obj) : obj;
           }
           if (typeof obj !== "object") {
-            return serialize16 ? serialize16(obj) : obj;
+            return serialize17 ? serialize17(obj) : obj;
           }
         }
         const cloned = selectiveClone(obj, pathStructure);
@@ -24645,14 +24645,14 @@ var require_redact = __commonJS({
           actualCensor = censor;
         }
         redactPaths(cloned, paths, actualCensor, remove);
-        if (serialize16 === false) {
+        if (serialize17 === false) {
           cloned.restore = function() {
             return deepClone(original);
           };
           return cloned;
         }
-        if (typeof serialize16 === "function") {
-          return serialize16(cloned);
+        if (typeof serialize17 === "function") {
+          return serialize17(cloned);
         }
         return JSON.stringify(cloned);
       };
@@ -24741,7 +24741,7 @@ var require_redaction = __commonJS({
     var rx = /[^.[\]]+|\[([^[\]]*?)\]/g;
     var CENSOR = "[Redacted]";
     var strict = false;
-    function redaction(opts, serialize16) {
+    function redaction(opts, serialize17) {
       const { paths, censor, remove } = handle(opts);
       const shape = paths.reduce((o, str2) => {
         rx.lastIndex = 0;
@@ -24775,10 +24775,10 @@ var require_redaction = __commonJS({
         return o;
       }, {});
       const result = {
-        [redactFmtSym]: Redact({ paths, censor, serialize: serialize16, strict, remove })
+        [redactFmtSym]: Redact({ paths, censor, serialize: serialize17, strict, remove })
       };
       const topCensor = (...args) => {
-        return typeof censor === "function" ? serialize16(censor(...args)) : serialize16(censor);
+        return typeof censor === "function" ? serialize17(censor(...args)) : serialize17(censor);
       };
       return [...Object.keys(shape), ...Object.getOwnPropertySymbols(shape)].reduce((o, k) => {
         if (shape[k] === null) {
@@ -24790,7 +24790,7 @@ var require_redaction = __commonJS({
           o[k] = Redact({
             paths: shape[k],
             censor: wrappedCensor,
-            serialize: serialize16,
+            serialize: serialize17,
             strict,
             remove
           });
@@ -27929,7 +27929,7 @@ var require_pino = __commonJS({
     function pinoBundlerAbsolutePath(p) {
       try {
         const path2 = __require("path");
-        const outputDir = "/home/runner/workspace/artifacts/api-server/dist";
+        const outputDir = "/Users/a050a/.openclaw/workspace/bobxd-os/artifacts/api-server/dist";
         return path2.resolve(outputDir, p.replace(/^\.\//, ""));
       } catch (e) {
         const f = new Function("p", "return new URL(p, import.meta.url).pathname");
@@ -31018,7 +31018,7 @@ var require_serializer = __commonJS({
       99
       /* code.copyDone */
     );
-    var serialize16 = {
+    var serialize17 = {
       startup,
       password,
       requestSsl,
@@ -31038,7 +31038,7 @@ var require_serializer = __commonJS({
       copyFail,
       cancel
     };
-    exports.serialize = serialize16;
+    exports.serialize = serialize17;
   }
 });
 
@@ -31512,11 +31512,11 @@ var require_connection = __commonJS({
   "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
-    var { parse: parse3, serialize: serialize16 } = require_dist2();
+    var { parse: parse3, serialize: serialize17 } = require_dist2();
     var { getStream, getSecureStream } = require_stream();
-    var flushBuffer = serialize16.flush();
-    var syncBuffer = serialize16.sync();
-    var endBuffer = serialize16.end();
+    var flushBuffer = serialize17.flush();
+    var syncBuffer = serialize17.sync();
+    var endBuffer = serialize17.end();
     var Connection2 = class extends EventEmitter {
       constructor(config2) {
         super();
@@ -31607,22 +31607,22 @@ var require_connection = __commonJS({
         });
       }
       requestSsl() {
-        this.stream.write(serialize16.requestSsl());
+        this.stream.write(serialize17.requestSsl());
       }
       startup(config2) {
-        this.stream.write(serialize16.startup(config2));
+        this.stream.write(serialize17.startup(config2));
       }
       cancel(processID, secretKey) {
-        this._send(serialize16.cancel(processID, secretKey));
+        this._send(serialize17.cancel(processID, secretKey));
       }
       password(password) {
-        this._send(serialize16.password(password));
+        this._send(serialize17.password(password));
       }
       sendSASLInitialResponseMessage(mechanism, initialResponse) {
-        this._send(serialize16.sendSASLInitialResponseMessage(mechanism, initialResponse));
+        this._send(serialize17.sendSASLInitialResponseMessage(mechanism, initialResponse));
       }
       sendSCRAMClientFinalMessage(additionalData) {
-        this._send(serialize16.sendSCRAMClientFinalMessage(additionalData));
+        this._send(serialize17.sendSCRAMClientFinalMessage(additionalData));
       }
       _send(buffer) {
         if (!this.stream.writable) {
@@ -31631,19 +31631,19 @@ var require_connection = __commonJS({
         return this.stream.write(buffer);
       }
       query(text2) {
-        this._send(serialize16.query(text2));
+        this._send(serialize17.query(text2));
       }
       // send parse message
       parse(query) {
-        this._send(serialize16.parse(query));
+        this._send(serialize17.parse(query));
       }
       // send bind message
       bind(config2) {
-        this._send(serialize16.bind(config2));
+        this._send(serialize17.bind(config2));
       }
       // send execute message
       execute(config2) {
-        this._send(serialize16.execute(config2));
+        this._send(serialize17.execute(config2));
       }
       flush() {
         if (this.stream.writable) {
@@ -31671,19 +31671,19 @@ var require_connection = __commonJS({
         });
       }
       close(msg) {
-        this._send(serialize16.close(msg));
+        this._send(serialize17.close(msg));
       }
       describe(msg) {
-        this._send(serialize16.describe(msg));
+        this._send(serialize17.describe(msg));
       }
       sendCopyFromChunk(chunk) {
-        this._send(serialize16.copyData(chunk));
+        this._send(serialize17.copyData(chunk));
       }
       endCopyFrom() {
-        this._send(serialize16.copyDone());
+        this._send(serialize17.copyDone());
       }
       sendCopyFail(msg) {
-        this._send(serialize16.copyFail(msg));
+        this._send(serialize17.copyFail(msg));
       }
     };
     module.exports = Connection2;
@@ -65481,56 +65481,16 @@ var memories_default = router11;
 // src/routes/audit.ts
 var import_express12 = __toESM(require_express2(), 1);
 var router12 = (0, import_express12.Router)();
-function serializeAudit(a) {
-  return {
-    id: a.id,
-    action: a.action,
-    entity: a.entity,
-    entityId: a.entityId,
-    details: a.details,
-    source: a.source,
-    createdAt: a.createdAt.toISOString()
-  };
+function serialize9(a) {
+  return { ...a, createdAt: a.createdAt.toISOString() };
 }
 router12.get("/audit", async (req, res) => {
   try {
     const rows = await db.select().from(auditLog).orderBy(desc(auditLog.createdAt)).limit(200);
-    res.json(rows.map(serializeAudit));
+    res.json(rows.map(serialize9));
   } catch (err) {
     req.log.error({ err }, "Failed to list audit log");
     res.status(500).json({ error: "Internal server error" });
-  }
-});
-router12.get("/audit/stream", async (req, res) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.flushHeaders();
-  try {
-    const initial = await db.select().from(auditLog).orderBy(desc(auditLog.createdAt)).limit(20);
-    let lastId = 0;
-    for (const entry of initial.slice().reverse()) {
-      if (entry.id > lastId) lastId = entry.id;
-      res.write(`data: ${JSON.stringify(serializeAudit(entry))}
-
-`);
-    }
-    const interval2 = setInterval(async () => {
-      try {
-        const newEntries = await db.select().from(auditLog).where(gt(auditLog.id, lastId)).orderBy(auditLog.id).limit(50);
-        for (const entry of newEntries) {
-          if (entry.id > lastId) lastId = entry.id;
-          res.write(`data: ${JSON.stringify(serializeAudit(entry))}
-
-`);
-        }
-      } catch {
-      }
-    }, 3e3);
-    req.on("close", () => clearInterval(interval2));
-  } catch (err) {
-    req.log.error({ err }, "Audit stream error");
-    res.end();
   }
 });
 router12.post("/audit", async (req, res) => {
@@ -65538,12 +65498,13 @@ router12.post("/audit", async (req, res) => {
     const body = req.body;
     const [row] = await db.insert(auditLog).values({
       action: body.action || "unknown",
-      entity: body.entity ?? "unknown",
+      entity: body.entity ?? null,
       entityId: body.entityId ?? null,
       details: body.details ?? null,
-      source: body.source ?? "user"
+      userName: body.user ?? "system",
+      createdAt: /* @__PURE__ */ new Date()
     }).returning();
-    res.status(201).json(serializeAudit(row));
+    res.status(201).json(serialize9(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create audit log");
     res.status(400).json({ error: "Bad request" });
@@ -65554,13 +65515,13 @@ var audit_default = router12;
 // src/routes/metrics.ts
 var import_express13 = __toESM(require_express2(), 1);
 var router13 = (0, import_express13.Router)();
-function serialize9(m) {
+function serialize10(m) {
   return { ...m, date: m.date.toISOString(), createdAt: m.createdAt.toISOString() };
 }
 router13.get("/metrics", async (req, res) => {
   try {
     const rows = await db.select().from(metrics).orderBy(desc(metrics.date)).limit(200);
-    res.json(rows.map(serialize9));
+    res.json(rows.map(serialize10));
   } catch (err) {
     req.log.error({ err }, "Failed to list metrics");
     res.status(500).json({ error: "Internal server error" });
@@ -65570,7 +65531,7 @@ router13.post("/metrics", async (req, res) => {
   try {
     const body = CreateMetricBody.parse(req.body);
     const [row] = await db.insert(metrics).values(body).returning();
-    res.status(201).json(serialize9(row));
+    res.status(201).json(serialize10(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create metric");
     res.status(400).json({ error: "Bad request" });
@@ -65721,7 +65682,7 @@ var briefing_default = router15;
 // src/routes/leads.ts
 var import_express16 = __toESM(require_express2(), 1);
 var router16 = (0, import_express16.Router)();
-function serialize10(l) {
+function serialize11(l) {
   return {
     ...l,
     lastContactedAt: l.lastContactedAt?.toISOString() ?? null,
@@ -65732,7 +65693,7 @@ function serialize10(l) {
 router16.get("/leads", async (req, res) => {
   try {
     const rows = await db.select().from(leads).orderBy(desc(leads.createdAt));
-    res.json(rows.map(serialize10));
+    res.json(rows.map(serialize11));
   } catch (err) {
     req.log.error({ err }, "Failed to list leads");
     res.status(500).json({ error: "Internal server error" });
@@ -65743,7 +65704,7 @@ router16.post("/leads", async (req, res) => {
     const body = CreateLeadBody.parse(req.body);
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(leads).values({ ...body, createdAt: now, updatedAt: now }).returning();
-    res.status(201).json(serialize10(row));
+    res.status(201).json(serialize11(row));
     emitEvent("lead_created", "LEAD", `New ${row.score} lead: ${row.name}`, {
       entityId: row.id,
       entityType: "lead",
@@ -65765,7 +65726,7 @@ router16.put("/leads/:id", async (req, res) => {
     const body = UpdateLeadBody.parse(req.body);
     const [row] = await db.update(leads).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(leads.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize10(row));
+    res.json(serialize11(row));
     emitEvent("lead_updated", "LEAD", `Lead updated: ${row.name} \u2014 ${row.stage}`, {
       entityId: row.id,
       entityType: "lead",
@@ -65851,7 +65812,7 @@ var leads_default = router16;
 // src/routes/invoices.ts
 var import_express17 = __toESM(require_express2(), 1);
 var router17 = (0, import_express17.Router)();
-function serialize11(i) {
+function serialize12(i) {
   return {
     ...i,
     dueDate: i.dueDate?.toISOString() ?? null,
@@ -65863,7 +65824,7 @@ function serialize11(i) {
 router17.get("/invoices", async (req, res) => {
   try {
     const rows = await db.select().from(invoices).orderBy(desc(invoices.createdAt));
-    res.json(rows.map(serialize11));
+    res.json(rows.map(serialize12));
   } catch (err) {
     req.log.error({ err }, "Failed to list invoices");
     res.status(500).json({ error: "Internal server error" });
@@ -65874,7 +65835,7 @@ router17.post("/invoices", async (req, res) => {
     const body = CreateInvoiceBody.parse(req.body);
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(invoices).values({ ...body, createdAt: now, updatedAt: now }).returning();
-    res.status(201).json(serialize11(row));
+    res.status(201).json(serialize12(row));
     emitEvent("invoice_created", "FIN", `Invoice created: ${row.invoiceNumber} \u2014 $${row.amount}`, {
       entityId: row.id,
       entityType: "invoice",
@@ -65896,7 +65857,7 @@ router17.put("/invoices/:id", async (req, res) => {
     const body = UpdateInvoiceBody.parse(req.body);
     const [row] = await db.update(invoices).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(invoices.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize11(row));
+    res.json(serialize12(row));
     const isPaid = row.status === "paid";
     emitEvent(
       isPaid ? "invoice_paid" : "invoice_updated",
@@ -65936,13 +65897,13 @@ var invoices_default = router17;
 // src/routes/expenses.ts
 var import_express18 = __toESM(require_express2(), 1);
 var router18 = (0, import_express18.Router)();
-function serialize12(e) {
+function serialize13(e) {
   return { ...e, date: e.date.toISOString(), createdAt: e.createdAt.toISOString() };
 }
 router18.get("/expenses", async (req, res) => {
   try {
     const rows = await db.select().from(expenses).orderBy(desc(expenses.date));
-    res.json(rows.map(serialize12));
+    res.json(rows.map(serialize13));
   } catch (err) {
     req.log.error({ err }, "Failed to list expenses");
     res.status(500).json({ error: "Internal server error" });
@@ -65952,7 +65913,7 @@ router18.post("/expenses", async (req, res) => {
   try {
     const body = CreateExpenseBody.parse(req.body);
     const [row] = await db.insert(expenses).values(body).returning();
-    res.status(201).json(serialize12(row));
+    res.status(201).json(serialize13(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create expense");
     res.status(400).json({ error: "Bad request" });
@@ -65974,13 +65935,13 @@ var expenses_default = router18;
 // src/routes/time-entries.ts
 var import_express19 = __toESM(require_express2(), 1);
 var router19 = (0, import_express19.Router)();
-function serialize13(t) {
+function serialize14(t) {
   return { ...t, date: t.date.toISOString(), createdAt: t.createdAt.toISOString() };
 }
 router19.get("/time-entries", async (req, res) => {
   try {
     const rows = await db.select().from(timeEntries).orderBy(desc(timeEntries.date));
-    res.json(rows.map(serialize13));
+    res.json(rows.map(serialize14));
   } catch (err) {
     req.log.error({ err }, "Failed to list time entries");
     res.status(500).json({ error: "Internal server error" });
@@ -65990,7 +65951,7 @@ router19.post("/time-entries", async (req, res) => {
   try {
     const body = CreateTimeEntryBody.parse(req.body);
     const [row] = await db.insert(timeEntries).values(body).returning();
-    res.status(201).json(serialize13(row));
+    res.status(201).json(serialize14(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create time entry");
     res.status(400).json({ error: "Bad request" });
@@ -66012,7 +65973,7 @@ var time_entries_default = router19;
 // src/routes/milestones.ts
 var import_express20 = __toESM(require_express2(), 1);
 var router20 = (0, import_express20.Router)();
-function serialize14(m) {
+function serialize15(m) {
   return {
     ...m,
     dueDate: m.dueDate?.toISOString() ?? null,
@@ -66023,7 +65984,7 @@ function serialize14(m) {
 router20.get("/milestones", async (req, res) => {
   try {
     const rows = await db.select().from(milestones).orderBy(desc(milestones.createdAt));
-    res.json(rows.map(serialize14));
+    res.json(rows.map(serialize15));
   } catch (err) {
     req.log.error({ err }, "Failed to list milestones");
     res.status(500).json({ error: "Internal server error" });
@@ -66033,7 +65994,7 @@ router20.post("/milestones", async (req, res) => {
   try {
     const body = CreateMilestoneBody.parse(req.body);
     const [row] = await db.insert(milestones).values(body).returning();
-    res.status(201).json(serialize14(row));
+    res.status(201).json(serialize15(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create milestone");
     res.status(400).json({ error: "Bad request" });
@@ -66049,7 +66010,7 @@ router20.put("/milestones/:id", async (req, res) => {
     }
     const [row] = await db.update(milestones).set(updateData).where(eq(milestones.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize14(row));
+    res.json(serialize15(row));
   } catch (err) {
     req.log.error({ err }, "Failed to update milestone");
     res.status(400).json({ error: "Bad request" });
@@ -66071,7 +66032,7 @@ var milestones_default = router20;
 // src/routes/content.ts
 var import_express21 = __toESM(require_express2(), 1);
 var router21 = (0, import_express21.Router)();
-function serialize15(c) {
+function serialize16(c) {
   return {
     ...c,
     scheduledDate: c.scheduledDate?.toISOString() ?? null,
@@ -66083,7 +66044,7 @@ function serialize15(c) {
 router21.get("/content", async (req, res) => {
   try {
     const rows = await db.select().from(contentItems).orderBy(desc(contentItems.createdAt));
-    res.json(rows.map(serialize15));
+    res.json(rows.map(serialize16));
   } catch (err) {
     req.log.error({ err }, "Failed to list content");
     res.status(500).json({ error: "Internal server error" });
@@ -66094,7 +66055,7 @@ router21.post("/content", async (req, res) => {
     const body = CreateContentBody.parse(req.body);
     const now = /* @__PURE__ */ new Date();
     const [row] = await db.insert(contentItems).values({ ...body, createdAt: now, updatedAt: now }).returning();
-    res.status(201).json(serialize15(row));
+    res.status(201).json(serialize16(row));
   } catch (err) {
     req.log.error({ err }, "Failed to create content");
     res.status(400).json({ error: "Bad request" });
@@ -66106,7 +66067,7 @@ router21.put("/content/:id", async (req, res) => {
     const body = UpdateContentBody.parse(req.body);
     const [row] = await db.update(contentItems).set({ ...body, updatedAt: /* @__PURE__ */ new Date() }).where(eq(contentItems.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(serialize15(row));
+    res.json(serialize16(row));
   } catch (err) {
     req.log.error({ err }, "Failed to update content");
     res.status(400).json({ error: "Bad request" });

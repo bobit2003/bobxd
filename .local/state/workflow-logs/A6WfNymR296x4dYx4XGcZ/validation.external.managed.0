@@ -1,0 +1,39 @@
+VERDICT: REJECTED
+The diff delivers most of the UI upgrades, but it misses a core functional requirement in the Content Calendar and has a materially incorrect trend calculation on Metrics.
+
+Critical findings:
+- **Content Calendar requirement not mVERDICT: REJECTED
+et (blocking):** In calendar view, scheduled item chips are rendered but **do not open theThe diff delivers most of the UI upgrades, but it misses a core functional requirement in the Content Calendar and has a materially incorrect trend calculation on Metrics.
+ edit sheet on click**. The requirement explicitly says clic
+king a chip opens edit. The chips have no `onClick`, and `sCritical findings:
+etEditItem` is never triggered from calendar cells. Additionally, `ContentCard` accepts `onEdit` but never calls it, so the edit sheet path is effectively dead.
+- **Habit trend logic is incorrect vs spec (blocking):** The required metric is weekly habit completion rate based on habits logged each day (habit-days / possible habit-days). Current code deduplicates by `entityId-week` (`Set("habitId-week")`), which caps each habit to 1 completion per week, not up to 7. This substantially underreports completion and does not implement the requested calculation.
+- **Everything else is largely aligned:**
+  - `@hello-pangea/dnd` installed and wired.
+  - Tasks Kanban drag/drop works with optimistic cache update and drop-zone/card drag styling.
+  - Content Kanban drag/drop implemented with optimistic update.
+  - Calendar grid + month navigation implemented.
+  - Recharts trend cards integrated with dark-theme styling.
+
+Security:
+- None observed (no serious authz/injection/secrets regressions in this UI-focused diff).
+
+Next actions:
+1. Wire calendar chips to open the edit sheet (`onClick={() => setEditItem(item)}`), and ensure edit entry points are intentional (either from chips and/or cards).
+2. Fix habit rate aggregation to count **habit-day completions** per week (e.g., unique key per `habitId + date`, then divide by `habits * daysInWeekWindow`).
+3. Re-verify charts against sample data for week grouping correctness and expected percentages before approval.- **Content Calendar requirement not met (blocking):** In calendar view, scheduled item chips are rendered but **do not open the edit sheet on click**. The requirement explicitly says clicking a chip opens edit. The chips have no `onClick`, and `setEditItem` is never triggered from calendar cells. Additionally, `ContentCard` accepts `onEdit` but never calls it, so the edit sheet path is effectively dead.
+- **Habit trend logic is incorrect vs spec (blocking):** The required metric is weekly habit completion rate based on habits logged each day (habit-days / possible habit-days). Current code deduplicates by `entityId-week` (`Set("habitId-week")`), which caps each habit to 1 completion per week, not up to 7. This substantially underreports completion and does not implement the requested calculation.
+- **Everything else is largely aligned:**
+  - `@hello-pangea/dnd` installed and wired.
+  - Tasks Kanban drag/drop works with optimistic cache update and drop-zone/card drag styling.
+  - Content Kanban drag/drop implemented with optimistic update.
+  - Calendar grid + month navigation implemented.
+  - Recharts trend cards integrated with dark-theme styling.
+
+Security:
+- None observed (no serious authz/injection/secrets regressions in this UI-focused diff).
+
+Next actions:
+1. Wire calendar chips to open the edit sheet (`onClick={() => setEditItem(item)}`), and ensure edit entry points are intentional (either from chips and/or cards).
+2. Fix habit rate aggregation to count **habit-day completions** per week (e.g., unique key per `habitId + date`, then divide by `habits * daysInWeekWindow`).
+3. Re-verify charts against sample data for week grouping correctness and expected percentages before approval.

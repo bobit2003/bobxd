@@ -1,0 +1,35 @@
+VERDICT: REJECTED
+The implementation delivers major pieces (audit SSE stream, alert endpoint, live map wiring), but it misses multiple core “Done looks like” requirements, so it is not ready for approval.
+
+Critical findings:
+1) **AI conversatioVERDICT: REJECTED
+n activity is not instrumented into audit log**. The dashboard feed now depThe implementation delivers major pieces (audit SSE stream, alert endpoint, live map wiring), but it misses multiple core “Done looks like” requirements, so it is not ready for approval.
+ends on `/api/audit/stream`, but `artifacts/api-se
+rver/src/routes/openai.ts` does not call `writeCritical findings:
+Audit` on conversation/message create/send. This directly breaks the requirement that AI conversations appear in the real-time activity feed.
+
+2) **Agent stats payload does not match required business metrics**. `/intelligence/agent-stats` returns task counts and automation counts, but not the required **projects count** in Operations and not **automation run count / recent runs** for Automation. Frontend (`agent-map.tsx`) also displays active/total automations rather than run metrics. This is a functional mismatch against task objective.
+
+3) **Alert dismissal behavior does not match requirement**. Requirement says clicking any alert should dismiss it for the session. Current dashboard only dismisses via a separate X button, and dismissal state is local component state (not persisted for session across remount/reload). This is incomplete relative to the specified UX behavior.
+
+4) **Instrumentation approach is partial/manual rather than automatic middleware/helper coverage**. Key routes were updated (tasks/leads/invoices/habits/automations), which is good, but “automatic” system-level coverage is not implemented and remains route-by-route. This is acceptable only if all required operations are fully covered—including AI conversation events—which they are not.
+
+Security: none observed that are newly introduced and directly germane to this task.
+
+Next actions:
+1) Add `writeAudit` calls in OpenAI conversation/message routes (conversation created, user message sent, assistant reply stored) so AI activity enters `/audit/stream`.
+2) Update `/intelligence/agent-stats` and `agent-map.tsx` to include/show required metrics: operations project count and automation run count/recent runs.
+3) Make alert click dismiss semantics compliant: dismiss on alert click and persist dismissed alert types in `sessionStorage` for session scope.1) **AI conversation activity is not instrumented into audit log**. The dashboard feed now depends on `/api/audit/stream`, but `artifacts/api-server/src/routes/openai.ts` does not call `writeAudit` on conversation/message create/send. This directly breaks the requirement that AI conversations appear in the real-time activity feed.
+
+2) **Agent stats payload does not match required business metrics**. `/intelligence/agent-stats` returns task counts and automation counts, but not the required **projects count** in Operations and not **automation run count / recent runs** for Automation. Frontend (`agent-map.tsx`) also displays active/total automations rather than run metrics. This is a functional mismatch against task objective.
+
+3) **Alert dismissal behavior does not match requirement**. Requirement says clicking any alert should dismiss it for the session. Current dashboard only dismisses via a separate X button, and dismissal state is local component state (not persisted for session across remount/reload). This is incomplete relative to the specified UX behavior.
+
+4) **Instrumentation approach is partial/manual rather than automatic middleware/helper coverage**. Key routes were updated (tasks/leads/invoices/habits/automations), which is good, but “automatic” system-level coverage is not implemented and remains route-by-route. This is acceptable only if all required operations are fully covered—including AI conversation events—which they are not.
+
+Security: none observed that are newly introduced and directly germane to this task.
+
+Next actions:
+1) Add `writeAudit` calls in OpenAI conversation/message routes (conversation created, user message sent, assistant reply stored) so AI activity enters `/audit/stream`.
+2) Update `/intelligence/agent-stats` and `agent-map.tsx` to include/show required metrics: operations project count and automation run count/recent runs.
+3) Make alert click dismiss semantics compliant: dismiss on alert click and persist dismissed alert types in `sessionStorage` for session scope.

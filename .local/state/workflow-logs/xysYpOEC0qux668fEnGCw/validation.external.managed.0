@@ -1,0 +1,39 @@
+VERDICT: APPROVED_WITH_COMMENTS
+The diff delivers the core task objectives end-to-end: multi-agent prompt injection, memory context injection, backend agent routing via `agentMode`, control modVERDICT: APPROVED_WITH_COMMENTS
+e UI (including Money Mode behavior and persisted localStorage state), a streamed `/api/intelligence/daily-plan` endpoint, and GPT-powered narrative generation in `/briefing`.
+
+Critical findings / analysis:
+- `openai.ts` now prepends a master OpenClaw system prompt on every chat call and injects memory context before conversation history. Agent routing is implemented with distinct sub-prompts for `ceo`, `revenue`, `ops`, `analytics`, and `general`.
+- Request schema contract is aligned: `SendOpenaiMessageBody` now supports optional `agentMode` in generated zod/types.
+- `ai.tsx` includes visible agent chips, control mode selector, localStorage persistence, Money Mode amber theming, and Revenue-agent dominance when Money Mode is active.
+- `/intelligence/daily-plan` exists and streams GPT output using live DB-derived context (tasks/leads/invoices/milestones, plus extra signals). UI wires a “Daily Plan” action to this stream.
+- `/briefing` now generates `aiInsight` via GPT with a fallback path, replacing the previous static concatenation behavior.
+
+Comments (non-blocking):
+- Memory injection currently caps at 50 records (`limit(50)`) rather than truly “all stored memories.” This is likely pragmatic for token limits but slightly diverges from the literal requirement language.
+- Daily-plan and chat-trigger data collection performs full-table reads then filters in application code. Functional now, but could become costly as data grows.
+
+Security: none observed (no serious authz/injection/secret-handling regressions introduced by this diff).
+
+Next actions:
+1) Decide and document intended memory cap behavior (all vs bounded) and, if needed, make it configurable/token-budget aware.
+2) Add integration tests for: agentMode routing, memory injection presence, Money Mode default-to-revenue behavior, and daily-plan SSE formatting.
+3) Optimize daily-plan queries with DB-side filtering/limits to avoid full-table scans as dataset size increases.The diff delivers the core task objectives end-to-end: multi-agent prompt injection, memory context injection, backend agent routing via `agentMode`, control mode UI (including Money Mode behavior and persisted localStorage state), a streamed `/api/intelligence/daily-plan` endpoint, and GPT-powered narrative generation in `/briefing`.
+
+Critical findings / analysis:
+- `openai.ts` now prepends a master OpenClaw system prompt on every chat call and injects memory context before conversation history. Agent routing is implemented with distinct sub-prompts for `ceo`, `revenue`, `ops`, `analytics`, and `general`.
+- Request schema contract is aligned: `SendOpenaiMessageBody` now supports optional `agentMode` in generated zod/types.
+- `ai.tsx` includes visible agent chips, control mode selector, localStorage persistence, Money Mode amber theming, and Revenue-agent dominance when Money Mode is active.
+- `/intelligence/daily-plan` exists and streams GPT output using live DB-derived context (tasks/leads/invoices/milestones, plus extra signals). UI wires a “Daily Plan” action to this stream.
+- `/briefing` now generates `aiInsight` via GPT with a fallback path, replacing the previous static concatenation behavior.
+
+Comments (non-blocking):
+- Memory injection currently caps at 50 records (`limit(50)`) rather than truly “all stored memories.” This is likely pragmatic for token limits but slightly diverges from the literal requirement language.
+- Daily-plan and chat-trigger data collection performs full-table reads then filters in application code. Functional now, but could become costly as data grows.
+
+Security: none observed (no serious authz/injection/secret-handling regressions introduced by this diff).
+
+Next actions:
+1) Decide and document intended memory cap behavior (all vs bounded) and, if needed, make it configurable/token-budget aware.
+2) Add integration tests for: agentMode routing, memory injection presence, Money Mode default-to-revenue behavior, and daily-plan SSE formatting.
+3) Optimize daily-plan queries with DB-side filtering/limits to avoid full-table scans as dataset size increases.
