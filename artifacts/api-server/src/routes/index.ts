@@ -21,11 +21,13 @@ import timeEntriesRouter from "./time-entries";
 import milestonesRouter from "./milestones";
 import contentRouter from "./content";
 import financialRouter from "./financial";
+import intelligenceRouter from "./intelligence";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(openaiRouter);
+router.use(intelligenceRouter);
 router.use(projectsRouter);
 router.use(clientsRouter);
 router.use(tasksRouter);

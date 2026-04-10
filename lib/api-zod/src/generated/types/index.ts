@@ -74,6 +74,7 @@ export * from "./projectStatus";
 export * from "./projectType";
 export * from "./searchResults";
 export * from "./sendOpenaiMessageBody";
+export * from "./sendOpenaiMessageBodyAgentMode";
 export * from "./task";
 export * from "./taskPriority";
 export * from "./taskStatus";

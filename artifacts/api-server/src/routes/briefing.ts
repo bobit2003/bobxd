@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { tasks, projects, habits, goals, leads, invoices, timeEntries, milestones, contentItems } from "@workspace/db";
-import { eq, and, lte, gte } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
 
@@ -56,6 +57,11 @@ router.get("/briefing", async (req, res) => {
 
     const allLeads = await db.select().from(leads);
     const hotLeads = allLeads.filter(l => l.score === "hot" && l.stage !== "won" && l.stage !== "lost").length;
+    const staleLeads = allLeads.filter(l => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24) > 7;
+    }).length;
 
     const allTime = await db.select().from(timeEntries);
     const weeklyBillable = allTime
@@ -76,13 +82,34 @@ router.get("/briefing", async (req, res) => {
       .slice(0, 3)
       .map(c => `${c.title} on ${c.platform} (${c.scheduledDate!.toLocaleDateString()})`);
 
-    const insights: string[] = [];
-    if (tasksOverdue > 0) insights.push(`${tasksOverdue} overdue task(s) need attention.`);
-    else insights.push("All tasks are on track.");
-    if (unpaidInvs.length > 0) insights.push(`$${unpaidAmount.toFixed(0)} in unpaid invoices across ${unpaidInvs.length} invoice(s).`);
-    if (hotLeads > 0) insights.push(`${hotLeads} hot lead(s) ready to close.`);
-    if (weeklyBillable > 0) insights.push(`${weeklyBillable.toFixed(1)}h billable this week.`);
-    if (habitRows.length > 0) insights.push(`Tracking ${habitRows.length} habit(s). Longest streak: ${maxStreak} day(s).`);
+    // Build AI narrative from real data
+    let aiInsight = "";
+    try {
+      const dataContext = `System snapshot: ${tasksOverdue} overdue tasks, ${tasksDueToday} due today, ${highPriTasks.length} high-priority pending. Revenue: $${unpaidAmount.toFixed(0)} unpaid across ${unpaidInvs.length} invoices, ${hotLeads} hot leads, ${staleLeads} stale leads, ${weeklyBillable.toFixed(1)}h billable this week. Habits: ${habitRows.length} tracked, longest streak ${maxStreak} days. Active projects: ${activeProjectRows.length}.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-5.2",
+        max_completion_tokens: 200,
+        messages: [
+          {
+            role: "system",
+            content: "You are the OpenClaw AI Operating System. Generate a concise 2-3 sentence strategic morning narrative — not a list, not bullet points — from the system snapshot. Be specific about numbers. Focus on what matters most today for revenue and momentum. Write in an assertive, commander-to-commander tone.",
+          },
+          { role: "user", content: dataContext },
+        ],
+      });
+      aiInsight = completion.choices[0]?.message?.content ?? "";
+    } catch {
+      // Fallback to static insight if GPT fails
+      const insights: string[] = [];
+      if (tasksOverdue > 0) insights.push(`${tasksOverdue} overdue task(s) need attention.`);
+      else insights.push("All tasks are on track.");
+      if (unpaidInvs.length > 0) insights.push(`$${unpaidAmount.toFixed(0)} in unpaid invoices across ${unpaidInvs.length} invoice(s).`);
+      if (hotLeads > 0) insights.push(`${hotLeads} hot lead(s) ready to close.`);
+      if (weeklyBillable > 0) insights.push(`${weeklyBillable.toFixed(1)}h billable this week.`);
+      if (habitRows.length > 0) insights.push(`Tracking ${habitRows.length} habit(s). Longest streak: ${maxStreak} day(s).`);
+      aiInsight = insights.join(" ");
+    }
 
     res.json({
       greeting: `${greeting}, Commander`,
@@ -92,7 +119,7 @@ router.get("/briefing", async (req, res) => {
       activeProjects: activeProjectRows.length,
       currentStreak: maxStreak,
       topPriorities: highPriTasks.length > 0 ? highPriTasks : ["No high priority tasks. You're ahead of schedule."],
-      aiInsight: insights.join(" "),
+      aiInsight,
       quote: quotes[Math.floor(Math.random() * quotes.length)],
       unpaidInvoices: unpaidInvs.length,
       unpaidAmount: unpaidAmount.toFixed(2),

@@ -762,6 +762,79 @@ export const useGenerateOpenaiImage = <
 };
 
 /**
+ * @summary Get AI-generated daily strategic plan (SSE stream)
+ */
+export const getGetDailyPlanUrl = () => {
+  return `/api/intelligence/daily-plan`;
+};
+
+export const getDailyPlan = async (options?: RequestInit): Promise<unknown> => {
+  return customFetch<unknown>(getGetDailyPlanUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDailyPlanQueryKey = () => {
+  return [`/api/intelligence/daily-plan`] as const;
+};
+
+export const getGetDailyPlanQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDailyPlan>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDailyPlan>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDailyPlanQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDailyPlan>>> = ({
+    signal,
+  }) => getDailyPlan({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDailyPlan>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDailyPlanQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDailyPlan>>
+>;
+export type GetDailyPlanQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get AI-generated daily strategic plan (SSE stream)
+ */
+
+export function useGetDailyPlan<
+  TData = Awaited<ReturnType<typeof getDailyPlan>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDailyPlan>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDailyPlanQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
  * @summary List all projects
  */
 export const getListProjectsUrl = () => {

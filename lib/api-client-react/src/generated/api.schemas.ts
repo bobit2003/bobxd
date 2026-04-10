@@ -27,8 +27,20 @@ export interface CreateOpenaiConversationBody {
   title: string;
 }
 
+export type SendOpenaiMessageBodyAgentMode =
+  (typeof SendOpenaiMessageBodyAgentMode)[keyof typeof SendOpenaiMessageBodyAgentMode];
+
+export const SendOpenaiMessageBodyAgentMode = {
+  general: "general",
+  ceo: "ceo",
+  revenue: "revenue",
+  ops: "ops",
+  analytics: "analytics",
+} as const;
+
 export interface SendOpenaiMessageBody {
   content: string;
+  agentMode?: SendOpenaiMessageBodyAgentMode;
 }
 
 export interface OpenaiConversationWithMessages {

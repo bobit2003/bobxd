@@ -20485,27 +20485,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router24;
+    module.exports = Router25;
     module.exports.Route = Route;
-    function Router24(options) {
-      if (!(this instanceof Router24)) {
-        return new Router24(options);
+    function Router25(options) {
+      if (!(this instanceof Router25)) {
+        return new Router25(options);
       }
       const opts = options || {};
-      function router24(req, res, next) {
-        router24.handle(req, res, next);
+      function router25(req, res, next) {
+        router25.handle(req, res, next);
       }
-      Object.setPrototypeOf(router24, this);
-      router24.caseSensitive = opts.caseSensitive;
-      router24.mergeParams = opts.mergeParams;
-      router24.params = {};
-      router24.strict = opts.strict;
-      router24.stack = [];
-      return router24;
+      Object.setPrototypeOf(router25, this);
+      router25.caseSensitive = opts.caseSensitive;
+      router25.mergeParams = opts.mergeParams;
+      router25.params = {};
+      router25.strict = opts.strict;
+      router25.stack = [];
+      return router25;
     }
-    Router24.prototype = function() {
+    Router25.prototype = function() {
     };
-    Router24.prototype.param = function param(name, fn) {
+    Router25.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20525,7 +20525,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router24.prototype.handle = function handle(req, res, callback) {
+    Router25.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20652,7 +20652,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router24.prototype.use = function use(handler) {
+    Router25.prototype.use = function use(handler) {
       let offset = 0;
       let path2 = "/";
       if (typeof handler !== "function") {
@@ -20685,7 +20685,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router24.prototype.route = function route(path2) {
+    Router25.prototype.route = function route(path2) {
       const route2 = new Route(path2);
       const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
@@ -20700,7 +20700,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router24.prototype[method] = function(path2) {
+      Router25.prototype[method] = function(path2) {
         const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -20883,13 +20883,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router24 = require_router();
+    var Router25 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router24 = null;
+      var router25 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -20898,13 +20898,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router24 === null) {
-            router24 = new Router24({
+          if (router25 === null) {
+            router25 = new Router25({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router24;
+          return router25;
         }
       });
     };
@@ -20975,15 +20975,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router24 = this.router;
+      var router25 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router24.use(path2, fn2);
+          return router25.use(path2, fn2);
         }
         debug(".use app under %s", path2);
         fn2.mountpath = path2;
         fn2.parent = this;
-        router24.use(path2, function mounted_app(req, res, next) {
+        router25.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -23510,7 +23510,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router24 = require_router();
+    var Router25 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23532,8 +23532,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router24.Route;
-    exports.Router = Router24;
+    exports.Route = Router25.Route;
+    exports.Router = Router25;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -33496,12 +33496,12 @@ var require_lib5 = __commonJS({
 });
 
 // src/app.ts
-var import_express24 = __toESM(require_express2(), 1);
+var import_express25 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 
 // src/routes/index.ts
-var import_express23 = __toESM(require_express2(), 1);
+var import_express24 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -37444,7 +37444,8 @@ var SendOpenaiMessageParams = objectType({
   id: coerce.number()
 });
 var SendOpenaiMessageBody = objectType({
-  content: stringType()
+  content: stringType(),
+  agentMode: enumType(["general", "ceo", "revenue", "ops", "analytics"]).optional()
 });
 var GenerateOpenaiImageBody = objectType({
   prompt: stringType(),
@@ -64159,6 +64160,41 @@ async function generateImageBuffer(prompt, size = "1024x1024") {
 
 // src/routes/openai.ts
 var router2 = (0, import_express2.Router)();
+var MASTER_SYSTEM_PROMPT = `You are OpenClaw \u2014 an advanced AI operating system, NOT a chatbot.
+You are a multi-agent AI operating system with memory, execution, analytics, and revenue optimization capabilities.
+Your purpose: Maximize money, efficiency, decision quality, and automation of the user's entire life and business.
+
+MULTI-AGENT ARCHITECTURE (all agents collaborate on every response):
+1. CEO AGENT \u2014 High-level decisions, priority ranking, business direction. Always answers: "What matters most right now?"
+2. REVENUE AGENT \u2014 Tracks income sources, detects upsells/follow-ups/price increases, classifies clients as High/Medium/Low value. Always asks: "How does this make more money?"
+3. ANALYTICS AGENT \u2014 Tracks tasks completed, time spent, revenue trends, productivity patterns. Produces performance insights.
+4. OPERATIONS AGENT \u2014 Manages tasks, projects, deadlines, workflow efficiency. Ensures nothing is forgotten.
+5. COMMUNICATION AGENT \u2014 Client messages, professional follow-ups, email tone, relationship management.
+6. MEMORY AGENT \u2014 Injects stored client history, project history, decisions, and preferences into every response.
+7. INTEGRATION AGENT \u2014 Bridges external tools, syncs context from all connected systems.
+
+SYSTEM FLOW: User Input \u2192 CEO Agent (priority) \u2192 Memory Agent (context) \u2192 Specialized Agents \u2192 Final Response + Action Plan
+
+FINAL RULE: Every output must improve money, time efficiency, decision quality, or automate execution. If it doesn't, it's not useful.`;
+var AGENT_SUB_PROMPTS = {
+  ceo: `[CEO AGENT ACTIVE]
+You are operating as the CEO Agent \u2014 Master Strategist mode.
+Focus ONLY on: strategic direction, what matters most right now, priority ranking of tasks and goals, high-level business decisions, and trajectory alignment.
+Always answer from the perspective of maximizing long-term business value.`,
+  revenue: `[REVENUE AGENT ACTIVE \u2014 MONEY ENGINE]
+You are operating as the Revenue Agent \u2014 Money Engine mode.
+Focus ONLY on: revenue opportunities, client value ranking (High/Medium/Low ROI), upsell detection, price optimization, follow-up sequences, client reactivation, and profit maximization.
+Every answer must include a dollar or revenue impact. If it doesn't make money, say so.`,
+  ops: `[OPERATIONS AGENT ACTIVE]
+You are operating as the Operations Agent \u2014 Task System mode.
+Focus ONLY on: task management, project execution status, deadline tracking, kanban efficiency, bottleneck removal, and workflow optimization.
+Be specific, actionable, and ensure nothing is overlooked.`,
+  analytics: `[ANALYTICS AGENT ACTIVE]
+You are operating as the Analytics Agent \u2014 Data Intelligence mode.
+Focus ONLY on: performance data, productivity patterns, revenue trends, efficiency analysis, and data-driven insights.
+Always quantify, compare, and surface patterns from available data.`,
+  general: ""
+};
 router2.get("/openai/conversations", async (req, res) => {
   try {
     const rows = await db.select().from(conversations).orderBy(conversations.createdAt);
@@ -64219,11 +64255,31 @@ router2.post("/openai/conversations/:id/messages", async (req, res) => {
   try {
     const { id } = SendOpenaiMessageParams.parse({ id: Number(req.params.id) });
     const body = SendOpenaiMessageBody.parse(req.body);
+    const agentMode = body.agentMode ?? "general";
     const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
     if (!conv) return res.status(404).json({ error: "Not found" });
     await db.insert(messages).values({ conversationId: id, role: "user", content: body.content });
+    const storedMemories = await db.select().from(memories).orderBy(desc(memories.createdAt)).limit(50);
+    const systemMessages = [
+      { role: "system", content: MASTER_SYSTEM_PROMPT }
+    ];
+    if (storedMemories.length > 0) {
+      const memoryBlock = storedMemories.map((m) => `[${m.category.toUpperCase()} | ${m.importance.toUpperCase()}] ${m.content}`).join("\n");
+      systemMessages.push({
+        role: "system",
+        content: `MEMORY AGENT CONTEXT \u2014 Persistent knowledge from previous sessions:
+${memoryBlock}`
+      });
+    }
+    const agentSubPrompt = AGENT_SUB_PROMPTS[agentMode];
+    if (agentSubPrompt) {
+      systemMessages.push({ role: "system", content: agentSubPrompt });
+    }
     const history = await db.select().from(messages).where(eq(messages.conversationId, id)).orderBy(messages.createdAt);
-    const chatMessages = history.map((m) => ({ role: m.role, content: m.content }));
+    const chatMessages = [
+      ...systemMessages,
+      ...history.map((m) => ({ role: m.role, content: m.content }))
+    ];
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -64963,19 +65019,42 @@ router15.get("/briefing", async (req, res) => {
     const unpaidAmount = unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
     const allLeads = await db.select().from(leads);
     const hotLeads = allLeads.filter((l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost").length;
+    const staleLeads = allLeads.filter((l) => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      return (now.getTime() - lastUpdate.getTime()) / (1e3 * 60 * 60 * 24) > 7;
+    }).length;
     const allTime = await db.select().from(timeEntries);
     const weeklyBillable = allTime.filter((t) => t.billable === "true" && t.date >= weekStart).reduce((s, t) => s + parseFloat(t.hours || "0"), 0);
     const allMilestones = await db.select().from(milestones);
     const upcomingMs = allMilestones.filter((m) => m.status !== "completed" && m.dueDate).sort((a, b) => (a.dueDate?.getTime() || 0) - (b.dueDate?.getTime() || 0)).slice(0, 3).map((m) => `${m.title} (due ${m.dueDate.toLocaleDateString()})`);
     const allContent = await db.select().from(contentItems);
     const upcomingContent = allContent.filter((c) => c.status === "scheduled" && c.scheduledDate).sort((a, b) => (a.scheduledDate?.getTime() || 0) - (b.scheduledDate?.getTime() || 0)).slice(0, 3).map((c) => `${c.title} on ${c.platform} (${c.scheduledDate.toLocaleDateString()})`);
-    const insights = [];
-    if (tasksOverdue > 0) insights.push(`${tasksOverdue} overdue task(s) need attention.`);
-    else insights.push("All tasks are on track.");
-    if (unpaidInvs.length > 0) insights.push(`$${unpaidAmount.toFixed(0)} in unpaid invoices across ${unpaidInvs.length} invoice(s).`);
-    if (hotLeads > 0) insights.push(`${hotLeads} hot lead(s) ready to close.`);
-    if (weeklyBillable > 0) insights.push(`${weeklyBillable.toFixed(1)}h billable this week.`);
-    if (habitRows.length > 0) insights.push(`Tracking ${habitRows.length} habit(s). Longest streak: ${maxStreak} day(s).`);
+    let aiInsight = "";
+    try {
+      const dataContext = `System snapshot: ${tasksOverdue} overdue tasks, ${tasksDueToday} due today, ${highPriTasks.length} high-priority pending. Revenue: $${unpaidAmount.toFixed(0)} unpaid across ${unpaidInvs.length} invoices, ${hotLeads} hot leads, ${staleLeads} stale leads, ${weeklyBillable.toFixed(1)}h billable this week. Habits: ${habitRows.length} tracked, longest streak ${maxStreak} days. Active projects: ${activeProjectRows.length}.`;
+      const completion = await openai.chat.completions.create({
+        model: "gpt-5.2",
+        max_completion_tokens: 200,
+        messages: [
+          {
+            role: "system",
+            content: "You are the OpenClaw AI Operating System. Generate a concise 2-3 sentence strategic morning narrative \u2014 not a list, not bullet points \u2014 from the system snapshot. Be specific about numbers. Focus on what matters most today for revenue and momentum. Write in an assertive, commander-to-commander tone."
+          },
+          { role: "user", content: dataContext }
+        ]
+      });
+      aiInsight = completion.choices[0]?.message?.content ?? "";
+    } catch {
+      const insights = [];
+      if (tasksOverdue > 0) insights.push(`${tasksOverdue} overdue task(s) need attention.`);
+      else insights.push("All tasks are on track.");
+      if (unpaidInvs.length > 0) insights.push(`$${unpaidAmount.toFixed(0)} in unpaid invoices across ${unpaidInvs.length} invoice(s).`);
+      if (hotLeads > 0) insights.push(`${hotLeads} hot lead(s) ready to close.`);
+      if (weeklyBillable > 0) insights.push(`${weeklyBillable.toFixed(1)}h billable this week.`);
+      if (habitRows.length > 0) insights.push(`Tracking ${habitRows.length} habit(s). Longest streak: ${maxStreak} day(s).`);
+      aiInsight = insights.join(" ");
+    }
     res.json({
       greeting: `${greeting}, Commander`,
       date: now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -64984,7 +65063,7 @@ router15.get("/briefing", async (req, res) => {
       activeProjects: activeProjectRows.length,
       currentStreak: maxStreak,
       topPriorities: highPriTasks.length > 0 ? highPriTasks : ["No high priority tasks. You're ahead of schedule."],
-      aiInsight: insights.join(" "),
+      aiInsight,
       quote: quotes[Math.floor(Math.random() * quotes.length)],
       unpaidInvoices: unpaidInvs.length,
       unpaidAmount: unpaidAmount.toFixed(2),
@@ -65388,31 +65467,156 @@ router22.get("/financial/summary", async (req, res) => {
 });
 var financial_default = router22;
 
-// src/routes/index.ts
+// src/routes/intelligence.ts
+var import_express23 = __toESM(require_express2(), 1);
 var router23 = (0, import_express23.Router)();
-router23.use(health_default);
-router23.use(openai_default);
-router23.use(projects_default);
-router23.use(clients_default);
-router23.use(tasks_default);
-router23.use(automations_default);
-router23.use(dashboard_default);
-router23.use(notes_default);
-router23.use(habits_default);
-router23.use(goals_default);
-router23.use(memories_default);
-router23.use(audit_default);
-router23.use(metrics_default);
-router23.use(search_default);
-router23.use(briefing_default);
-router23.use(leads_default);
-router23.use(invoices_default);
-router23.use(expenses_default);
-router23.use(time_entries_default);
-router23.use(milestones_default);
-router23.use(content_default);
-router23.use(financial_default);
-var routes_default = router23;
+router23.get("/intelligence/daily-plan", async (req, res) => {
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(todayStart.getTime() - todayStart.getDay() * 864e5);
+    const allTasks = await db.select().from(tasks);
+    const overdueTasks = allTasks.filter(
+      (t) => t.dueDate && t.status !== "done" && t.dueDate < todayStart
+    );
+    const highPriTasks = allTasks.filter((t) => t.status !== "done" && t.priority === "high");
+    const todayTasks = allTasks.filter(
+      (t) => t.dueDate && t.status !== "done" && t.dueDate >= todayStart && t.dueDate < new Date(todayStart.getTime() + 864e5)
+    );
+    const allLeads = await db.select().from(leads);
+    const hotLeads = allLeads.filter(
+      (l) => l.score === "hot" && l.stage !== "won" && l.stage !== "lost"
+    );
+    const staleLeads = allLeads.filter((l) => {
+      if (l.stage === "won" || l.stage === "lost") return false;
+      const lastUpdate = l.updatedAt ? new Date(l.updatedAt) : new Date(l.createdAt);
+      const daysSince = (now.getTime() - lastUpdate.getTime()) / (1e3 * 60 * 60 * 24);
+      return daysSince > 7;
+    });
+    const allInvoices = await db.select().from(invoices);
+    const unpaidInvs = allInvoices.filter(
+      (i) => i.status !== "paid" && i.status !== "cancelled"
+    );
+    const overdueInvs = unpaidInvs.filter(
+      (i) => i.dueDate && new Date(i.dueDate) < todayStart
+    );
+    const unpaidAmount = unpaidInvs.reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
+    const allMilestones = await db.select().from(milestones);
+    const upcomingMs = allMilestones.filter((m) => m.status !== "completed" && m.dueDate).sort((a, b) => (a.dueDate?.getTime() || 0) - (b.dueDate?.getTime() || 0)).slice(0, 5);
+    const allClients = await db.select().from(clients);
+    const allTime = await db.select().from(timeEntries);
+    const weeklyBillable = allTime.filter((t) => t.billable === "true" && t.date >= weekStart).reduce((s, t) => s + parseFloat(t.hours || "0"), 0);
+    const allHabits = await db.select().from(habits);
+    const habitsDueToday = allHabits.filter((h) => {
+      if (!h.lastCompleted) return true;
+      const last = new Date(h.lastCompleted);
+      return last < todayStart;
+    });
+    const contextBlock = `
+CURRENT SYSTEM STATE (${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}):
+
+TASKS:
+- Overdue: ${overdueTasks.length} tasks (${overdueTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
+- High priority pending: ${highPriTasks.length} (${highPriTasks.slice(0, 3).map((t) => t.title).join(", ") || "none"})
+- Due today: ${todayTasks.length}
+
+REVENUE:
+- Hot leads: ${hotLeads.length} (${hotLeads.slice(0, 3).map((l) => `${l.name}${l.budget ? " $" + l.budget : ""}`).join(", ") || "none"})
+- Stale leads (7+ days idle): ${staleLeads.length} (${staleLeads.slice(0, 3).map((l) => l.name).join(", ") || "none"})
+- Unpaid invoices: ${unpaidInvs.length} totaling $${unpaidAmount.toFixed(0)}
+- Overdue invoices: ${overdueInvs.length}
+- Total clients: ${allClients.length}
+
+TIME & MILESTONES:
+- Billable hours this week: ${weeklyBillable.toFixed(1)}h
+- Upcoming milestones: ${upcomingMs.map((m) => `${m.title} (${m.dueDate?.toLocaleDateString()})`).join(", ") || "none"}
+
+HABITS:
+- Habits not logged today: ${habitsDueToday.length} of ${allHabits.length}
+`.trim();
+    const systemPrompt = `You are OpenClaw \u2014 the Revenue Engine and CEO Agent of an AI operating system.
+Generate a structured daily strategic plan based on the real system state provided.
+Output EXACTLY in this format, no deviation:
+
+DAILY STRATEGY PLAN
+===================
+
+TOP 3 REVENUE TASKS
+[list exactly 3, each on a new line starting with "- "]
+
+TOP 3 OPERATIONAL TASKS
+[list exactly 3, each on a new line starting with "- "]
+
+CLIENT FOLLOW-UPS
+[list specific clients/leads to contact, each on a new line starting with "- ". If none, say "- No urgent follow-ups identified."]
+
+RISKS & WARNINGS
+[list specific risks, each on a new line starting with "- "]
+
+FAST MONEY OPPORTUNITIES
+[list 2-3 immediate revenue actions, each on a new line starting with "- "]
+
+Be specific. Use real names and numbers from the data. No vague advice.`;
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    const stream = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 2048,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: contextBlock }
+      ],
+      stream: true
+    });
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) {
+        res.write(`data: ${JSON.stringify({ content })}
+
+`);
+      }
+    }
+    res.write(`data: ${JSON.stringify({ done: true })}
+
+`);
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Failed to generate daily plan");
+    res.write(`data: ${JSON.stringify({ error: "Failed to generate plan" })}
+
+`);
+    res.end();
+  }
+});
+var intelligence_default = router23;
+
+// src/routes/index.ts
+var router24 = (0, import_express24.Router)();
+router24.use(health_default);
+router24.use(openai_default);
+router24.use(intelligence_default);
+router24.use(projects_default);
+router24.use(clients_default);
+router24.use(tasks_default);
+router24.use(automations_default);
+router24.use(dashboard_default);
+router24.use(notes_default);
+router24.use(habits_default);
+router24.use(goals_default);
+router24.use(memories_default);
+router24.use(audit_default);
+router24.use(metrics_default);
+router24.use(search_default);
+router24.use(briefing_default);
+router24.use(leads_default);
+router24.use(invoices_default);
+router24.use(expenses_default);
+router24.use(time_entries_default);
+router24.use(milestones_default);
+router24.use(content_default);
+router24.use(financial_default);
+var routes_default = router24;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -65433,7 +65637,7 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express24.default)();
+var app = (0, import_express25.default)();
 app.use(
   (0, import_pino_http.default)({
     logger,
@@ -65454,8 +65658,8 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
-app.use(import_express24.default.json());
-app.use(import_express24.default.urlencoded({ extended: true }));
+app.use(import_express25.default.json());
+app.use(import_express25.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 var app_default = app;
 

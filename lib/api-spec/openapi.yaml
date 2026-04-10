@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: openai
     description: OpenAI AI chat, image, and audio operations
+  - name: intelligence
+    description: Multi-agent intelligence and daily planning
   - name: projects
     description: Project and tool tracking
   - name: tasks
@@ -186,6 +188,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GenerateOpenaiImageResponse"
+
+  /intelligence/daily-plan:
+    get:
+      operationId: getDailyPlan
+      tags: [intelligence]
+      summary: Get AI-generated daily strategic plan (SSE stream)
+      responses:
+        "200":
+          description: SSE stream of the daily plan
+          content:
+            text/event-stream: {}
 
   /projects:
     get:
@@ -1361,6 +1374,9 @@ components:
       properties:
         content:
           type: string
+        agentMode:
+          type: string
+          enum: [general, ceo, revenue, ops, analytics]
       required:
         - content
     OpenaiConversationWithMessages:

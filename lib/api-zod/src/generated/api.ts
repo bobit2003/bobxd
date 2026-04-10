@@ -90,6 +90,9 @@ export const SendOpenaiMessageParams = zod.object({
 
 export const SendOpenaiMessageBody = zod.object({
   content: zod.string(),
+  agentMode: zod
+    .enum(["general", "ceo", "revenue", "ops", "analytics"])
+    .optional(),
 });
 
 /**

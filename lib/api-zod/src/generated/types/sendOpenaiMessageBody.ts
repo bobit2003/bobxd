@@ -5,7 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SendOpenaiMessageBodyAgentMode } from "./sendOpenaiMessageBodyAgentMode";
 
 export interface SendOpenaiMessageBody {
   content: string;
+  agentMode?: SendOpenaiMessageBodyAgentMode;
 }
