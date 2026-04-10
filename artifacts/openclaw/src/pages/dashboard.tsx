@@ -129,7 +129,6 @@ function AlertStrip({ alerts, onDismiss }: { alerts: AlertItem[]; onDismiss: (ty
             <Link
               href={alert.link}
               className="flex-1 min-w-0"
-              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <span className={`text-xs truncate ${alert.severity === "high" ? "text-red-300" : "text-amber-300"}`}>
                 {alert.message}
