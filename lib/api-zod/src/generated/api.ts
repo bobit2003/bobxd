@@ -14,3 +14,393 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all conversations
+ */
+export const ListOpenaiConversationsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListOpenaiConversationsResponse = zod.array(
+  ListOpenaiConversationsResponseItem,
+);
+
+/**
+ * @summary Create a new conversation
+ */
+export const CreateOpenaiConversationBody = zod.object({
+  title: zod.string(),
+});
+
+/**
+ * @summary Get conversation with messages
+ */
+export const GetOpenaiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetOpenaiConversationResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  messages: zod.array(
+    zod.object({
+      id: zod.number(),
+      conversationId: zod.number(),
+      role: zod.string(),
+      content: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete a conversation
+ */
+export const DeleteOpenaiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List messages in a conversation
+ */
+export const ListOpenaiMessagesParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListOpenaiMessagesResponseItem = zod.object({
+  id: zod.number(),
+  conversationId: zod.number(),
+  role: zod.string(),
+  content: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListOpenaiMessagesResponse = zod.array(
+  ListOpenaiMessagesResponseItem,
+);
+
+/**
+ * @summary Send a text message and receive a streaming text response
+ */
+export const SendOpenaiMessageParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SendOpenaiMessageBody = zod.object({
+  content: zod.string(),
+});
+
+/**
+ * @summary Generate an image from a text prompt
+ */
+export const GenerateOpenaiImageBody = zod.object({
+  prompt: zod.string(),
+  size: zod.enum(["1024x1024", "512x512", "256x256"]).optional(),
+});
+
+export const GenerateOpenaiImageResponse = zod.object({
+  b64_json: zod.string(),
+});
+
+/**
+ * @summary List all projects
+ */
+export const ListProjectsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().optional(),
+  status: zod.enum(["active", "paused", "completed", "archived"]),
+  type: zod.enum(["website", "bot", "tool", "automation", "other"]),
+  clientId: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListProjectsResponse = zod.array(ListProjectsResponseItem);
+
+/**
+ * @summary Create a new project
+ */
+export const CreateProjectBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+  status: zod.enum(["active", "paused", "completed", "archived"]),
+  type: zod.enum(["website", "bot", "tool", "automation", "other"]),
+  clientId: zod.number().nullish(),
+});
+
+/**
+ * @summary Get a project by ID
+ */
+export const GetProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetProjectResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().optional(),
+  status: zod.enum(["active", "paused", "completed", "archived"]),
+  type: zod.enum(["website", "bot", "tool", "automation", "other"]),
+  clientId: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a project
+ */
+export const UpdateProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateProjectBody = zod.object({
+  name: zod.string().optional(),
+  description: zod.string().optional(),
+  status: zod.enum(["active", "paused", "completed", "archived"]).optional(),
+  type: zod.enum(["website", "bot", "tool", "automation", "other"]).optional(),
+  clientId: zod.number().nullish(),
+});
+
+export const UpdateProjectResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().optional(),
+  status: zod.enum(["active", "paused", "completed", "archived"]),
+  type: zod.enum(["website", "bot", "tool", "automation", "other"]),
+  clientId: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a project
+ */
+export const DeleteProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all tasks
+ */
+export const ListTasksQueryParams = zod.object({
+  projectId: zod.coerce.number().optional(),
+  status: zod.enum(["todo", "in_progress", "done"]).optional(),
+  clientId: zod.coerce.number().optional(),
+});
+
+export const ListTasksResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  status: zod.enum(["todo", "in_progress", "done"]),
+  priority: zod.enum(["low", "medium", "high"]),
+  projectId: zod.number().nullish(),
+  clientId: zod.number().nullish(),
+  dueDate: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListTasksResponse = zod.array(ListTasksResponseItem);
+
+/**
+ * @summary Create a new task
+ */
+export const CreateTaskBody = zod.object({
+  title: zod.string(),
+  description: zod.string().optional(),
+  status: zod.enum(["todo", "in_progress", "done"]),
+  priority: zod.enum(["low", "medium", "high"]),
+  projectId: zod.number().nullish(),
+  clientId: zod.number().nullish(),
+  dueDate: zod.coerce.date().nullish(),
+});
+
+/**
+ * @summary Update a task
+ */
+export const UpdateTaskParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateTaskBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  status: zod.enum(["todo", "in_progress", "done"]).optional(),
+  priority: zod.enum(["low", "medium", "high"]).optional(),
+  projectId: zod.number().nullish(),
+  clientId: zod.number().nullish(),
+  dueDate: zod.coerce.date().nullish(),
+});
+
+export const UpdateTaskResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  status: zod.enum(["todo", "in_progress", "done"]),
+  priority: zod.enum(["low", "medium", "high"]),
+  projectId: zod.number().nullish(),
+  clientId: zod.number().nullish(),
+  dueDate: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a task
+ */
+export const DeleteTaskParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all clients
+ */
+export const ListClientsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string().optional(),
+  company: zod.string().optional(),
+  notes: zod.string().optional(),
+  status: zod.enum(["active", "inactive", "lead"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListClientsResponse = zod.array(ListClientsResponseItem);
+
+/**
+ * @summary Create a new client
+ */
+export const CreateClientBody = zod.object({
+  name: zod.string(),
+  email: zod.string().optional(),
+  company: zod.string().optional(),
+  notes: zod.string().optional(),
+  status: zod.enum(["active", "inactive", "lead"]),
+});
+
+/**
+ * @summary Update a client
+ */
+export const UpdateClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateClientBody = zod.object({
+  name: zod.string().optional(),
+  email: zod.string().optional(),
+  company: zod.string().optional(),
+  notes: zod.string().optional(),
+  status: zod.enum(["active", "inactive", "lead"]).optional(),
+});
+
+export const UpdateClientResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string().optional(),
+  company: zod.string().optional(),
+  notes: zod.string().optional(),
+  status: zod.enum(["active", "inactive", "lead"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a client
+ */
+export const DeleteClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all automations
+ */
+export const ListAutomationsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().optional(),
+  script: zod.string(),
+  trigger: zod.enum(["manual", "scheduled", "event"]),
+  status: zod.enum(["active", "inactive"]),
+  lastRunAt: zod.coerce.date().nullish(),
+  lastResult: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListAutomationsResponse = zod.array(ListAutomationsResponseItem);
+
+/**
+ * @summary Create a new automation
+ */
+export const CreateAutomationBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+  script: zod.string(),
+  trigger: zod.enum(["manual", "scheduled", "event"]),
+  status: zod.enum(["active", "inactive"]),
+});
+
+/**
+ * @summary Update an automation
+ */
+export const UpdateAutomationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateAutomationBody = zod.object({
+  name: zod.string().optional(),
+  description: zod.string().optional(),
+  script: zod.string().optional(),
+  trigger: zod.enum(["manual", "scheduled", "event"]).optional(),
+  status: zod.enum(["active", "inactive"]).optional(),
+});
+
+export const UpdateAutomationResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().optional(),
+  script: zod.string(),
+  trigger: zod.enum(["manual", "scheduled", "event"]),
+  status: zod.enum(["active", "inactive"]),
+  lastRunAt: zod.coerce.date().nullish(),
+  lastResult: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete an automation
+ */
+export const DeleteAutomationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Trigger an automation to run
+ */
+export const RunAutomationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RunAutomationResponse = zod.object({
+  success: zod.boolean(),
+  output: zod.string(),
+  runAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Get overall dashboard summary stats
+ */
+export const GetDashboardSummaryResponse = zod.object({
+  totalProjects: zod.number(),
+  activeProjects: zod.number(),
+  totalTasks: zod.number(),
+  pendingTasks: zod.number(),
+  completedTasks: zod.number(),
+  totalClients: zod.number(),
+  activeClients: zod.number(),
+  totalAutomations: zod.number(),
+  activeAutomations: zod.number(),
+  totalConversations: zod.number(),
+});

@@ -8,3 +8,394 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface OpenaiConversation {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+export interface OpenaiMessage {
+  id: number;
+  conversationId: number;
+  role: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface CreateOpenaiConversationBody {
+  title: string;
+}
+
+export interface SendOpenaiMessageBody {
+  content: string;
+}
+
+export interface OpenaiConversationWithMessages {
+  id: number;
+  title: string;
+  createdAt: string;
+  messages: OpenaiMessage[];
+}
+
+export type GenerateOpenaiImageBodySize =
+  (typeof GenerateOpenaiImageBodySize)[keyof typeof GenerateOpenaiImageBodySize];
+
+export const GenerateOpenaiImageBodySize = {
+  "1024x1024": "1024x1024",
+  "512x512": "512x512",
+  "256x256": "256x256",
+} as const;
+
+export interface GenerateOpenaiImageBody {
+  prompt: string;
+  size?: GenerateOpenaiImageBodySize;
+}
+
+export interface GenerateOpenaiImageResponse {
+  b64_json: string;
+}
+
+export interface OpenaiError {
+  error: string;
+}
+
+export type ProjectStatus = (typeof ProjectStatus)[keyof typeof ProjectStatus];
+
+export const ProjectStatus = {
+  active: "active",
+  paused: "paused",
+  completed: "completed",
+  archived: "archived",
+} as const;
+
+export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType];
+
+export const ProjectType = {
+  website: "website",
+  bot: "bot",
+  tool: "tool",
+  automation: "automation",
+  other: "other",
+} as const;
+
+export interface Project {
+  id: number;
+  name: string;
+  description?: string;
+  status: ProjectStatus;
+  type: ProjectType;
+  clientId?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateProjectBodyStatus =
+  (typeof CreateProjectBodyStatus)[keyof typeof CreateProjectBodyStatus];
+
+export const CreateProjectBodyStatus = {
+  active: "active",
+  paused: "paused",
+  completed: "completed",
+  archived: "archived",
+} as const;
+
+export type CreateProjectBodyType =
+  (typeof CreateProjectBodyType)[keyof typeof CreateProjectBodyType];
+
+export const CreateProjectBodyType = {
+  website: "website",
+  bot: "bot",
+  tool: "tool",
+  automation: "automation",
+  other: "other",
+} as const;
+
+export interface CreateProjectBody {
+  name: string;
+  description?: string;
+  status: CreateProjectBodyStatus;
+  type: CreateProjectBodyType;
+  clientId?: number | null;
+}
+
+export type UpdateProjectBodyStatus =
+  (typeof UpdateProjectBodyStatus)[keyof typeof UpdateProjectBodyStatus];
+
+export const UpdateProjectBodyStatus = {
+  active: "active",
+  paused: "paused",
+  completed: "completed",
+  archived: "archived",
+} as const;
+
+export type UpdateProjectBodyType =
+  (typeof UpdateProjectBodyType)[keyof typeof UpdateProjectBodyType];
+
+export const UpdateProjectBodyType = {
+  website: "website",
+  bot: "bot",
+  tool: "tool",
+  automation: "automation",
+  other: "other",
+} as const;
+
+export interface UpdateProjectBody {
+  name?: string;
+  description?: string;
+  status?: UpdateProjectBodyStatus;
+  type?: UpdateProjectBodyType;
+  clientId?: number | null;
+}
+
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
+
+export const TaskStatus = {
+  todo: "todo",
+  in_progress: "in_progress",
+  done: "done",
+} as const;
+
+export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority];
+
+export const TaskPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+} as const;
+
+export interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  projectId?: number | null;
+  clientId?: number | null;
+  dueDate?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateTaskBodyStatus =
+  (typeof CreateTaskBodyStatus)[keyof typeof CreateTaskBodyStatus];
+
+export const CreateTaskBodyStatus = {
+  todo: "todo",
+  in_progress: "in_progress",
+  done: "done",
+} as const;
+
+export type CreateTaskBodyPriority =
+  (typeof CreateTaskBodyPriority)[keyof typeof CreateTaskBodyPriority];
+
+export const CreateTaskBodyPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+} as const;
+
+export interface CreateTaskBody {
+  title: string;
+  description?: string;
+  status: CreateTaskBodyStatus;
+  priority: CreateTaskBodyPriority;
+  projectId?: number | null;
+  clientId?: number | null;
+  dueDate?: string | null;
+}
+
+export type UpdateTaskBodyStatus =
+  (typeof UpdateTaskBodyStatus)[keyof typeof UpdateTaskBodyStatus];
+
+export const UpdateTaskBodyStatus = {
+  todo: "todo",
+  in_progress: "in_progress",
+  done: "done",
+} as const;
+
+export type UpdateTaskBodyPriority =
+  (typeof UpdateTaskBodyPriority)[keyof typeof UpdateTaskBodyPriority];
+
+export const UpdateTaskBodyPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+} as const;
+
+export interface UpdateTaskBody {
+  title?: string;
+  description?: string;
+  status?: UpdateTaskBodyStatus;
+  priority?: UpdateTaskBodyPriority;
+  projectId?: number | null;
+  clientId?: number | null;
+  dueDate?: string | null;
+}
+
+export type ClientStatus = (typeof ClientStatus)[keyof typeof ClientStatus];
+
+export const ClientStatus = {
+  active: "active",
+  inactive: "inactive",
+  lead: "lead",
+} as const;
+
+export interface Client {
+  id: number;
+  name: string;
+  email?: string;
+  company?: string;
+  notes?: string;
+  status: ClientStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateClientBodyStatus =
+  (typeof CreateClientBodyStatus)[keyof typeof CreateClientBodyStatus];
+
+export const CreateClientBodyStatus = {
+  active: "active",
+  inactive: "inactive",
+  lead: "lead",
+} as const;
+
+export interface CreateClientBody {
+  name: string;
+  email?: string;
+  company?: string;
+  notes?: string;
+  status: CreateClientBodyStatus;
+}
+
+export type UpdateClientBodyStatus =
+  (typeof UpdateClientBodyStatus)[keyof typeof UpdateClientBodyStatus];
+
+export const UpdateClientBodyStatus = {
+  active: "active",
+  inactive: "inactive",
+  lead: "lead",
+} as const;
+
+export interface UpdateClientBody {
+  name?: string;
+  email?: string;
+  company?: string;
+  notes?: string;
+  status?: UpdateClientBodyStatus;
+}
+
+export type AutomationTrigger =
+  (typeof AutomationTrigger)[keyof typeof AutomationTrigger];
+
+export const AutomationTrigger = {
+  manual: "manual",
+  scheduled: "scheduled",
+  event: "event",
+} as const;
+
+export type AutomationStatus =
+  (typeof AutomationStatus)[keyof typeof AutomationStatus];
+
+export const AutomationStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export interface Automation {
+  id: number;
+  name: string;
+  description?: string;
+  script: string;
+  trigger: AutomationTrigger;
+  status: AutomationStatus;
+  lastRunAt?: string | null;
+  lastResult?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateAutomationBodyTrigger =
+  (typeof CreateAutomationBodyTrigger)[keyof typeof CreateAutomationBodyTrigger];
+
+export const CreateAutomationBodyTrigger = {
+  manual: "manual",
+  scheduled: "scheduled",
+  event: "event",
+} as const;
+
+export type CreateAutomationBodyStatus =
+  (typeof CreateAutomationBodyStatus)[keyof typeof CreateAutomationBodyStatus];
+
+export const CreateAutomationBodyStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export interface CreateAutomationBody {
+  name: string;
+  description?: string;
+  script: string;
+  trigger: CreateAutomationBodyTrigger;
+  status: CreateAutomationBodyStatus;
+}
+
+export type UpdateAutomationBodyTrigger =
+  (typeof UpdateAutomationBodyTrigger)[keyof typeof UpdateAutomationBodyTrigger];
+
+export const UpdateAutomationBodyTrigger = {
+  manual: "manual",
+  scheduled: "scheduled",
+  event: "event",
+} as const;
+
+export type UpdateAutomationBodyStatus =
+  (typeof UpdateAutomationBodyStatus)[keyof typeof UpdateAutomationBodyStatus];
+
+export const UpdateAutomationBodyStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export interface UpdateAutomationBody {
+  name?: string;
+  description?: string;
+  script?: string;
+  trigger?: UpdateAutomationBodyTrigger;
+  status?: UpdateAutomationBodyStatus;
+}
+
+export interface AutomationRunResult {
+  success: boolean;
+  output: string;
+  runAt: string;
+}
+
+export interface DashboardSummary {
+  totalProjects: number;
+  activeProjects: number;
+  totalTasks: number;
+  pendingTasks: number;
+  completedTasks: number;
+  totalClients: number;
+  activeClients: number;
+  totalAutomations: number;
+  activeAutomations: number;
+  totalConversations: number;
+}
+
+export type ListTasksParams = {
+  projectId?: number;
+  status?: ListTasksStatus;
+  clientId?: number;
+};
+
+export type ListTasksStatus =
+  (typeof ListTasksStatus)[keyof typeof ListTasksStatus];
+
+export const ListTasksStatus = {
+  todo: "todo",
+  in_progress: "in_progress",
+  done: "done",
+} as const;
