@@ -1774,10 +1774,13 @@ components:
           type: string
         email:
           type: string
+          nullable: true
         company:
           type: string
+          nullable: true
         notes:
           type: string
+          nullable: true
         status:
           type: string
           enum: [active, inactive, lead]
@@ -1787,12 +1790,30 @@ components:
         updatedAt:
           type: string
           format: date-time
+        lifetimeValue:
+          type: number
+          description: Total revenue from paid invoices
+        valueTier:
+          type: string
+          enum: [high, medium, low]
+          description: "Revenue tier: high >= $5000, medium >= $1000, low < $1000"
+        paidInvoiceCount:
+          type: integer
+          description: Number of paid invoices
+        lastInvoiceDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date of most recent paid invoice
       required:
         - id
         - name
         - status
         - createdAt
         - updatedAt
+        - lifetimeValue
+        - valueTier
+        - paidInvoiceCount
     CreateClientBody:
       type: object
       properties:

@@ -327,15 +327,35 @@ export const ClientStatus = {
   lead: "lead",
 } as const;
 
+/**
+ * Revenue tier: high >= $5000, medium >= $1000, low < $1000
+ */
+export type ClientValueTier =
+  (typeof ClientValueTier)[keyof typeof ClientValueTier];
+
+export const ClientValueTier = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+} as const;
+
 export interface Client {
   id: number;
   name: string;
-  email?: string;
-  company?: string;
-  notes?: string;
+  email?: string | null;
+  company?: string | null;
+  notes?: string | null;
   status: ClientStatus;
   createdAt: string;
   updatedAt: string;
+  /** Total revenue from paid invoices */
+  lifetimeValue: number;
+  /** Revenue tier: high >= $5000, medium >= $1000, low < $1000 */
+  valueTier: ClientValueTier;
+  /** Number of paid invoices */
+  paidInvoiceCount: number;
+  /** Date of most recent paid invoice */
+  lastInvoiceDate?: string | null;
 }
 
 export type CreateClientBodyStatus =

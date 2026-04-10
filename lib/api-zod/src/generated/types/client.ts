@@ -6,14 +6,23 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ClientStatus } from "./clientStatus";
+import type { ClientValueTier } from "./clientValueTier";
 
 export interface Client {
   id: number;
   name: string;
-  email?: string;
-  company?: string;
-  notes?: string;
+  email?: string | null;
+  company?: string | null;
+  notes?: string | null;
   status: ClientStatus;
   createdAt: Date;
   updatedAt: Date;
+  /** Total revenue from paid invoices */
+  lifetimeValue: number;
+  /** Revenue tier: high >= $5000, medium >= $1000, low < $1000 */
+  valueTier: ClientValueTier;
+  /** Number of paid invoices */
+  paidInvoiceCount: number;
+  /** Date of most recent paid invoice */
+  lastInvoiceDate?: Date | null;
 }

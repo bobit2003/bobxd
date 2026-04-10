@@ -316,12 +316,21 @@ export const DeleteTaskParams = zod.object({
 export const ListClientsResponseItem = zod.object({
   id: zod.number(),
   name: zod.string(),
-  email: zod.string().optional(),
-  company: zod.string().optional(),
-  notes: zod.string().optional(),
+  email: zod.string().nullish(),
+  company: zod.string().nullish(),
+  notes: zod.string().nullish(),
   status: zod.enum(["active", "inactive", "lead"]),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
+  lifetimeValue: zod.number().describe("Total revenue from paid invoices"),
+  valueTier: zod
+    .enum(["high", "medium", "low"])
+    .describe("Revenue tier: high >= $5000, medium >= $1000, low < $1000"),
+  paidInvoiceCount: zod.number().describe("Number of paid invoices"),
+  lastInvoiceDate: zod.coerce
+    .date()
+    .nullish()
+    .describe("Date of most recent paid invoice"),
 });
 export const ListClientsResponse = zod.array(ListClientsResponseItem);
 
@@ -354,12 +363,21 @@ export const UpdateClientBody = zod.object({
 export const UpdateClientResponse = zod.object({
   id: zod.number(),
   name: zod.string(),
-  email: zod.string().optional(),
-  company: zod.string().optional(),
-  notes: zod.string().optional(),
+  email: zod.string().nullish(),
+  company: zod.string().nullish(),
+  notes: zod.string().nullish(),
   status: zod.enum(["active", "inactive", "lead"]),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
+  lifetimeValue: zod.number().describe("Total revenue from paid invoices"),
+  valueTier: zod
+    .enum(["high", "medium", "low"])
+    .describe("Revenue tier: high >= $5000, medium >= $1000, low < $1000"),
+  paidInvoiceCount: zod.number().describe("Number of paid invoices"),
+  lastInvoiceDate: zod.coerce
+    .date()
+    .nullish()
+    .describe("Date of most recent paid invoice"),
 });
 
 /**
@@ -814,12 +832,21 @@ export const GlobalSearchResponse = zod.object({
     zod.object({
       id: zod.number(),
       name: zod.string(),
-      email: zod.string().optional(),
-      company: zod.string().optional(),
-      notes: zod.string().optional(),
+      email: zod.string().nullish(),
+      company: zod.string().nullish(),
+      notes: zod.string().nullish(),
       status: zod.enum(["active", "inactive", "lead"]),
       createdAt: zod.coerce.date(),
       updatedAt: zod.coerce.date(),
+      lifetimeValue: zod.number().describe("Total revenue from paid invoices"),
+      valueTier: zod
+        .enum(["high", "medium", "low"])
+        .describe("Revenue tier: high >= $5000, medium >= $1000, low < $1000"),
+      paidInvoiceCount: zod.number().describe("Number of paid invoices"),
+      lastInvoiceDate: zod.coerce
+        .date()
+        .nullish()
+        .describe("Date of most recent paid invoice"),
     }),
   ),
   notes: zod.array(

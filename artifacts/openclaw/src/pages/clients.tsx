@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { 
+import {
   useListClients, getListClientsQueryKey,
-  useCreateClient,
-  useDeleteClient,
-  useGetRevenueIntelligence, getGetRevenueIntelligenceQueryKey,
+  useCreateClient, useDeleteClient,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -27,7 +25,9 @@ function intToHSL(hash: number) {
   return `hsl(${h}, 70%, 50%)`;
 }
 
-const TIER_CONFIG = {
+type ValueTier = "high" | "medium" | "low";
+
+const TIER_CONFIG: Record<ValueTier, { label: string; cls: string }> = {
   high: { label: "HIGH VALUE", cls: "bg-green-500/10 text-green-400 border-green-500/30" },
   medium: { label: "MED VALUE", cls: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
   low: { label: "LOW VALUE", cls: "bg-red-500/10 text-red-500/70 border-red-500/20" },
@@ -35,43 +35,24 @@ const TIER_CONFIG = {
 
 type SortBy = "name" | "revenue" | "value_tier";
 
+const tierOrder: Record<ValueTier, number> = { high: 3, medium: 2, low: 1 };
+
 export default function Clients() {
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("revenue");
   const [formData, setFormData] = useState({ name: "", email: "", company: "", status: "active" });
 
-  const { data: clients, isLoading: isLoadingClients } = useListClients({
+  const { data: clients, isLoading } = useListClients({
     query: { queryKey: getListClientsQueryKey() }
-  });
-
-  const { data: revenueData, isLoading: isLoadingRevenue } = useGetRevenueIntelligence({
-    query: { queryKey: getGetRevenueIntelligenceQueryKey(), staleTime: 30000 }
   });
 
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
 
-  const isLoading = isLoadingClients || isLoadingRevenue;
-
-  // Merge client data with revenue intelligence
-  const enrichedClients = clients?.map(c => {
-    const ranking = revenueData?.clientRankings?.find(r => r.id === c.id);
-    return {
-      ...c,
-      lifetimeValue: ranking?.lifetimeValue ?? 0,
-      valueTier: (ranking?.valueTier ?? "low") as "high" | "medium" | "low",
-      lastInvoiceDate: ranking?.lastInvoiceDate ?? null,
-      paidInvoiceCount: ranking?.paidInvoiceCount ?? 0,
-    };
-  }) ?? [];
-
-  const sortedClients = [...enrichedClients].sort((a, b) => {
+  const sortedClients = [...(clients ?? [])].sort((a, b) => {
     if (sortBy === "revenue") return b.lifetimeValue - a.lifetimeValue;
-    if (sortBy === "value_tier") {
-      const tierOrder = { high: 3, medium: 2, low: 1 };
-      return tierOrder[b.valueTier] - tierOrder[a.valueTier];
-    }
+    if (sortBy === "value_tier") return tierOrder[b.valueTier as ValueTier] - tierOrder[a.valueTier as ValueTier];
     return a.name.localeCompare(b.name);
   });
 
@@ -82,12 +63,11 @@ export default function Clients() {
         name: formData.name,
         email: formData.email,
         company: formData.company,
-        status: formData.status as ClientStatus
+        status: formData.status as ClientStatus,
       }
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetRevenueIntelligenceQueryKey() });
         setIsCreateOpen(false);
         setFormData({ name: "", email: "", company: "", status: "active" });
       }
@@ -97,21 +77,13 @@ export default function Clients() {
   const handleDelete = (id: number) => {
     if (confirm("Execute deletion of this entity?")) {
       deleteClient.mutate({ id }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetRevenueIntelligenceQueryKey() });
-        }
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() })
       });
     }
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-6 h-full flex flex-col"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 h-full flex flex-col">
       <div className="flex justify-between items-end shrink-0">
         <div>
           <h1 className="text-2xl font-bold tracking-widest mb-1 text-primary uppercase glow-text">Client Registry</h1>
@@ -190,16 +162,15 @@ export default function Clients() {
           {isLoading ? (
             <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
           ) : sortedClients.length === 0 ? (
-            <div className="text-center p-12 text-muted-foreground/50 text-[10px] uppercase tracking-widest font-mono">
-              Registry Empty.
-            </div>
+            <div className="text-center p-12 text-muted-foreground/50 text-[10px] uppercase tracking-widest font-mono">Registry Empty.</div>
           ) : (
             <div className="divide-y divide-white/5">
               {sortedClients.map(client => {
                 const initials = client.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                 const color = intToHSL(hashCode(client.name));
-                const tierCfg = TIER_CONFIG[client.valueTier];
-                
+                const tier = (client.valueTier as ValueTier) ?? "low";
+                const tierCfg = TIER_CONFIG[tier];
+
                 return (
                   <div key={client.id} className="grid grid-cols-[auto_1fr_1.5fr_2fr_auto_auto_auto] gap-4 p-3 items-center hover:bg-white/5 transition-colors group">
                     <div className="w-8 flex justify-center">
@@ -233,7 +204,7 @@ export default function Clients() {
                     <div className="w-28">
                       {client.lifetimeValue > 0 ? (
                         <div>
-                          <div className={`text-sm font-bold font-mono ${client.valueTier === 'high' ? 'text-green-400' : client.valueTier === 'medium' ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                          <div className={`text-sm font-bold font-mono ${tier === 'high' ? 'text-green-400' : tier === 'medium' ? 'text-amber-400' : 'text-muted-foreground'}`}>
                             ${client.lifetimeValue.toLocaleString()}
                           </div>
                           <div className="text-[9px] text-muted-foreground uppercase tracking-widest">
@@ -245,9 +216,9 @@ export default function Clients() {
                       )}
                     </div>
                     <div className="w-10 flex justify-center">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="w-7 h-7 text-muted-foreground hover:bg-destructive/20 hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
                         onClick={() => handleDelete(client.id)}
                       >

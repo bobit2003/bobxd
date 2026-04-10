@@ -13,6 +13,7 @@ export * from "./automationStatus";
 export * from "./automationTrigger";
 export * from "./client";
 export * from "./clientStatus";
+export * from "./clientValueTier";
 export * from "./contentItem";
 export * from "./contentItemContentType";
 export * from "./contentItemPlatform";
