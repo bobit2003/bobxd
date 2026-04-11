@@ -20,6 +20,7 @@ import expensesRouter from "./expenses";
 import timeEntriesRouter from "./time-entries";
 import milestonesRouter from "./milestones";
 import contentRouter from "./content";
+import contentGenerateRouter from "./content-generate";
 import financialRouter from "./financial";
 import intelligenceRouter from "./intelligence";
 import eventsRouter from "./events";
@@ -27,6 +28,9 @@ import agentStatsRouter from "./agent-stats";
 import systemContextRouter from "./system-context";
 import automationEngineRouter from "./automation-engine";
 import priorityEngineRouter from "./priority-engine";
+import revenueForecastRouter from "./revenue-forecast";
+import autonomousEngineRouter from "./autonomous-engine";
+import projectCommandCenterRouter from "./project-command-center";
 
 const router: IRouter = Router();
 
@@ -52,10 +56,14 @@ router.use(expensesRouter);
 router.use(timeEntriesRouter);
 router.use(milestonesRouter);
 router.use(contentRouter);
+router.use(contentGenerateRouter);
 router.use(financialRouter);
 router.use(eventsRouter);
 router.use(systemContextRouter);
 router.use(automationEngineRouter);
 router.use(priorityEngineRouter);
+router.use(revenueForecastRouter);
+router.use(autonomousEngineRouter);
+router.use(projectCommandCenterRouter);
 
 export default router;

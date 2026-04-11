@@ -10,9 +10,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, MoreVertical, Trash2, Code, LayoutTemplate, Bot, Wrench, FileQuestion, FolderKanban } from "lucide-react";
+import { Loader2, Plus, MoreVertical, Trash2, Code, LayoutTemplate, Bot, Wrench, FileQuestion, FolderKanban, Command } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -232,10 +233,17 @@ export default function Projects() {
                   </div>
                   <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-muted-foreground pt-3 border-t border-white/5">
                     <span>{format(new Date(project.createdAt), 'MMM dd, yyyy')}</span>
-                    <span className={`flex items-center gap-1 ${project.status === 'active' ? 'text-green-400' : ''}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${project.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'}`} />
-                      {project.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/projects/${project.id}`}>
+                        <button className="text-[9px] text-primary hover:underline flex items-center gap-1">
+                          <Command className="w-3 h-3" /> Command Centre
+                        </button>
+                      </Link>
+                      <span className={`flex items-center gap-1 ${project.status === 'active' ? 'text-green-400' : ''}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${project.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'}`} />
+                        {project.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

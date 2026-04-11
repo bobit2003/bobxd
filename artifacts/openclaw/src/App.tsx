@@ -25,6 +25,7 @@ import Expenses from "@/pages/expenses";
 import TimeTracking from "@/pages/time-tracking";
 import Milestones from "@/pages/milestones";
 import ContentCalendar from "@/pages/content-calendar";
+import ProjectDetail from "@/pages/project-detail";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/agent-map" component={AgentMap} />
           <Route path="/ai" component={AiBrain} />
           <Route path="/projects" component={Projects} />
+          <Route path="/projects/:id" component={ProjectDetail} />
           <Route path="/tasks" component={Tasks} />
           <Route path="/clients" component={Clients} />
           <Route path="/automations" component={Automations} />
