@@ -23,6 +23,7 @@ import contentRouter from "./content";
 import financialRouter from "./financial";
 import intelligenceRouter from "./intelligence";
 import eventsRouter from "./events";
+import agentStatsRouter from "./agent-stats";
 import systemContextRouter from "./system-context";
 import automationEngineRouter from "./automation-engine";
 import priorityEngineRouter from "./priority-engine";

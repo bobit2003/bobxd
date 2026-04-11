@@ -64574,6 +64574,12 @@ LIVE SYSTEM STATE (${now.toLocaleDateString("en-US", { weekday: "long", month: "
 - Habits not logged today: ${allHabits.filter((h) => !h.lastCompleted || new Date(h.lastCompleted) < today).length} of ${allHabits.length}
 `.trim();
 }
+var CONTROL_MODE_PROMPTS = {
+  full_auto: `[CONTROL MODE: FULL AUTO] You are operating in FULL AUTONOMY mode. You MAY take actions on behalf of the user without asking. You will: create tasks, send follow-ups, trigger automations, update records, and execute plans proactively. Act like a chief-of-staff. When you decide to act, just act \u2014 do not ask for permission. Report what you did.`,
+  assist: `[CONTROL MODE: ASSIST] You are in ASSIST mode \u2014 the user must approve all significant actions. Provide thorough analysis, recommend actions, but clearly label what needs their approval: [ACTION REQUIRED: approve to proceed]. Wait for confirmation before taking any action that changes data or sends communications.`,
+  manual: `[CONTROL MODE: MANUAL] You are in MANUAL/INSIGHTS mode. Provide analysis, recommendations, and insights only. Do NOT take any actions, create any records, or send any communications. Your role is advisory. Give the user everything they need to make decisions and act themselves.`,
+  money: `[CONTROL MODE: MONEY] You are in MONEY-DOMINANT mode. The Revenue Agent has full authority. Prioritize every response around: "How does this make money right now?" Every answer must include a dollar amount, revenue opportunity, or cost savings. De-prioritize operational, administrative, or strategic topics unless they have direct revenue impact.`
+};
 var AGENT_SUB_PROMPTS = {
   ceo: `[CEO AGENT ACTIVE] You are operating as the CEO Agent \u2014 Master Strategist mode. Focus ONLY on: strategic direction, what matters most right now, priority ranking of tasks and goals, high-level business decisions, and trajectory alignment. Always answer from the perspective of maximizing long-term business value.`,
   revenue: `[REVENUE AGENT ACTIVE \u2014 MONEY ENGINE] You are operating as the Revenue Agent \u2014 Money Engine mode. Focus ONLY on: revenue opportunities, client value ranking (High/Medium/Low ROI), upsell detection, price optimization, follow-up sequences, client reactivation, and profit maximization. Every answer must include a dollar or revenue impact. If it doesn't make money, say so.`,
@@ -64639,6 +64645,7 @@ router2.post("/openai/conversations/:id/messages", async (req, res) => {
     const { id } = SendOpenaiMessageParams.parse({ id: Number(req.params.id) });
     const body = SendOpenaiMessageBody.parse(req.body);
     const agentMode = body.agentMode ?? "general";
+    const controlMode = body.controlMode ?? "assist";
     const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
     if (!conv) return res.status(404).json({ error: "Not found" });
     await db.insert(messages).values({ conversationId: id, role: "user", content: body.content });
@@ -64658,6 +64665,8 @@ ${dailyPlanData}`
     }
     const agentSubPrompt = AGENT_SUB_PROMPTS[agentMode];
     if (agentSubPrompt) systemMessages.push({ role: "system", content: agentSubPrompt });
+    const controlPrompt = CONTROL_MODE_PROMPTS[controlMode];
+    if (controlPrompt) systemMessages.push({ role: "system", content: controlPrompt });
     systemMessages.push({
       role: "system",
       content: `SYSTEM CONTEXT (always accurate \u2014 updated every request):
